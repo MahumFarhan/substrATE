@@ -11,9 +11,9 @@ polysaccharide substrate, SubstrATE:
 2. Classifies CGCs as canonical PULs, non-canonical CGCs, or
    ungrouped CAZymes based on transporter gene co-localisation
 3. Assigns enzymatic activity labels from EXPASY and dbCAN databases
-4. Extracts substrate-relevant sequences and places them onto
-   reference trees of characterised CAZymes using EPA-ng, or builds
-   de novo trees using IQ-TREE2 where reference trees are unavailable
+4. Extracts substrate-relevant sequences, merges them with
+   characterised CAZyme reference sequences from CAZy, and builds
+   phylogenetic trees using IQ-TREE2
 5. Generates [iTOL](https://itol.embl.de/) annotation files for tree
    visualisation
 6. Produces [clinker](https://github.com/gamcil/clinker) synteny plots
@@ -76,8 +76,6 @@ The main external tools are:
 | MAFFT | 7.525 | Multiple sequence alignment |
 | trimAl | 1.5 | Alignment trimming |
 | IQ-TREE2 | 3.1.1 | Phylogenetic tree inference |
-| EPA-ng | 0.3.8 | Evolutionary placement of sequences |
-| HMMER | 3.4 | Profile alignment for EPA placement |
 | clinker | 0.0.32 | Synteny plot generation |
 
 Python dependencies: `biopython`, `pandas`, `click`, `requests`,
@@ -140,7 +138,10 @@ This downloads characterised enzyme sequences from CAZy for all 26
 built-in substrates and caches them locally. The download takes
 approximately 30-60 minutes depending on your connection and NCBI load.
 
-### Step 2 — Build reference trees
+### Step 2 — Build reference trees (optional)
+
+SubstrATE can optionally build reference trees from the downloaded
+sequences for use with external tools:
 
 ```bash
 substrate build-reference-trees \
@@ -149,26 +150,11 @@ substrate build-reference-trees \
     --output substrate/data/reference_trees
 ```
 
-Builds IQ-TREE2 reference trees for each CAZyme family. Families with
-fewer than 4 characterised sequences are skipped and will use de novo
-tree building during pipeline runs.
-
-The `--max_seqs` flag limits sequences per family tree using
-proportional subfamily representation. This reduces build time without
-losing coverage of important subfamilies. Recommended: 150-200 for
-routine use, no limit for publication-quality trees.
-
-Build time depends on family sizes — expect 4-12 hours for all
-families with `--max_seqs 200`.
-
-### Running without reference trees
-
-If reference trees have not been built, use `--skip_placement` to fall
-back to de novo IQ-TREE2 tree building for all families:
-
-```bash
-substrate run --skip_placement ...
-```
+This step is not required for normal pipeline runs. SubstrATE
+automatically merges genomic sequences with reference sequences
+from `reference_seqs/by_family/` before building each family tree,
+producing richer trees with biological context without any additional
+setup.
 
 ---
 
@@ -242,9 +228,6 @@ Options:
   --pul_mode CHOICE        PUL classification mode  [default: bacteroidetes]
   --min_substrate_cazymes  Minimum substrate CAZymes per CGC  [default: 2]
   --skip_tree              Skip all tree building
-  --skip_placement         Use de novo IQ-TREE2 for all families instead
-                           of EPA placement (useful if reference trees
-                           not yet built)
   --skip_clinker           Skip clinker synteny plot
   --force                  Overwrite existing output files
   --overlap_threshold INT  Pattern overlap warning threshold  [default: 5]
@@ -337,11 +320,6 @@ results/
     ├── alignments/                    # MAFFT alignments (de novo only)
     ├── trimmed/                       # trimAl trimmed alignments
     ├── trees/                         # IQ-TREE2 treefiles (de novo)
-    ├── placements/                    # EPA-ng placement outputs
-    │   └── GH16/
-    │       ├── GH16.jplace            # Full placement data
-    │       ├── GH16.newick            # Best placement as Newick
-    │       └── GH16.placement_scores.tsv
     ├── itol_annotations/              # iTOL annotation files
     ├── genbank/                       # GenBank files per CGC
     └── clinker/                       # Clinker HTML and TSV outputs
@@ -362,15 +340,6 @@ interpretation.
 activities, and localisations. Edit this file and rerun
 `substrate visualise` to regenerate iTOL annotations with custom
 colours without rebuilding the tree.
-
-**`placements/{family}/{family}.jplace`** — Full EPA-ng placement data
-in jplace format, compatible with iTOL's native placement visualisation.
-
-**`placements/{family}/{family}.newick`** — Best placement positions
-converted to Newick format for use with standard tree viewers.
-
-**`placements/{family}/{family}.placement_scores.tsv`** — Per-sequence
-placement confidence scores (likelihood weight ratios).
 
 **`clinker/{substrate}_all_cgcs.html`** — Interactive clinker synteny
 plot comparing all qualifying CGCs for the substrate.
@@ -517,10 +486,6 @@ Please also cite the underlying tools:
   automated alignment trimming. *Bioinformatics*.
 - **IQ-TREE2**: Minh BQ et al. (2020) IQ-TREE 2: new models and
   methods for phylogenetic inference. *Molecular Biology and Evolution*.
-- **EPA-ng**: Barbera P et al. (2019) EPA-ng: massively parallel
-  evolutionary placement of genetic sequences. *Systematic Biology*.
-- **HMMER**: Eddy SR (2011) Accelerated profile HMM searches.
-  *PLOS Computational Biology*.
 - **clinker**: Gilchrist CLM & Chooi YH (2021) clinker & clustermap.js.
   *Bioinformatics*.
 

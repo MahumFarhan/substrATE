@@ -14,23 +14,21 @@ import click
 
 from substrate import (run_dbcan, classify_pul, activity,
                        extract_seqs, align, trim, tree,
-                       genbank, itol, clinker, parse_substrates,
-                       place_sequences)
+                       genbank, itol, clinker, parse_substrates)
 from substrate.align import TooFewSequencesError
 from substrate.align import ToolNotFoundError as AlignToolError
 from substrate.trim  import ToolNotFoundError as TrimToolError
 from substrate.tree  import ToolNotFoundError as TreeToolError
 from substrate.clinker import ToolNotFoundError as ClinkerToolError
 from substrate.run_dbcan import ToolNotFoundError as DbcanToolError
-from substrate.place_sequences import (ToolNotFoundError as EpaToolError,
-                                        place_all_families)
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-_DATA_DIR     = os.path.join(os.path.dirname(__file__), 'data')
-_COLOURS_FILE = os.path.join(_DATA_DIR, 'default_colours.tsv')
+_DATA_DIR      = os.path.join(os.path.dirname(__file__), 'data')
+_COLOURS_FILE  = os.path.join(_DATA_DIR, 'default_colours.tsv')
 _PATTERNS_FILE = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
+_REF_SEQS_DIR  = os.path.join(_DATA_DIR, 'reference_seqs', 'by_family')
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -237,10 +235,7 @@ def main():
 @click.option('--min_substrate_cazymes', default=2, show_default=True,
               help='Minimum substrate CAZymes required per CGC')
 @click.option('--skip_tree', is_flag=True, default=False,
-              help='Skip all tree building (placement and de novo)')
-@click.option('--skip_placement', is_flag=True, default=False,
-              help='Skip EPA placement, use de novo IQ-TREE2 for all '
-                   'families (useful if reference trees not yet built)')
+              help='Skip alignment, trimming and tree building')
 @click.option('--skip_clinker', is_flag=True, default=False,
               help='Skip clinker synteny plot')
 @click.option('--force', is_flag=True, default=False,
@@ -254,8 +249,8 @@ def main():
                    'in the built-in list)')
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         ref_metadata, ref_seqs, output, threads, pul_mode,
-        min_substrate_cazymes, skip_tree, skip_placement,
-        skip_clinker, force, overlap_threshold, substrate_terms):
+        min_substrate_cazymes, skip_tree, skip_clinker, force,
+        overlap_threshold, substrate_terms):
     """Run the full analysis pipeline."""
 
     os.makedirs(output, exist_ok=True)
@@ -526,89 +521,76 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 _warn("No sequences extracted — skipping downstream steps")
                 results[sub] = 'SKIPPED — no sequences extracted'
                 continue
-
-            # ── 4-6. Placement or de novo tree building ───────────────
+            # ── 4-6. Alignment, trimming, tree building ──────────────
             if not skip_tree:
-                tree_step = 4
-                _step(tree_step, n_steps,
-                      "Sequence placement / tree building")
+                _step(4, n_steps, "Alignment, trimming and tree building")
 
-                placement_log_dir = os.path.join(log_dir, sub)
-                os.makedirs(placement_log_dir, exist_ok=True)
+                align_dir   = os.path.join(sub_output_dir, 'alignments')
+                trimmed_dir = os.path.join(sub_output_dir, 'trimmed')
+                tree_dir    = os.path.join(sub_output_dir, 'trees')
+                log_sub_dir = os.path.join(log_dir, sub)
+                os.makedirs(align_dir,   exist_ok=True)
+                os.makedirs(trimmed_dir, exist_ok=True)
+                os.makedirs(tree_dir,    exist_ok=True)
+                os.makedirs(log_sub_dir, exist_ok=True)
 
-                # Use de novo for all families if --skip_placement
-                # or if epa-ng/hmmer not available
-                use_placement = not skip_placement
-                if use_placement:
+                for family, fasta_path in sorted(fasta_paths.items()):
                     try:
-                        place_sequences.check_epang()
-                        place_sequences.check_hmmer()
-                    except place_sequences.ToolNotFoundError as e:
-                        _warn(f"EPA placement unavailable ({e}), "
-                              f"falling back to de novo for all families")
-                        use_placement = False
+                        # Merge genomic sequences with CAZy reference
+                        # sequences if available, for richer trees
+                        ref_faa = os.path.join(
+                            _REF_SEQS_DIR, f'{family}.faa')
+                        if os.path.exists(ref_faa):
+                            merged_path = os.path.join(
+                                align_dir, f'{family}_merged.faa')
+                            with open(merged_path, 'w') as mf:
+                                with open(fasta_path) as qf:
+                                    mf.write(qf.read())
+                                with open(ref_faa) as rf:
+                                    mf.write(rf.read())
+                            input_faa = merged_path
+                            n_ref = sum(
+                                1 for line in open(ref_faa)
+                                if line.startswith('>'))
+                            click.echo(
+                                f"  {family}: merging with "
+                                f"{n_ref} reference sequences")
+                        else:
+                            input_faa = fasta_path
 
-                if use_placement:
-                    tree_results = place_all_families(
-                        fasta_paths=fasta_paths,
-                        output_dir=sub_output_dir,
-                        threads=threads,
-                        log_dir=placement_log_dir,
-                    )
-                    for family, res in tree_results.items():
-                        if res['method'] is None:
-                            skipped_families.append(
-                                (sub, family, 'no sequences'))
-                else:
-                    # De novo for all families
-                    align_dir   = os.path.join(sub_output_dir,
-                                               'alignments')
-                    trimmed_dir = os.path.join(sub_output_dir,
-                                               'trimmed')
-                    tree_dir    = os.path.join(sub_output_dir,
-                                               'trees')
-                    os.makedirs(align_dir,   exist_ok=True)
-                    os.makedirs(trimmed_dir, exist_ok=True)
-                    os.makedirs(tree_dir,    exist_ok=True)
-
-                    for family, fasta_path in sorted(
-                            fasta_paths.items()):
-                        try:
-                            aligned = align.align(
-                                fasta_path=fasta_path,
-                                output_path=os.path.join(
-                                    align_dir, f'{family}.aln'),
-                                threads=threads,
-                                log_path=os.path.join(
-                                    placement_log_dir,
-                                    f'{family}_mafft.log'),
-                            )
-                            trimmed = trim.trim(
-                                alignment_path=aligned,
-                                output_path=os.path.join(
-                                    trimmed_dir, f'{family}.trim'),
-                                log_path=os.path.join(
-                                    placement_log_dir,
-                                    f'{family}_trimal.log'),
-                            )
-                            tree.build_tree(
-                                trimmed_path=trimmed,
-                                output_prefix=os.path.join(
-                                    tree_dir, family),
-                                threads=threads,
-                                log_path=os.path.join(
-                                    placement_log_dir,
-                                    f'{family}_iqtree.log'),
-                            )
-                            _success(f"{family} tree built")
-                        except TooFewSequencesError as e:
-                            _warn(f"Skipping {family}: {e}")
-                            skipped_families.append(
-                                (sub, family, str(e)))
-                        except Exception as e:
-                            _warn(f"Failed {family}: {e}")
-                            skipped_families.append(
-                                (sub, family, str(e)))
+                        aligned = align.align(
+                            fasta_path=input_faa,
+                            output_path=os.path.join(
+                                align_dir, f'{family}.aln'),
+                            threads=threads,
+                            log_path=os.path.join(
+                                log_sub_dir,
+                                f'{family}_mafft.log'),
+                        )
+                        trimmed = trim.trim(
+                            alignment_path=aligned,
+                            output_path=os.path.join(
+                                trimmed_dir, f'{family}.trim'),
+                            log_path=os.path.join(
+                                log_sub_dir,
+                                f'{family}_trimal.log'),
+                        )
+                        tree.build_tree(
+                            trimmed_path=trimmed,
+                            output_prefix=os.path.join(
+                                tree_dir, family),
+                            threads=threads,
+                            log_path=os.path.join(
+                                log_sub_dir,
+                                f'{family}_iqtree.log'),
+                        )
+                        _success(f"{family} tree built")
+                    except TooFewSequencesError as e:
+                        _warn(f"Skipping {family}: {e}")
+                        skipped_families.append((sub, family, str(e)))
+                    except Exception as e:
+                        _warn(f"Failed {family}: {e}")
+                        skipped_families.append((sub, family, str(e)))
 
             # ── GenBank step number depends on skip_tree ──────────────────
             gbk_step = 4 if skip_tree else 7
@@ -994,7 +976,7 @@ def list_substrates():
 def build_reference_db(email, api_key, output, substrates,
                        families, force):
     """
-    Build CAZy reference sequence database for EPA placement.
+    Build CAZy reference sequence database for phylogenetic tree enrichment.
 
     Downloads characterised enzyme sequences from CAZy and NCBI
     for all built-in substrates. Run this once before building
@@ -1047,7 +1029,7 @@ def build_reference_trees(families, max_seqs, threads, min_seqs,
 
     Run this after build-reference-db. Trees are stored in
     substrate/data/reference_trees/ and used automatically
-    during pipeline runs for EPA sequence placement.
+    during pipeline runs to enrich de novo phylogenetic trees.
 
     Families with fewer than --min_seqs sequences are skipped
     and will use de novo tree building during pipeline runs.

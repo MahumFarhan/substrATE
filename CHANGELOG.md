@@ -16,16 +16,13 @@ All notable changes to SubstrATE will be documented here.
 - dbCAN easy_substrate integration for CAZyme annotation and CGC
   prediction in one step
 
-#### Sequence placement
-- EPA-ng sequence placement onto reference trees of characterised CAZymes
-- HMMER profile alignment (hmmbuild + hmmalign) for query-to-reference
-  alignment
-- Both .jplace (full placement data) and .newick (best placement)
-  outputs per family
-- Per-sequence placement confidence scores (likelihood weight ratios)
-- Automatic fallback to de novo IQ-TREE2 tree building for families
-  without reference trees or with too few reference sequences
-- --skip_placement flag for de novo mode on all families
+#### Phylogenetic trees
+- De novo IQ-TREE2 trees per CAZyme family
+- Automatic merging of genomic sequences with CAZy characterised
+  reference sequences from reference_seqs/by_family/ before tree building
+- Richer trees with biological context — genomic sequences placed
+  alongside characterised enzymes of known substrate specificity
+- Families with too few sequences skipped with warning
 
 #### Reference sequence database
 - build-reference-db subcommand: downloads characterised CAZyme sequences

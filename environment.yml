@@ -15,8 +15,6 @@ dependencies:
   - clinker-py=0.0.32
   - prodigal
   - dbcan=5.2.8
-  - hmmer
-  - epa-ng
   - requests
   - beautifulsoup4
   - pip:
