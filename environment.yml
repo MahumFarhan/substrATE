@@ -1,0 +1,23 @@
+name: substrATE
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - pip
+  - biopython
+  - pandas
+  - click
+  - mafft=7.525
+  - trimal=1.5
+  - iqtree=3.1.1
+  - clinker-py=0.0.32
+  - prodigal
+  - dbcan=5.2.8
+  - hmmer
+  - epa-ng
+  - requests
+  - beautifulsoup4
+  - pip:
+    - -e .

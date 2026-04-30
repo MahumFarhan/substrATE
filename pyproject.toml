@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "substrATE"
+version = "0.1.0"
+description = "Substrate Annotation Tool for Enzymes — CAZyme/PUL analysis pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "biopython",
+    "pandas",
+    "click",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.scripts]
+substrate = "substrate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["substrate*"]
+
+[tool.setuptools.package-data]
+substrate = ["data/*.tsv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

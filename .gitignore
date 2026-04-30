@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Reference sequences (built by user via build_reference_db.py)
+substrate/data/reference_seqs/
+
+# Reference trees (built by user via build_reference_trees.py)
+substrate/data/reference_trees/
+
+# CAZy download cache
+scripts/.cazy_cache/
+
+# Test output
+/tmp/ref_seqs_test/
+
+# Pipeline output
+substrATE_test_output/
+
+# Databases (user-provided)
+databases/
+
+# Conda
+.conda/
+
+# Pytest
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# Zone identifier files (Windows)
+*:Zone.Identifier
+
+# Logs
+*.log
+# R history
+.Rhistory
+
+# Reference sequences zip
+substrate/data/reference_seqs.zip
+
+# egg-info
+*.egg-info/
