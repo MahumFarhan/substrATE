@@ -29,6 +29,7 @@ _DATA_DIR      = os.path.join(os.path.dirname(__file__), 'data')
 _COLOURS_FILE  = os.path.join(_DATA_DIR, 'default_colours.tsv')
 _PATTERNS_FILE = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
 _REF_SEQS_DIR  = os.path.join(_DATA_DIR, 'reference_seqs', 'by_family')
+_REF_TREES_DIR = os.path.join(_DATA_DIR, 'reference_trees')
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -240,6 +241,9 @@ def main():
               help='Skip clinker synteny plot')
 @click.option('--force', is_flag=True, default=False,
               help='Overwrite existing output files')
+@click.option('--denovo', is_flag=True, default=False,
+              help='Build trees from genomic sequences only, without '
+                   'merging or placing against reference sequences.')
 @click.option('--pattern_mode', default='permissive', show_default=True,
               type=click.Choice(['permissive', 'strict']),
               help='Activity pattern matching mode. permissive (default) '
@@ -257,7 +261,7 @@ def main():
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         ref_metadata, ref_seqs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
-        pattern_mode, overlap_threshold, substrate_terms):
+        denovo, pattern_mode, overlap_threshold, substrate_terms):
     """Run the full analysis pipeline."""
 
     os.makedirs(output, exist_ok=True)
@@ -400,6 +404,8 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
     click.echo(f"  Output:            {output}")
     click.echo(f"  PUL mode:          {pul_mode}")
     click.echo(f"  Pattern mode:      {pattern_mode}")
+    click.echo(f"  Tree mode:         "
+               f"{'denovo' if denovo else 'auto (place > merge > denovo)'}")
     click.echo(f"  Min CAZymes/CGC:   {min_substrate_cazymes}")
     click.echo(f"  Threads:           {threads}")
     click.echo(f"  Skip tree:         {skip_tree}")
@@ -547,11 +553,47 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
 
                 for family, fasta_path in sorted(fasta_paths.items()):
                     try:
-                        # Merge genomic sequences with CAZy reference
-                        # sequences if available, for richer trees
-                        ref_faa = os.path.join(
+                        # ── Determine tree mode for this family ───────
+                        ref_tree_dir  = os.path.join(
+                            _REF_TREES_DIR, family)
+                        ref_treefile  = os.path.join(
+                            ref_tree_dir, f'{family}.ref.treefile')
+                        ref_trim_file = os.path.join(
+                            ref_tree_dir, f'{family}.ref.trim')
+                        ref_faa       = os.path.join(
                             _REF_SEQS_DIR, f'{family}.faa')
-                        if os.path.exists(ref_faa):
+
+                        n_query = sum(
+                            1 for line in open(fasta_path)
+                            if line.startswith('>'))
+
+                        if denovo:
+                            click.echo(
+                                f"  {family}: de novo tree "
+                                f"({n_query} genomic sequences, "
+                                f"--denovo flag set)")
+                            input_faa = fasta_path
+                            tree_mode = 'denovo'
+
+                        elif (os.path.exists(ref_treefile) and
+                              os.path.exists(ref_trim_file)):
+                            n_ref = sum(
+                                1 for line in open(ref_trim_file)
+                                if line.startswith('>'))
+                            click.echo(
+                                f"  {family}: placing {n_query} genomic "
+                                f"sequences onto reference tree "
+                                f"({n_ref} reference sequences)")
+                            tree_mode = 'place'
+
+                        elif os.path.exists(ref_faa):
+                            n_ref = sum(
+                                1 for line in open(ref_faa)
+                                if line.startswith('>'))
+                            click.echo(
+                                f"  {family}: no reference tree found — "
+                                f"building de novo with {n_ref} reference "
+                                f"sequences merged in")
                             merged_path = os.path.join(
                                 align_dir, f'{family}_merged.faa')
                             with open(merged_path, 'w') as mf:
@@ -560,42 +602,65 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                                 with open(ref_faa) as rf:
                                     mf.write(rf.read())
                             input_faa = merged_path
-                            n_ref = sum(
-                                1 for line in open(ref_faa)
-                                if line.startswith('>'))
-                            click.echo(
-                                f"  {family}: merging with "
-                                f"{n_ref} reference sequences")
-                        else:
-                            input_faa = fasta_path
+                            tree_mode = 'merge'
 
-                        aligned = align.align(
-                            fasta_path=input_faa,
-                            output_path=os.path.join(
-                                align_dir, f'{family}.aln'),
-                            threads=threads,
-                            log_path=os.path.join(
-                                log_sub_dir,
-                                f'{family}_mafft.log'),
-                        )
-                        trimmed = trim.trim(
-                            alignment_path=aligned,
-                            output_path=os.path.join(
-                                trimmed_dir, f'{family}.trim'),
-                            log_path=os.path.join(
-                                log_sub_dir,
-                                f'{family}_trimal.log'),
-                        )
-                        tree.build_tree(
-                            trimmed_path=trimmed,
-                            output_prefix=os.path.join(
-                                tree_dir, family),
-                            threads=threads,
-                            log_path=os.path.join(
-                                log_sub_dir,
-                                f'{family}_iqtree.log'),
-                        )
-                        _success(f"{family} tree built")
+                        else:
+                            click.echo(
+                                f"  {family}: building de novo "
+                                f"({n_query} genomic sequences, "
+                                f"no reference sequences available)")
+                            input_faa = fasta_path
+                            tree_mode = 'denovo'
+
+                        mafft_log  = os.path.join(
+                            log_sub_dir, f'{family}_mafft.log')
+                        trimal_log = os.path.join(
+                            log_sub_dir, f'{family}_trimal.log')
+                        iqtree_log = os.path.join(
+                            log_sub_dir, f'{family}_iqtree.log')
+
+                        if tree_mode == 'place':
+                            combined = os.path.join(
+                                align_dir, f'{family}_combined.aln')
+                            align.add_fragments(
+                                query_path=fasta_path,
+                                reference_aln_path=ref_trim_file,
+                                output_path=combined,
+                                threads=threads,
+                                log_path=mafft_log,
+                            )
+                            tree.place_sequences(
+                                combined_aln_path=combined,
+                                ref_treefile=ref_treefile,
+                                output_prefix=os.path.join(
+                                    tree_dir, family),
+                                threads=threads,
+                                log_path=iqtree_log,
+                            )
+                        else:
+                            aligned = align.align(
+                                fasta_path=input_faa,
+                                output_path=os.path.join(
+                                    align_dir, f'{family}.aln'),
+                                threads=threads,
+                                log_path=mafft_log,
+                            )
+                            trimmed = trim.trim(
+                                alignment_path=aligned,
+                                output_path=os.path.join(
+                                    trimmed_dir, f'{family}.trim'),
+                                log_path=trimal_log,
+                            )
+                            tree.build_tree(
+                                trimmed_path=trimmed,
+                                output_prefix=os.path.join(
+                                    tree_dir, family),
+                                threads=threads,
+                                log_path=iqtree_log,
+                            )
+
+                        _success(f"{family} tree built [{tree_mode}]")
+
                     except TooFewSequencesError as e:
                         _warn(f"Skipping {family}: {e}")
                         skipped_families.append((sub, family, str(e)))

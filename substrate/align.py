@@ -57,6 +57,61 @@ def count_sequences(fasta_path):
 MIN_SEQUENCES = 3
 
 
+def add_fragments(query_path, reference_aln_path, output_path,
+                  threads=8, log_path=None):
+    """
+    Add query sequences into an existing reference alignment using
+    MAFFT --addfragments.
+
+    Query sequences are inserted into the reference alignment without
+    changing the alignment columns of the reference sequences. This is
+    used for the place tree mode, where genomic sequences are added
+    to the pre-built reference alignment before IQ-TREE2 --tree-fix.
+
+    Args:
+        query_path:         path to query sequences FASTA (genomic seqs)
+        reference_aln_path: path to existing reference alignment FASTA
+                            (the .ref.trim file from build-reference-trees)
+        output_path:        path to write combined aligned FASTA
+        threads:            number of threads (default: 8)
+        log_path:           path to append MAFFT log output (optional)
+
+    Returns:
+        output_path on success
+
+    Raises:
+        TooFewSequencesError if query_path has fewer than MIN_SEQUENCES
+        ToolNotFoundError if MAFFT is not on PATH
+        subprocess.CalledProcessError if MAFFT exits with non-zero status
+    """
+    n = count_sequences(query_path)
+    if n < MIN_SEQUENCES:
+        raise TooFewSequencesError(
+            f"{os.path.basename(query_path)}: {n} sequence(s) "
+            f"(minimum {MIN_SEQUENCES} required for alignment)"
+        )
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    cmd = [
+        'mafft',
+        '--addfragments', query_path,
+        '--thread', str(threads),
+        '--quiet',
+        reference_aln_path,
+    ]
+
+    with open(output_path, 'w') as out:
+        if log_path:
+            with open(log_path, 'a') as log:
+                subprocess.run(cmd, stdout=out, stderr=log, check=True)
+        else:
+            subprocess.run(cmd, stdout=out,
+                           stderr=subprocess.DEVNULL, check=True)
+
+    return output_path
+
+
 def align(fasta_path, output_path, threads=8, log_path=None):
     """
     Align sequences in fasta_path using MAFFT --auto.

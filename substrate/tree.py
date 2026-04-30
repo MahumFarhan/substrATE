@@ -85,6 +85,75 @@ def count_sequences(fasta_path):
 MIN_SEQUENCES = 4
 
 
+def place_sequences(combined_aln_path, ref_treefile, output_prefix,
+                    threads=8, log_path=None):
+    """
+    Place sequences onto a fixed reference tree topology using IQ-TREE2
+    --tree-fix.
+
+    The reference tree topology is held fixed while branch lengths are
+    re-optimised and query sequences are inserted. This is much faster
+    than a full de novo tree build for large families like GH16, and
+    produces trees that are directly comparable across different runs
+    since the reference backbone is always the same.
+
+    Args:
+        combined_aln_path: path to combined alignment FASTA containing
+                           both reference and query sequences (output of
+                           align.add_fragments())
+        ref_treefile:      path to reference tree (.ref.treefile from
+                           build-reference-trees)
+        output_prefix:     prefix for IQ-TREE2 output files
+        threads:           number of threads (default: 8)
+        log_path:          path to append IQ-TREE2 log output (optional)
+
+    Returns:
+        path to the output treefile on success
+
+    Raises:
+        TooFewSequencesError if combined_aln_path has fewer than
+        MIN_SEQUENCES
+        ToolNotFoundError if IQ-TREE2 is not on PATH
+        subprocess.CalledProcessError if IQ-TREE2 exits non-zero
+    """
+    n = count_sequences(combined_aln_path)
+    if n < MIN_SEQUENCES:
+        raise TooFewSequencesError(
+            f"{os.path.basename(combined_aln_path)}: {n} sequence(s) "
+            f"(minimum {MIN_SEQUENCES} required)"
+        )
+
+    os.makedirs(os.path.dirname(output_prefix), exist_ok=True)
+
+    binary, _ = check_iqtree()
+
+    cmd = [
+        binary,
+        '-s',        combined_aln_path,
+        '-t',        ref_treefile,
+        '--tree-fix',
+        '--prefix',  output_prefix,
+        '-m',        'TEST',
+        '-T',        str(threads),
+        '--quiet',
+        '--redo',
+    ]
+
+    if log_path:
+        with open(log_path, 'a') as log:
+            subprocess.run(cmd, stderr=log, check=True)
+    else:
+        subprocess.run(cmd, stderr=subprocess.DEVNULL, check=True)
+
+    treefile = f"{output_prefix}.treefile"
+    if not os.path.exists(treefile):
+        raise FileNotFoundError(
+            f"IQ-TREE2 completed but treefile not found: {treefile}"
+        )
+
+    return treefile
+
+
 def build_tree(trimmed_path, output_prefix, threads=8,
                bootstrap=1000, log_path=None):
     """
@@ -124,10 +193,9 @@ def build_tree(trimmed_path, output_prefix, threads=8,
         '-s', trimmed_path,
         '--prefix', output_prefix,
         '-m', 'TEST',
-        '-B', str(bootstrap),
+        '-bb', str(bootstrap),
         '-T', str(threads),
         '--quiet',
-        '--redo',
     ]
 
     if log_path:
