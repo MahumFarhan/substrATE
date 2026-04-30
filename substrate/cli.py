@@ -1141,6 +1141,66 @@ def test_install(db_dir, expasy, tcdb, threads):
                 f"Check your database paths and installation."
             )
 
+
+# ── family-sizes subcommand ───────────────────────────────────────────────────
+
+@main.command('family-sizes')
+@click.option('--ref_seqs_dir',
+              default=None,
+              type=click.Path(),
+              help='Path to by_family/ reference sequences directory. '
+                   'Defaults to substrate/data/reference_seqs/by_family/')
+@click.option('--top', default=None, type=int,
+              help='Show only the top N largest families (default: all)')
+def family_sizes(ref_seqs_dir, top):
+    """
+    Show sequence counts for all reference families.
+
+    Useful for choosing a --max_seqs cap before running
+    substrate build-reference-trees. Families with many sequences
+    will take longer to build trees for.
+    """
+    if ref_seqs_dir is None:
+        ref_seqs_dir = _REF_SEQS_DIR
+
+    if not os.path.exists(ref_seqs_dir):
+        raise click.ClickException(
+            f"Reference sequences directory not found: {ref_seqs_dir}\n"
+            f"Run substrate build-reference-db first."
+        )
+
+    families = []
+    for fname in os.listdir(ref_seqs_dir):
+        if not fname.endswith('.faa'):
+            continue
+        family = fname[:-4]
+        fpath  = os.path.join(ref_seqs_dir, fname)
+        with open(fpath) as f:
+            n = sum(1 for line in f if line.startswith('>'))
+        families.append((n, family))
+
+    if not families:
+        raise click.ClickException(
+            f"No .faa files found in {ref_seqs_dir}"
+        )
+
+    families.sort(reverse=True)
+
+    if top:
+        families = families[:top]
+
+    click.echo(f"\nReference family sequence counts ({ref_seqs_dir}):\n")
+    click.echo(f"  {'Family':<15} {'Sequences':>10}")
+    click.echo(f"  {'-'*15} {'-'*10}")
+    for n, family in families:
+        click.echo(f"  {family:<15} {n:>10}")
+
+    total = sum(n for n, _ in families)
+    click.echo(f"  {'-'*15} {'-'*10}")
+    click.echo(f"  {'Total shown':<15} {total:>10}")
+    click.echo(f"\nTip: use --max_seqs with substrate build-reference-trees")
+    click.echo(f"     to cap large families (recommended: 150)")
+
 # ── build-reference-db subcommand ─────────────────────────────────────────────
 
 @main.command('build-reference-db')
