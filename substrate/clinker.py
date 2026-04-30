@@ -144,7 +144,7 @@ def _accessory_group(label):
     return None
 
 
-def get_gene_label(feature, has_susd=False):
+def get_gene_label(feature):
     """
     Derive a clean display label for a CGC gene feature.
 
@@ -166,11 +166,8 @@ def get_gene_label(feature, has_susd=False):
     product   = feature.qualifiers.get('product', [''])[0]
 
     if 'CAZyme' in note:
-        # Handle bifunctional genes (e.g. GH16_3+Sulfatase|S1_19)
-        # Take the CAZyme part only, ignoring fused domains
+        # Collapse subfamily to top-level family
         raw = gene.split('_e')[0] if gene else product
-        # Strip any fused domain annotations after +
-        raw = raw.split('+')[0].strip()
         return _top_level_family(raw)
 
     if 'SULFATLAS' in note or 'sulfatase' in product.lower():
@@ -190,22 +187,7 @@ def get_gene_label(feature, has_susd=False):
 
     if 'TC' in note:
         tc_id = product.split('|')[-1] if '|' in product else product
-        # Map to category name for consistent colouring
-        if tc_id.startswith('1.B.14'):
-            return 'SusC' if has_susd else 'TonB-dep.'
-        elif tc_id.startswith('8.A.46'):
-            return 'SusD-like'
-        elif tc_id.startswith('3.A.1'):
-            return 'ABC transporter'
-        elif tc_id.startswith('2.A.21'):
-            return 'SSS transporter'
-        elif tc_id.startswith('2.A.1'):
-            return 'MFS transporter'
-        else:
-            return tc_id if tc_id else 'transporter'
-
-    if 'prodoric' in note.lower() or 'prodoric' in product.lower():
-        return 'TF'
+        return tc_id if tc_id else 'transporter'
 
     if 'TF' in note:
         return 'TF'
@@ -260,19 +242,12 @@ def generate_clinker_inputs(gbk_dir, output_dir, substrate,
                 continue
             gbk_path = os.path.join(root, fname)
             for record in SeqIO.parse(gbk_path, 'genbank'):
-                # Pre-check: does this CGC have a SusD (8.A.46)?
-                cgc_features = [f for f in record.features
-                                if f.type == 'CDS']
-                has_susd = any(
-                    '8.A.46' in f.qualifiers.get(
-                        'product', [''])[0]
-                    for f in cgc_features
-                )
-                for feature in cgc_features:
+                for feature in record.features:
+                    if feature.type != 'CDS':
+                        continue
                     locus = feature.qualifiers.get(
                         'locus_tag', [''])[0]
-                    label = get_gene_label(feature,
-                                           has_susd=has_susd)
+                    label = get_gene_label(feature)
                     locus_to_label[locus] = label
                     all_labels.add(label)
 

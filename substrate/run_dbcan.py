@@ -176,6 +176,50 @@ def run_prodigal(sample, nucleotide_fasta, prodigal_dir,
 
 # ── dbCAN annotation ──────────────────────────────────────────────────────────
 
+# Files that dbCAN expects with specific casing. On some systems
+# (e.g. Windows-derived filesystems via WSL2) these may be lowercase.
+_DBCAN_REQUIRED_FILES = [
+    ('TCDB.dmnd',       ['tcdb.dmnd']),
+    ('TCDB.fa',         ['tcdb.fa', 'tcdb.faa']),
+    ('CAZy.dmnd',       ['CAZyDB.dmnd', 'cazydb.dmnd']),
+    ('PUL.dmnd',        ['pul.dmnd']),
+    ('dbCAN.hmm',       ['dbCAN-HMMdb-V14.txt', 'dbCAN-HMMdb.hmm']),
+    ('dbCAN.hmm.h3f',   ['dbCAN-HMMdb-V14.txt.h3f']),
+    ('dbCAN.hmm.h3i',   ['dbCAN-HMMdb-V14.txt.h3i']),
+    ('dbCAN.hmm.h3m',   ['dbCAN-HMMdb-V14.txt.h3m']),
+    ('dbCAN.hmm.h3p',   ['dbCAN-HMMdb-V14.txt.h3p']),
+    ('dbCAN-sub.hmm',   ['dbCAN_sub.hmm']),
+    ('dbCAN-sub.hmm.h3f', ['dbCAN_sub.hmm.h3f']),
+    ('dbCAN-sub.hmm.h3i', ['dbCAN_sub.hmm.h3i']),
+    ('dbCAN-sub.hmm.h3m', ['dbCAN_sub.hmm.h3m']),
+    ('dbCAN-sub.hmm.h3p', ['dbCAN_sub.hmm.h3p']),
+]
+
+
+def normalise_db_dir(db_dir):
+    """
+    Ensure dbCAN database files exist with the exact casing dbCAN
+    expects, creating symlinks for case mismatches if needed.
+
+    This is necessary on Linux filesystems where files downloaded on
+    Windows (e.g. via WSL2) may have lowercase names while dbCAN
+    hardcodes uppercase filenames internally.
+
+    Args:
+        db_dir: path to dbCAN database directory
+    """
+    for expected, alternatives in _DBCAN_REQUIRED_FILES:
+        expected_path = os.path.join(db_dir, expected)
+        if os.path.exists(expected_path):
+            continue
+        for alt in alternatives:
+            alt_path = os.path.join(db_dir, alt)
+            if os.path.exists(alt_path):
+                os.symlink(alt_path, expected_path)
+                print(f"  Created symlink: {expected} -> {alt}")
+                break
+
+
 def run_dbcan_sample(sample, faa_path, cgc_output_dir, db_dir,
                      threads=8, log_path=None):
     """
@@ -244,6 +288,7 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
         path to cgc_output directory containing all sample outputs
     """
     check_dbcan()
+    normalise_db_dir(db_dir)
 
     prodigal_dir   = os.path.join(output_dir, 'prodigal')
     cgc_output_dir = os.path.join(output_dir, 'cgc_output')

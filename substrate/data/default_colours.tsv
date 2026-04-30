@@ -39,8 +39,7 @@ activity	#920000
 activity	#ffff6d
 activity	#004949
 activity	#009292
-clinker_SusC	#2166ac
-clinker_TonB-dep.	#4393c3
+clinker_SusC/TonB-dep.	#2166ac
 clinker_SusD-like	#92c5de
 clinker_ABC transporter	#4dac26
 clinker_MFS transporter	#b8e186
