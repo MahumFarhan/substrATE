@@ -47,3 +47,4 @@ substrate/data/reference_seqs.zip
 
 # egg-info
 *.egg-info/
+tests/test_data/
