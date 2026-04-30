@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use SubstrATE in your research, please cite it as below."
+type: software
+title: "SubstrATE: Substrate Annotation Tool for Enzymes"
+abstract: "A command-line pipeline for identifying and annotating
+  polysaccharide utilisation loci (PULs) and CAZyme gene clusters
+  (CGCs) in bacterial genomes. Supports 25 built-in substrates,
+  automated phylogenetic tree building, synteny visualisation,
+  and activity annotation."
+version: 0.1.0
+date-released: 2025-04-24
+license: MIT
+repository-code: https://github.com/MahumFarhan/substrATE
+authors:
+  - family-names: "Farhan"
+    given-names: "Mahum"
+    orcid: "0000-0002-2771-5300"
+    affiliation: "University of Bremen"
+keywords:
+  - CAZymes
+  - polysaccharide utilisation loci
+  - PUL
+  - glycoside hydrolases
+  - marine bacteria
+  - bioinformatics
+  - phylogenetics
+references:
+  - type: software
+    title: "dbCAN"
+    url: https://github.com/linnabrown/run_dbcan
+  - type: software
+    title: "IQ-TREE2"
+    url: http://www.iqtree.org
+  - type: software
+    title: "MAFFT"
+    url: https://mafft.cbrc.jp/alignment/software/
+  - type: software
+    title: "trimAl"
+    url: http://trimal.cgenomics.org
+  - type: software
+    title: "clinker"
+    url: https://github.com/gamcil/clinker
