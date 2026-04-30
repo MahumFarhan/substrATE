@@ -1034,6 +1034,113 @@ def list_substrates():
 
 
 
+
+# ── test-install subcommand ───────────────────────────────────────────────────
+
+@main.command('test-install')
+@click.option('--db_dir', required=True, type=click.Path(),
+              help='Path to dbCAN database directory')
+@click.option('--expasy', required=True, type=click.Path(),
+              help='Path to EXPASY enzyme.dat file')
+@click.option('--tcdb', required=True, type=click.Path(),
+              help='Path to TCDB tc_family_definitions.tsv file')
+@click.option('--threads', default=4, show_default=True,
+              help='Number of threads')
+def test_install(db_dir, expasy, tcdb, threads):
+    """
+    Verify installation using the bundled test genome.
+
+    Runs a minimal pipeline (classification + activity annotation only,
+    no trees or clinker) on the included Gramella forsetii test genome.
+    A successful run confirms that SubstrATE and all required databases
+    are correctly installed.
+    """
+    import tempfile
+
+    _DATA_DIR_PKG = os.path.join(os.path.dirname(__file__), 'data')
+    test_genomes  = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        'tests', 'data', 'genomes'
+    )
+
+    if not os.path.exists(test_genomes) or not any(
+        f.endswith(('.fna', '.fasta', '.fa'))
+        for f in os.listdir(test_genomes)
+    ):
+        raise click.ClickException(
+            f"Test genome directory not found or empty: {test_genomes}\n"
+            f"Re-install SubstrATE or clone the repository to restore "
+            f"test data."
+        )
+
+    _validate_paths(db_dir=db_dir, expasy=expasy, tcdb=tcdb)
+
+    click.echo("\nSubstrATE installation test")
+    click.echo("=" * 40)
+    click.echo(f"  Test genomes: {test_genomes}")
+    click.echo(f"  Substrate:    laminarin")
+    click.echo(f"  Skipping:     tree building, clinker")
+    click.echo("=" * 40)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            from substrate import run_dbcan, classify_pul, activity
+            from substrate import parse_substrates
+
+            fam_sub_map = _get_fam_sub_map(db_dir)
+
+            # Step 1: dbCAN annotation
+            click.echo("\nStep 1/3: Running dbCAN annotation...")
+            cgc_output_dir = run_dbcan.annotate_genomes(
+                input_dir=test_genomes,
+                output_dir=tmpdir,
+                db_dir=db_dir,
+                threads=threads,
+                force=True,
+            )
+            _success("dbCAN annotation complete")
+
+            # Step 2: Classification
+            click.echo("\nStep 2/3: PUL classification...")
+            substrate_hits, family_hits, _ = classify_pul.process_samples(
+                cgc_output_dir=cgc_output_dir,
+                substrate='laminarin',
+                pul_mode='bacteroidetes',
+                min_cazymes=2,
+            )
+
+            if family_hits.empty:
+                click.echo(
+                    "  NOTE: No laminarin PUL hits found in test genome — "
+                    "this may be expected depending on the genome used."
+                )
+            else:
+                n_pul = (family_hits['localisation'] == 'canonical_PUL').sum()
+                _success(f"{len(family_hits)} family hits, "
+                         f"{n_pul} in canonical PULs")
+
+            # Step 3: Activity annotation
+            click.echo("\nStep 3/3: Activity annotation...")
+            if not family_hits.empty:
+                family_hits = activity.annotate_hits(
+                    hits_df=family_hits,
+                    expasy_file=expasy,
+                    fam_sub_map=fam_sub_map,
+                )
+                _success("Activity annotation complete")
+
+            click.echo("\n" + "=" * 40)
+            click.echo("  ✓ Installation test passed")
+            click.echo("  SubstrATE is correctly installed and")
+            click.echo("  all required databases are accessible.")
+            click.echo("=" * 40 + "\n")
+
+        except Exception as e:
+            raise click.ClickException(
+                f"Installation test failed: {e}\n"
+                f"Check your database paths and installation."
+            )
+
 # ── build-reference-db subcommand ─────────────────────────────────────────────
 
 @main.command('build-reference-db')
