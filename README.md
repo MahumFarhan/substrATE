@@ -117,8 +117,8 @@ wget https://www.tcdb.org/public/tcdb -O tc_family_definitions.tsv
 
 ## Reference sequence database
 
-SubstrATE uses a database of characterised CAZyme sequences from CAZy
-for EPA-ng sequence placement. This database is not included in the
+SubstrATE uses a database of characterised CAZyme sequences from CAZy to enrich
+phylogenetic trees with biological context. This database is not included in the
 repository and must be built once after installation.
 
 ### Step 1 — Download characterised sequences
@@ -130,30 +130,40 @@ substrate build-reference-db \
     --output substrate/data/reference_seqs
 ```
 
-An NCBI API key is recommended for faster downloads (10 requests/second
-vs 3). Register at https://www.ncbi.nlm.nih.gov/account/
+An NCBI API key is recommended for faster downloads (10 requests/second vs 3).
+Register at https://www.ncbi.nlm.nih.gov/account/
 
-This downloads characterised enzyme sequences from CAZy for all 26
-built-in substrates and caches them locally. The download takes
-approximately 30-60 minutes depending on your connection and NCBI load.
+This downloads characterised enzyme sequences from CAZy for all 25 built-in
+substrates and caches them locally. The download takes approximately 30–60
+minutes depending on your connection and NCBI load.
 
 ### Step 2 — Build reference trees (optional)
 
-SubstrATE can optionally build reference trees from the downloaded
-sequences for use with external tools:
+Reference trees are only required if you plan to use `--tree_mode place`, which
+fixes the reference tree topology and places your genomic sequences onto it.
+This gives reproducible, directly comparable trees across different runs and
+datasets.
 
 ```bash
 substrate build-reference-trees \
     --threads 8 \
-    --max_seqs 200 \
     --output substrate/data/reference_trees
 ```
 
-This step is not required for normal pipeline runs. SubstrATE
-automatically merges genomic sequences with reference sequences
-from `reference_seqs/by_family/` before building each family tree,
-producing richer trees with biological context without any additional
-setup.
+This step is not required for the default `--tree_mode merge`, where SubstrATE
+automatically merges your genomic sequences with reference sequences from
+`substrate/data/reference_seqs/by_family/` before building each family tree de
+novo, producing trees with biological context without any additional setup.
+
+### Tree building modes
+
+SubstrATE supports three tree building modes via `--tree_mode`:
+
+| Mode | Description | Requires reference db | Requires reference trees |
+|---|---|---|---|
+| `merge` | De novo tree with reference sequences merged in (default) | Yes | No |
+| `denovo` | De novo tree from genomic sequences only | No | No |
+| `place` | Genomic sequences placed onto fixed reference tree topology | Yes | Yes |
 
 ---
 
