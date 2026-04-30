@@ -40,7 +40,6 @@ dbCAN fam-substrate-mapping database at runtime.
 - [Supported substrates](#supported-substrates)
 - [PUL classification modes](#pul-classification-modes)
 - [Activity patterns](#activity-patterns)
-- [Comparison with SACCHARIS](#comparison-with-saccharis)
 - [Citation](#citation)
 - [License](#license)
 
@@ -434,39 +433,6 @@ substrate run --overlap_threshold 0 ...
 # Increase sensitivity
 substrate run --overlap_threshold 3 ...
 ```
-
----
-
-## Comparison with SACCHARIS
-
-[SACCHARIS](https://github.com/saccharis/SACCHARIS_2) is the closest
-published tool to SubstrATE. The key differences are:
-
-**Scope:** SACCHARIS works at the level of individual CAZyme families —
-you provide sequences from one family and it builds an annotated tree.
-SubstrATE works at the level of complete polysaccharide utilisation loci,
-identifying which CGCs in a genome are involved in degrading a specific
-substrate and comparing them across genomes.
-
-**Input:** SACCHARIS requires sequences you provide manually. SubstrATE
-starts from genome assemblies or protein FASTAs and handles the entire
-workflow from dbCAN annotation through to visualisation.
-
-**PUL context:** SACCHARIS has no concept of PULs or CGCs and does not
-consider genomic organisation. SubstrATE's central output is the
-classification of CGCs as canonical PULs, non-canonical CGCs, or
-ungrouped CAZymes — the biologically meaningful unit for understanding
-polysaccharide degradation in Bacteroidetes.
-
-**Substrate focus:** SACCHARIS infers substrate specificity from tree
-topology. SubstrATE takes the opposite approach — you specify the
-substrate of interest and the tool identifies which genomic loci are
-relevant to that substrate.
-
-**Summary:** SACCHARIS answers *"What substrate does this CAZyme act
-on?"* SubstrATE answers *"Which complete gene clusters in these genomes
-are involved in degrading this substrate, and how do they compare?"*
-The tools are complementary rather than competing.
 
 ---
 
