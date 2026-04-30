@@ -205,7 +205,8 @@ def main():
 
 @main.command()
 @click.option('--substrate', multiple=True,
-              help='Target substrate(s). Can be specified multiple times. '
+              help='Target substrate(s). Use --substrate once per substrate '
+                   'e.g. --substrate laminarin --substrate alginate. '
                    'If omitted, dbCAN annotation runs first and a survey '
                    'prompts you to select substrates interactively.')
 @click.option('--genomes', type=click.Path(), default=None,
