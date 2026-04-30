@@ -19,7 +19,7 @@ polysaccharide substrate, SubstrATE:
 6. Produces [clinker](https://github.com/gamcil/clinker) synteny plots
    for PUL comparison
 
-SubstrATE supports 26 built-in substrates covering marine algal
+SubstrATE supports 25 built-in substrates covering marine algal
 polysaccharides, plant cell wall components, gut glycans, and general
 carbohydrates. Custom substrates can be derived automatically from the
 dbCAN fam-substrate-mapping database at runtime.
