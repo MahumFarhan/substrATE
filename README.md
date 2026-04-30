@@ -52,7 +52,7 @@ SubstrATE requires conda. If you do not have conda installed, download
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/substrATE.git
+git clone https://github.com/MahumFarhan/substrATE.git
 cd substrATE
 
 # Create the conda environment and install SubstrATE
@@ -477,7 +477,7 @@ details.
 ## Contributing
 
 Bug reports, feature requests, and pull requests are welcome via the
-[GitHub issue tracker](https://github.com/YOUR_USERNAME/substrATE/issues).
+[GitHub issue tracker](https://github.com/MahumFarhan/substrATE/issues).
 
 When adding a new built-in substrate, please:
 1. Add entries to `FAMILY_MAP` and `SUBSTRATE_TERMS` in
