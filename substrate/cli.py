@@ -242,6 +242,13 @@ def main():
               help='Skip clinker synteny plot')
 @click.option('--force', is_flag=True, default=False,
               help='Overwrite existing output files')
+@click.option('--max_colours', default=None, type=int,
+              help='Maximum number of sample colours to generate. '
+                   'If your dataset has more samples than the default '
+                   'palette (19), set this to your sample count or '
+                   'higher to generate distinct HSL colours for all '
+                   'samples automatically. Without this flag, colours '
+                   'will cycle and a warning will be shown.')
 @click.option('--denovo', is_flag=True, default=False,
               help='Build trees from genomic sequences only, without '
                    'merging or placing against reference sequences.')
@@ -262,7 +269,8 @@ def main():
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         ref_metadata, ref_seqs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
-        denovo, pattern_mode, overlap_threshold, substrate_terms):
+        max_colours, denovo, pattern_mode, overlap_threshold,
+        substrate_terms):
     """Run the full analysis pipeline."""
 
     os.makedirs(output, exist_ok=True)
@@ -701,6 +709,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 activity_file=activity_file,
                 ref_metadata=ref_metadata,
                 sample_metadata=None,
+                max_colours=max_colours,
             )
 
             # ── Clinker ───────────────────────────────────────────────────
@@ -906,10 +915,14 @@ def tree_cmd(substrate, output, threads):
               help='Base output directory')
 @click.option('--ref_metadata', type=click.Path(), default=None,
               help='Path to reference sequence metadata TSV')
+@click.option('--max_colours', default=None, type=int,
+              help='Maximum number of sample colours to generate '
+                   'using HSL colour generation. Use when your dataset '
+                   'has more than 19 samples.')
 @click.option('--colour_config', type=click.Path(), default=None,
               help='Path to existing colour config TSV to use instead '
                    'of regenerating colours')
-def visualise(substrate, output, ref_metadata, colour_config):
+def visualise(substrate, output, ref_metadata, max_colours, colour_config):
     """Generate iTOL annotation files only."""
     for sub in substrate:
         sub_output_dir = os.path.join(output, sub)
@@ -931,6 +944,7 @@ def visualise(substrate, output, ref_metadata, colour_config):
             activity_file=activity_file,
             ref_metadata=ref_metadata,
             colour_config_path=colour_config,
+            max_colours=max_colours,
         )
         _success(f"iTOL annotations written for {sub}")
 

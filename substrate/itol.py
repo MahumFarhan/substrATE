@@ -114,7 +114,30 @@ def load_colour_palettes(colours_file):
 
 # ── Colour assignment ─────────────────────────────────────────────────────────
 
-def assign_sample_colours(samples, sample_palette):
+def _generate_hsl_palette(n):
+    """
+    Generate N visually distinct colours using evenly spaced HSL hues.
+
+    Uses fixed saturation (0.65) and lightness (0.50) for colours that
+    are both distinct and visible against white backgrounds in iTOL.
+
+    Args:
+        n: number of colours to generate
+
+    Returns:
+        list of hex colour strings
+    """
+    import colorsys
+    colours = []
+    for i in range(n):
+        hue        = i / n
+        r, g, b    = colorsys.hls_to_rgb(hue, 0.50, 0.65)
+        colours.append('#{:02x}{:02x}{:02x}'.format(
+            int(r * 255), int(g * 255), int(b * 255)))
+    return colours
+
+
+def assign_sample_colours(samples, sample_palette, max_colours=None):
     """
     Assign colours to samples from the sample palette.
 
@@ -122,41 +145,57 @@ def assign_sample_colours(samples, sample_palette):
     'Reference' is always assigned the last colour in the palette
     (dark grey by convention).
 
-    If the number of samples exceeds the palette size, colours will
-    cycle and a warning is printed. Users can add more colours to
-    default_colours.tsv to avoid cycling.
-
-    NOTE: A --max_colours flag is planned for a future update that
-    will switch to programmatic HSL colour generation when the sample
-    count exceeds the palette size, for users who need more colours
-    than the palette provides.
+    If the number of samples exceeds the palette size:
+      - If max_colours is set: switch to programmatic HSL colour
+        generation for all samples, producing max_colours evenly
+        spaced hues. Use this for datasets with >19 samples.
+      - If max_colours is not set: colours cycle and a warning is
+        printed suggesting the user set --max_colours.
 
     Args:
         samples:        iterable of sample name strings
         sample_palette: list of hex colour strings
+        max_colours:    optional int — if set and sample count exceeds
+                        palette size, generate this many HSL colours
+                        instead of cycling the palette
 
     Returns:
         dict mapping sample name to hex colour string
     """
     sorted_samples = sorted(s for s in samples if s != 'Reference')
+    n_samples      = len(sorted_samples)
 
-    # Reserve last palette colour for Reference — don't count it
-    # as available for samples
+    # Reserve last palette colour for Reference
     available_palette = sample_palette[:-1]
     palette_size      = len(available_palette)
 
-    if len(sorted_samples) > palette_size:
-        print(f"WARNING: {len(sorted_samples)} samples exceed the colour "
-              f"palette size ({palette_size}).")
-        print(f"         Colours will repeat. To fix, add more 'sample' "
-              f"colours to:")
-        print(f"         substrate/data/default_colours.tsv")
+    if n_samples > palette_size:
+        if max_colours is not None:
+            n_colours   = max(max_colours, n_samples)
+            hsl_palette = _generate_hsl_palette(n_colours)
+            print(f"INFO: {n_samples} samples exceed palette size "
+                  f"({palette_size}) — using HSL colour generation "
+                  f"({n_colours} colours)")
+            colours = {}
+            for i, sample in enumerate(sorted_samples):
+                colours[sample] = hsl_palette[i]
+        else:
+            print(f"WARNING: {n_samples} samples exceed the colour "
+                  f"palette size ({palette_size}).")
+            print(f"         Colours will repeat. Use --max_colours "
+                  f"{n_samples} to generate distinct colours for all "
+                  f"samples automatically.")
+            colours = {}
+            for i, sample in enumerate(sorted_samples):
+                colours[sample] = available_palette[i % palette_size]
+    else:
+        colours = {}
+        for i, sample in enumerate(sorted_samples):
+            colours[sample] = available_palette[i]
 
-    colours = {}
-    for i, sample in enumerate(sorted_samples):
-        colours[sample] = available_palette[i % palette_size]
     if 'Reference' in samples:
         colours['Reference'] = sample_palette[-1]
+
     return colours
 
 
@@ -364,7 +403,7 @@ def parse_faa_annotations(faa_path, activity_map, sample_labels,
 
 def assign_colours(seq_dir, output_dir, substrate, colours_file,
                    activity_file, ref_metadata=None,
-                   sample_metadata=None):
+                   sample_metadata=None, max_colours=None):
     """
     Phase 1: scan sequence files, assign colours, write colour_config.tsv.
 
@@ -376,6 +415,8 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
         activity_file:   path to <substrate>_activity_annotated.tsv
         ref_metadata:    optional path to reference_metadata.tsv
         sample_metadata: optional path to metadata TSV with sample labels
+        max_colours:     optional int — if set and sample count exceeds
+                         palette size, generate this many HSL colours
 
     Returns:
         path to written colour_config.tsv
@@ -408,7 +449,8 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
             all_samples.add(sample)
             all_activities.add(activity_map.get(gene_id, 'unknown'))
 
-    sample_colours   = assign_sample_colours(all_samples, sample_palette)
+    sample_colours   = assign_sample_colours(all_samples, sample_palette,
+                                              max_colours=max_colours)
     activity_colours = assign_activity_colours(all_activities,
                                                activity_palette)
 
@@ -525,7 +567,8 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
 def generate_itol_annotations(seq_dir, output_dir, substrate,
                               colours_file, activity_file,
                               ref_metadata=None, sample_metadata=None,
-                              colour_config_path=None):
+                              colour_config_path=None,
+                              max_colours=None):
     """
     Full iTOL annotation generation for one substrate.
 
@@ -543,6 +586,10 @@ def generate_itol_annotations(seq_dir, output_dir, substrate,
         sample_metadata:    optional path to metadata TSV with sample labels
         colour_config_path: optional path to existing colour_config.tsv.
                             If None, Phase 1 runs automatically.
+        max_colours:        optional int — if set and sample count exceeds
+                            the default palette size, generate this many
+                            HSL colours instead of cycling. Recommended
+                            for datasets with more than 19 samples.
     """
     default_config = os.path.join(
         output_dir, f'{substrate}_colour_config.tsv')
@@ -559,7 +606,8 @@ def generate_itol_annotations(seq_dir, output_dir, substrate,
         colour_config_path = assign_colours(
             seq_dir, output_dir, substrate, colours_file,
             activity_file, ref_metadata=ref_metadata,
-            sample_metadata=sample_metadata
+            sample_metadata=sample_metadata,
+            max_colours=max_colours,
         )
 
     print("\nPhase 2: writing iTOL annotation files...")
