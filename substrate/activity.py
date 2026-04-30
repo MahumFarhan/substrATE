@@ -291,6 +291,26 @@ def annotate_references(ref_metadata, substrate):
     if ref_meta.empty:
         return pd.DataFrame()
 
+    # Determine activity — support legacy schema (activity column)
+    # and current schema (protein_name + ec_numbers)
+    if 'activity' in ref_meta.columns:
+        ref_meta['_activity'] = ref_meta['activity'].fillna('unknown')
+    elif 'protein_name' in ref_meta.columns:
+        def _make_activity(row):
+            name = str(row.get('protein_name', '')).strip()
+            ec   = str(row.get('ec_numbers', '')).strip()
+            if ec and ec not in ('', 'nan', '-'):
+                return f"{name} [{ec}]" if name else ec
+            return name or 'unknown'
+        ref_meta['_activity'] = ref_meta.apply(_make_activity, axis=1)
+    else:
+        ref_meta['_activity'] = 'unknown'
+
+    if 'ec_numbers' in ref_meta.columns:
+        ref_meta['_ec'] = ref_meta['ec_numbers'].fillna('-')
+    else:
+        ref_meta['_ec'] = '-'
+
     rows = []
     for _, row in ref_meta.iterrows():
         rows.append({
@@ -299,10 +319,11 @@ def annotate_references(ref_metadata, substrate):
             'substrate_category':   substrate,
             'matched_family':       str(row['family']),
             'localisation':         'characterised_reference',
-            'subfamily_annotation': str(row['family']),
-            'EC#':                  '-',
-            'primary_ec':           '-',
-            'activity':             str(row['activity']),
+            'subfamily_annotation': str(row.get('subfamily',
+                                                 row['family'])),
+            'EC#':                  str(row['_ec']),
+            'primary_ec':           str(row['_ec']),
+            'activity':             str(row['_activity']),
         })
 
     return pd.DataFrame(rows)
