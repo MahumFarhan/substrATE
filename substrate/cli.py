@@ -8,6 +8,7 @@ intermediate files from a previous run.
 """
 import os
 import sys
+import time
 import traceback
 import pandas as pd
 import click
@@ -42,12 +43,14 @@ def _section(title, width=60):
 
 
 def _step(n, total, description):
-    """Print a step header."""
+    """Print a step header and return start time."""
     click.echo(f"\nStep {n}/{total}: {description}...")
+    return time.time()
 
 
-def _success(msg):
-    click.echo(f"  ✓ {msg}")
+def _success(msg, t=None):
+    elapsed = f" ({time.time() - t:.1f}s)" if t is not None else ""
+    click.echo(f"  ✓ {msg}{elapsed}")
 
 
 def _warn(msg):
@@ -198,6 +201,11 @@ def _save_dataframe(df, path, description):
 # ── run command ───────────────────────────────────────────────────────────────
 
 @click.group()
+@click.version_option(
+    version='0.1.0',
+    prog_name='substrATE',
+    message='%(prog)s %(version)s'
+)
 def main():
     """substrATE: Substrate Annotation Tool for Enzymes."""
     pass
@@ -430,6 +438,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
     log_dir   = os.path.join(output, 'logs')
     os.makedirs(log_dir, exist_ok=True)
 
+    pipeline_start = time.time()
     for sub_idx, sub in enumerate(substrate, 1):
 
         _section(
@@ -450,7 +459,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
             n_steps = 7 if not skip_tree else 5
             if not skip_clinker:
                 n_steps += 1
-            _step(1, n_steps, "PUL classification")
+            t = _step(1, n_steps, "PUL classification")
 
             substrate_hits, family_hits, overview_df = (
                 classify_pul.process_samples(
@@ -470,7 +479,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                      ).sum()
             _success(
                 f"{len(family_hits)} family hits, "
-                f"{n_pul} in canonical PULs"
+                f"{n_pul} in canonical PULs", t
             )
 
             # Save classification outputs
@@ -489,7 +498,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 )
 
             # ── 2. Activity annotation ────────────────────────────────────
-            _step(2, n_steps, "Activity annotation")
+            t = _step(2, n_steps, "Activity annotation")
 
             family_hits = activity.annotate_hits(
                 hits_df=family_hits,
@@ -514,6 +523,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
 
             _save_dataframe(all_hits, activity_file,
                             'activity annotations')
+            _success("Activity annotation complete", t)
 
             # Write pattern review report for unreviewed substrates
             existing_patterns = pd.read_csv(_PATTERNS_FILE, sep='\t')
@@ -532,7 +542,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 )
 
             # ── 3. Sequence extraction ────────────────────────────────────
-            _step(3, n_steps, "Sequence extraction")
+            t = _step(3, n_steps, "Sequence extraction")
 
             fasta_paths = extract_seqs.extract_sequences(
                 cgc_output_dir=cgc_output_dir,
@@ -547,6 +557,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 _warn("No sequences extracted — skipping downstream steps")
                 results[sub] = 'SKIPPED — no sequences extracted'
                 continue
+            _success(f"{len(fasta_paths)} families extracted", t)
             # ── 4-6. Alignment, trimming, tree building ──────────────
             if not skip_tree:
                 _step(4, n_steps, "Alignment, trimming and tree building")
@@ -749,7 +760,9 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
             results[sub] = f'FAILED — see logs/{sub}_error.log'
 
     # ── Final summary ─────────────────────────────────────────────────────────
-    _section("Pipeline complete")
+    elapsed_total = time.time() - pipeline_start
+    _section(f"Pipeline complete "
+             f"({elapsed_total/60:.1f} min)")
 
     for sub, status in results.items():
         icon = '✓' if status == 'SUCCESS' else '✗'
