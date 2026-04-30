@@ -33,23 +33,24 @@ ACTIVITY_PATTERNS_FILE = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
 
 # ── Activity pattern loading ──────────────────────────────────────────────────
 
-def load_activity_patterns(patterns_file=None):
+def load_activity_patterns(patterns_file=None, pattern_mode='permissive'):
     """
     Load activity relevance patterns from activity_patterns.tsv.
 
     Args:
         patterns_file: path to activity_patterns.tsv. If None, uses
                        the default file in substrate/data/
+        pattern_mode:  'permissive' (default) loads all patterns;
+                       'strict' loads only substrate-specific patterns
 
     Returns:
         tuple of (patterns_dict, reviewed_dict) where:
           patterns_dict maps substrate -> list of pattern strings
           reviewed_dict maps substrate -> bool (True if all reviewed)
     """
-    if patterns_file is None:
-        patterns_file = ACTIVITY_PATTERNS_FILE
-
-    df = pd.read_csv(patterns_file, sep='\t')
+    from substrate.parse_substrates import load_patterns
+    df = load_patterns(patterns_file=patterns_file,
+                       pattern_mode=pattern_mode)
 
     patterns_dict = {}
     reviewed_dict = {}
@@ -234,7 +235,8 @@ def find_genome_fasta(sample, genomes_dir):
 
 def filter_qualifying_cgcs(hits_df, activity_file, substrate,
                            output_dir, min_cazymes=2,
-                           patterns_file=None):
+                           patterns_file=None,
+                           pattern_mode='permissive'):
     """
     Filter CGCs to those with >= min_cazymes substrate-relevant activity
     annotations, using canonical_PUL localisation only.
@@ -246,11 +248,13 @@ def filter_qualifying_cgcs(hits_df, activity_file, substrate,
         output_dir:    substrate output directory (for review report)
         min_cazymes:   minimum relevant activity genes per CGC
         patterns_file: optional path to activity_patterns.tsv override
+        pattern_mode:  'permissive' (default) or 'strict'
 
     Returns:
         set of (sample, cgc_id) tuples for qualifying CGCs
     """
-    patterns_dict, reviewed_dict = load_activity_patterns(patterns_file)
+    patterns_dict, reviewed_dict = load_activity_patterns(
+        patterns_file, pattern_mode=pattern_mode)
     check_patterns_reviewed(substrate, reviewed_dict, output_dir)
 
     hits = hits_df[hits_df['localisation'] == 'canonical_PUL'].copy()
@@ -405,7 +409,8 @@ def build_genbank_record(sample, cgc_id, cgc_genes, genome,
 def make_genbank_files(cgc_output_dir, hits_df, genomes_dir, output_dir,
                        substrate, tcdb_file, activity_file,
                        sample_labels=None, min_cazymes=2,
-                       patterns_file=None):
+                       patterns_file=None,
+                       pattern_mode='permissive'):
     """
     Extract qualifying CGC regions and write GenBank files.
 
@@ -424,6 +429,7 @@ def make_genbank_files(cgc_output_dir, hits_df, genomes_dir, output_dir,
                         If None, sample names are used as-is.
         min_cazymes:    minimum relevant activity genes per CGC
         patterns_file:  optional path to activity_patterns.tsv override
+        pattern_mode:   'permissive' (default) or 'strict'
 
     Returns:
         Total number of GenBank files written
@@ -443,7 +449,8 @@ def make_genbank_files(cgc_output_dir, hits_df, genomes_dir, output_dir,
         hits_df, activity_file, substrate,
         output_dir=output_dir,
         min_cazymes=min_cazymes,
-        patterns_file=patterns_file
+        patterns_file=patterns_file,
+        pattern_mode=pattern_mode,
     )
 
     if not qualifying_cgcs:

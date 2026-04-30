@@ -240,6 +240,13 @@ def main():
               help='Skip clinker synteny plot')
 @click.option('--force', is_flag=True, default=False,
               help='Overwrite existing output files')
+@click.option('--pattern_mode', default='permissive', show_default=True,
+              type=click.Choice(['permissive', 'strict']),
+              help='Activity pattern matching mode. permissive (default) '
+                   'uses all patterns including those shared across '
+                   'related substrates. strict uses only substrate-specific '
+                   'patterns, reducing false positives at the cost of '
+                   'potentially missing some annotations.')
 @click.option('--overlap_threshold', default=5, show_default=True,
               help='Minimum shared activity patterns to trigger overlap '
                    'warning. Set to 0 to suppress.')
@@ -250,7 +257,7 @@ def main():
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         ref_metadata, ref_seqs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
-        overlap_threshold, substrate_terms):
+        pattern_mode, overlap_threshold, substrate_terms):
     """Run the full analysis pipeline."""
 
     os.makedirs(output, exist_ok=True)
@@ -349,6 +356,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         parse_substrates.check_pattern_overlap(
             list(substrate),
             overlap_threshold=overlap_threshold,
+            pattern_mode=pattern_mode,
         )
 
     # ── Parse substrate terms ─────────────────────────────────────────────────
@@ -381,6 +389,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 parse_substrates.update_patterns_file(
                     sub, patterns, _PATTERNS_FILE,
                     source='auto_derived', reviewed=False,
+                    mode=pattern_mode,
                 )
         except ValueError as e:
             raise click.ClickException(str(e))
@@ -390,6 +399,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
     click.echo(f"  Substrates:        {', '.join(substrate)}")
     click.echo(f"  Output:            {output}")
     click.echo(f"  PUL mode:          {pul_mode}")
+    click.echo(f"  Pattern mode:      {pattern_mode}")
     click.echo(f"  Min CAZymes/CGC:   {min_substrate_cazymes}")
     click.echo(f"  Threads:           {threads}")
     click.echo(f"  Skip tree:         {skip_tree}")
@@ -503,6 +513,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                     activity_file=activity_file,
                     patterns=sub_patterns['pattern'].tolist(),
                     output_dir=sub_output_dir,
+                    pattern_mode=pattern_mode,
                 )
 
             # ── 3. Sequence extraction ────────────────────────────────────
@@ -608,6 +619,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                 activity_file=activity_file,
                 min_cazymes=min_substrate_cazymes,
                 patterns_file=_PATTERNS_FILE,
+                pattern_mode=pattern_mode,
             )
 
             # ── iTOL annotations ──────────────────────────────────────────

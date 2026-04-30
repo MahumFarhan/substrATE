@@ -1,370 +1,332 @@
-substrate	pattern	source	reviewed
-agar	agarase	auto_derived	False
-agar	agarobiose	auto_derived	False
-agar	agarose	auto_derived	False
-agar	anhydro	auto_derived	False
-agar	galactofuranosidase	auto_derived	False
-agar	galactosidase	auto_derived	False
-agar	neoagaro	auto_derived	False
-agar	neoagarose	auto_derived	False
-agar	porphyranase	auto_derived	False
-alginate	alginate	auto_derived	False
-alginate	diversity	auto_derived	False
-alginate	glucuronan	auto_derived	False
-alginate	guluronate	auto_derived	False
-alginate	mannuronate	auto_derived	False
-alginate	oligoalginate	auto_derived	False
-alginate	polygm	auto_derived	False
-alginate	polymg	auto_derived	False
-alginate	unspecified	auto_derived	False
-arabinogalactan	antigen	auto_derived	False
-arabinogalactan	arabinan	auto_derived	False
-arabinogalactan	arabinofuranosidase	auto_derived	False
-arabinogalactan	arabinogalactan	auto_derived	False
-arabinogalactan	arabinogalactans	auto_derived	False
-arabinogalactan	arabinopyranosidase	auto_derived	False
-arabinogalactan	arabinoxylans	auto_derived	False
-arabinogalactan	galactan	auto_derived	False
-arabinogalactan	galactanase	auto_derived	False
-arabinogalactan	galactofuranosidase	auto_derived	False
-arabinogalactan	galactomannan	auto_derived	False
-arabinogalactan	galactosidase	auto_derived	False
-arabinogalactan	galactoside	auto_derived	False
-arabinogalactan	glucuronate	auto_derived	False
-arabinogalactan	glucuronidase	auto_derived	False
-arabinogalactan	methyl	auto_derived	False
-arabinogalactan	rhamnose	auto_derived	False
-arabinogalactan	rhamnosidase	auto_derived	False
-arabinoxylan	arabinan	auto_derived	False
-arabinoxylan	arabinofuranosidase	auto_derived	False
-arabinoxylan	arabinogalactans	auto_derived	False
-arabinoxylan	arabinopyranosidase	auto_derived	False
-arabinoxylan	arabinoxylan	auto_derived	False
-arabinoxylan	arabinoxylans	auto_derived	False
-arabinoxylan	xylanase	auto_derived	False
-arabinoxylan	xylosidase	auto_derived	False
-beta_mannan	acetyl	auto_derived	False
-beta_mannan	acetylmannan	auto_derived	False
-beta_mannan	galactofuranosidase	auto_derived	False
-beta_mannan	galactomannan	auto_derived	False
-beta_mannan	galactomannans	auto_derived	False
-beta_mannan	galactosidase	auto_derived	False
-beta_mannan	galactoxyloglucan	auto_derived	False
-beta_mannan	glucomannan	auto_derived	False
-beta_mannan	glucosamine	auto_derived	False
-beta_mannan	glucosidase	auto_derived	False
-beta_mannan	glycan	auto_derived	False
-beta_mannan	mannan	auto_derived	False
-beta_mannan	mannanase	auto_derived	False
-beta_mannan	mannans	auto_derived	False
-beta_mannan	mannobiohydrolase	auto_derived	False
-beta_mannan	mannobiose	auto_derived	False
-beta_mannan	mannooligosaccharide	auto_derived	False
-beta_mannan	mannooligosaccharides	auto_derived	False
-beta_mannan	mannosidase	auto_derived	False
-beta_mannan	mannoside	auto_derived	False
-beta_mannan	mannosyl	auto_derived	False
-beta_mannan	mannosylglucose	auto_derived	False
-beta_mannan	oligomannan	auto_derived	False
-carrageenan	anhydro	auto_derived	False
-carrageenan	carrageenan	auto_derived	False
-carrageenan	carrageenans	auto_derived	False
-carrageenan	carrageenase	auto_derived	False
-carrageenan	galactosidase	auto_derived	False
-carrageenan	glucan	auto_derived	False
-carrageenan	kappa	auto_derived	False
-cellulose	acting	auto_derived	False
-cellulose	carboxymethyl	auto_derived	False
-cellulose	cellobiohydrolase	auto_derived	False
-cellulose	cellobiose	auto_derived	False
-cellulose	cellobiosidase	auto_derived	False
-cellulose	cellodextrinase	auto_derived	False
-cellulose	cellotetraose	auto_derived	False
-cellulose	cellulase	auto_derived	False
-cellulose	cellulose	auto_derived	False
-cellulose	dehydrogenase	auto_derived	False
-cellulose	endoglucanase	auto_derived	False
-cellulose	glucan	auto_derived	False
-cellulose	glucanase	auto_derived	False
-cellulose	glucomannan	auto_derived	False
-cellulose	glucosidase	auto_derived	False
-cellulose	lichenase	auto_derived	False
-cellulose	lichenin	auto_derived	False
-cellulose	mannan	auto_derived	False
-cellulose	substrates	auto_derived	False
-chitin	acetylglucosaminidase	auto_derived	False
-chitin	acetylhexosaminidase	auto_derived	False
-chitin	chitin	auto_derived	False
-chitin	chitinase	auto_derived	False
-chitin	chitobiose	auto_derived	False
-chitin	chitodextrin	auto_derived	False
-chitin	chitosan	auto_derived	False
-chitin	diacetylchitobiose	auto_derived	False
-chitin	favor	auto_derived	False
-chitin	glcnac	auto_derived	False
-chitin	glucan	auto_derived	False
-chitin	glucanosyltransferase	auto_derived	False
-chitin	glucosaminidase	auto_derived	False
-chitin	glycan	auto_derived	False
-chitin	hexosaminidase	auto_derived	False
-chitin	nonacetylated	auto_derived	False
-chitin	peptidoglycan	auto_derived	False
-chondroitin_sulfate	acetylglucosaminidase	auto_derived	False
-chondroitin_sulfate	chondroitin	auto_derived	False
-chondroitin_sulfate	chondroitinase	auto_derived	False
-chondroitin_sulfate	dermatan	auto_derived	False
-chondroitin_sulfate	glucuronyl	auto_derived	False
-chondroitin_sulfate	glycan	auto_derived	False
-chondroitin_sulfate	glycosaminoglycan,	auto_derived	False
-chondroitin_sulfate	glycosaminoglycans	auto_derived	False
-chondroitin_sulfate	hyaluronan	auto_derived	False
-chondroitin_sulfate	hyaluronan,	auto_derived	False
-chondroitin_sulfate	iduronidase	auto_derived	False
-chondroitin_sulfate	sulfate	auto_derived	False
-chondroitin_sulfate	sulfated	auto_derived	False
-chondroitin_sulfate	unsaturated	auto_derived	False
-fucoidan	brown	auto_derived	False
-fucoidan	fucan	auto_derived	False
-fucoidan	fucanase	auto_derived	False
-fucoidan	fucans	auto_derived	False
-fucoidan	fucoidan	auto_derived	False
-fucoidan	fucosidase	auto_derived	False
-fucoidan	sulfated	auto_derived	False
-fucoidan	sulfo	auto_derived	False
-glycogen	amylase	auto_derived	False
-glycogen	amylo	auto_derived	False
-glycogen	amylose	auto_derived	False
-glycogen	glucan	auto_derived	False
-glycogen	glucanotransferase	auto_derived	False
-glycogen	glucodextranase	auto_derived	False
-glycogen	glucosidase	auto_derived	False
-glycogen	glucosyltransferase	auto_derived	False
-glycogen	glycogen	auto_derived	False
-glycogen	isoamylase	auto_derived	False
-heparan_sulfate	baicalin	auto_derived	False
-heparan_sulfate	glucuronidase	auto_derived	False
-heparan_sulfate	glycan	auto_derived	False
-heparan_sulfate	heparan	auto_derived	False
-heparan_sulfate	heparanase	auto_derived	False
-heparan_sulfate	heparin	auto_derived	False
-heparan_sulfate	iduronidase	auto_derived	False
-heparan_sulfate	proteoglycans	auto_derived	False
-heparan_sulfate	sulfate	auto_derived	False
-hyaluronic_acid	acetylglucosaminidase	auto_derived	False
-hyaluronic_acid	chondroitin	auto_derived	False
-hyaluronic_acid	glycan	auto_derived	False
-hyaluronic_acid	glycosaminoglycan	auto_derived	False
-hyaluronic_acid	hyaluronan	auto_derived	False
-hyaluronic_acid	hyaluronate	auto_derived	False
-hyaluronic_acid	hyaluronidase	auto_derived	False
-hyaluronic_acid	hyaluronoglucuronidase	auto_derived	False
-inulin	cycloinulo	auto_derived	False
-inulin	forming	auto_derived	False
-inulin	fructan	auto_derived	False
-inulin	fructanotransferase	auto_derived	False
-inulin	fructosyltransferase	auto_derived	False
-inulin	inulin	auto_derived	False
-inulin	inulinase	auto_derived	False
-inulin	invertase	auto_derived	False
-inulin	levanbiohydrolase	auto_derived	False
-laminarin	degrading	auto_derived	False
-laminarin	glucan	auto_derived	False
-laminarin	glucanase	auto_derived	False
-laminarin	glucanotransferase	auto_derived	False
-laminarin	glucans	auto_derived	False
-laminarin	glucosidase	auto_derived	False
-laminarin	laminaribiose	auto_derived	False
-laminarin	laminarin	auto_derived	False
-laminarin	laminarinase	auto_derived	False
-laminarin	lichenase	auto_derived	False
-laminarin	lichenin	auto_derived	False
-laminarin	licheninase	auto_derived	False
-laminarin	pustulan	auto_derived	False
-levan	fructan	auto_derived	False
-levan	fructanotransferase	auto_derived	False
-levan	fructans	auto_derived	False
-levan	fructosyltransferase	auto_derived	False
-levan	graminan	auto_derived	False
-levan	levan	auto_derived	False
-levan	levanase	auto_derived	False
-levan	levanbiohydrolase	auto_derived	False
-levan	levansucrase	auto_derived	False
-lichenan	endoglucanase	auto_derived	False
-lichenan	glucan	auto_derived	False
-lichenan	glucanase	auto_derived	False
-lichenan	glucanotransferase	auto_derived	False
-lichenan	glucans	auto_derived	False
-lichenan	glucosidase	auto_derived	False
-lichenan	laminarinase	auto_derived	False
-lichenan	lichenan	auto_derived	False
-lichenan	lichenase	auto_derived	False
-lichenan	lichenin	auto_derived	False
-lichenan	licheninase	auto_derived	False
-lichenan	linkage	auto_derived	False
-lichenan	maltose	auto_derived	False
-lichenan	mixed	auto_derived	False
-mixed_linkage_glucan	glucan	auto_derived	False
-mixed_linkage_glucan	glucanase	auto_derived	False
-mixed_linkage_glucan	glucosidase	auto_derived	False
-mixed_linkage_glucan	licheninase	auto_derived	False
-mixed_linkage_glucan	linkage	auto_derived	False
-mixed_linkage_glucan	linked	auto_derived	False
-mixed_linkage_glucan	mixed	auto_derived	False
-pectin	aceric	auto_derived	False
-pectin	acetylesterase	auto_derived	False
-pectin	amylopectin	auto_derived	False
-pectin	apiosidase	auto_derived	False
-pectin	arabinan	auto_derived	False
-pectin	arabinanase	auto_derived	False
-pectin	arabinofuranosidase	auto_derived	False
-pectin	arabinopyranosidase	auto_derived	False
-pectin	deoxy	auto_derived	False
-pectin	endolyase	auto_derived	False
-pectin	esterified	auto_derived	False
-pectin	exolyase	auto_derived	False
-pectin	exopolygalacturonate	auto_derived	False
-pectin	fucosidase	auto_derived	False
-pectin	galactosidase	auto_derived	False
-pectin	galactoside	auto_derived	False
-pectin	galacturonan	auto_derived	False
-pectin	galacturonase	auto_derived	False
-pectin	galacturonate	auto_derived	False
-pectin	galacturonidase	auto_derived	False
-pectin	galacturonides	auto_derived	False
-pectin	galacturonohydrolase	auto_derived	False
-pectin	glucosidase	auto_derived	False
-pectin	heptulosaric	auto_derived	False
-pectin	homogalacturonan	auto_derived	False
-pectin	kdnase	auto_derived	False
-pectin	methylesterase	auto_derived	False
-pectin	nononic	auto_derived	False
-pectin	oligo	auto_derived	False
-pectin	oligogalacturonate	auto_derived	False
-pectin	oligogalacturonide	auto_derived	False
-pectin	pectate	auto_derived	False
-pectin	pectin	auto_derived	False
-pectin	polygalacturonan	auto_derived	False
-pectin	polygalacturonase	auto_derived	False
-pectin	polygalacturonate	auto_derived	False
-pectin	polygalacturonic	auto_derived	False
-pectin	polygalacturonosidase	auto_derived	False
-pectin	rhamnogalacturonan	auto_derived	False
-pectin	rhamnogalacturonase	auto_derived	False
-pectin	rhamnogalacturonyl	auto_derived	False
-pectin	rhamnohydrolase	auto_derived	False
-pectin	rhamnosidase	auto_derived	False
-pectin	unsaturated	auto_derived	False
-pectin	xylogalacturonan	auto_derived	False
-porphyran	agarase	auto_derived	False
-porphyran	agarose	auto_derived	False
-porphyran	algal	auto_derived	False
-porphyran	galactose	auto_derived	False
-porphyran	porphyran	auto_derived	False
-porphyran	porphyranase	auto_derived	False
-porphyran	retaining	auto_derived	False
-porphyran	sulfate	auto_derived	False
-pullulan	amylopullulanase	auto_derived	False
-pullulan	cyclodextrin	auto_derived	False
-pullulan	cyclomaltodextrinase	auto_derived	False
-pullulan	degradation	auto_derived	False
-pullulan	isopullulanase	auto_derived	False
-pullulan	maltodextrins	auto_derived	False
-pullulan	neopullulanase	auto_derived	False
-pullulan	pullulan	auto_derived	False
-pullulan	pullulanase	auto_derived	False
-starch	amylase	auto_derived	False
-starch	amylopectin	auto_derived	False
-starch	amylose	auto_derived	False
-starch	cyclodextrin	auto_derived	False
-starch	cyclomaltodextrin	auto_derived	False
-starch	degradation	auto_derived	False
-starch	glucan	auto_derived	False
-starch	glucanotransferase	auto_derived	False
-starch	glucoamylase	auto_derived	False
-starch	glucodextranase	auto_derived	False
-starch	glucosidase	auto_derived	False
-starch	glucosyltransferase	auto_derived	False
-starch	granular	auto_derived	False
-starch	isoamylase	auto_derived	False
-starch	isopullulanase	auto_derived	False
-starch	maltogenic	auto_derived	False
-starch	maltopentaose	auto_derived	False
-starch	maltose	auto_derived	False
-starch	maltotetraose	auto_derived	False
-starch	maltotriose	auto_derived	False
-starch	neopullulanase	auto_derived	False
-starch	oligo	auto_derived	False
-starch	oligosyltrehalose	auto_derived	False
-starch	pullulanase	auto_derived	False
-starch	starch	auto_derived	False
-starch	trehalohydrolase	auto_derived	False
-sucrose	amylosucrase	auto_derived	False
-sucrose	dextransucrase	auto_derived	False
-sucrose	disaccharides	auto_derived	False
-sucrose	fructan	auto_derived	False
-sucrose	fructanotransferase	auto_derived	False
-sucrose	fructosidase	auto_derived	False
-sucrose	fructosyltransferase	auto_derived	False
-sucrose	glucosidase	auto_derived	False
-sucrose	invertase	auto_derived	False
-sucrose	isomaltase	auto_derived	False
-sucrose	isomaltulose	auto_derived	False
-sucrose	isomeric	auto_derived	False
-sucrose	levanbiohydrolase	auto_derived	False
-sucrose	levansucrase	auto_derived	False
-sucrose	maltose	auto_derived	False
-sucrose	phosphate	auto_derived	False
-sucrose	sucrase	auto_derived	False
-sucrose	sucrose	auto_derived	False
-ulvan	glucuronyl	auto_derived	False
-ulvan	rhamnosidase	auto_derived	False
-ulvan	ulvan	auto_derived	False
-ulvan	unsaturated	auto_derived	False
-xylan	acetyl	auto_derived	False
-xylan	acetylesterase	auto_derived	False
-xylan	acetylxylan	auto_derived	False
-xylan	arabinan	auto_derived	False
-xylan	arabinofuranosidase	auto_derived	False
-xylan	arabinogalactans	auto_derived	False
-xylan	arabinopyranosidase	auto_derived	False
-xylan	arabinoxylans	auto_derived	False
-xylan	beechwood	auto_derived	False
-xylan	birchwood	auto_derived	False
-xylan	carboxylic	auto_derived	False
-xylan	endotransglycosylase	auto_derived	False
-xylan	ester	auto_derived	False
-xylan	galactosidase	auto_derived	False
-xylan	glucan	auto_derived	False
-xylan	glucanase	auto_derived	False
-xylan	glucanotransferase	auto_derived	False
-xylan	glucans	auto_derived	False
-xylan	glucuronidase	auto_derived	False
-xylan	glucuronide	auto_derived	False
-xylan	glucuronoarabinoxylan	auto_derived	False
-xylan	glucuronoxylan	auto_derived	False
-xylan	lectin	auto_derived	False
-xylan	maltose	auto_derived	False
-xylan	mannan	auto_derived	False
-xylan	oligoxylanase	auto_derived	False
-xylan	pectic	auto_derived	False
-xylan	releasing	auto_derived	False
-xylan	retaining	auto_derived	False
-xylan	spelt	auto_derived	False
-xylan	xylan	auto_derived	False
-xylan	xylanase	auto_derived	False
-xylan	xylans	auto_derived	False
-xylan	xylooligosaccharide	auto_derived	False
-xylan	xylose	auto_derived	False
-xylan	xylosidase	auto_derived	False
-xyloglucan	acetylesterase	auto_derived	False
-xyloglucan	cellobiohydrolase	auto_derived	False
-xyloglucan	galactomannan	auto_derived	False
-xyloglucan	galactoxyloglucan	auto_derived	False
-xyloglucan	glucomannan	auto_derived	False
-xyloglucan	isoprimeverose	auto_derived	False
-xyloglucan	oligoxyloglucan	auto_derived	False
-xyloglucan	producing	auto_derived	False
-xyloglucan	xyloglucan	auto_derived	False
-xyloglucan	xyloglucanase	auto_derived	False
-xyloglucan	xyloglucosyltransferase	auto_derived	False
-xyloglucan	xylosidase	auto_derived	False
+substrate	pattern	source	reviewed	mode
+agar	agarase	auto_derived	False	permissive
+agar	agarobiose	auto_derived	False	strict
+agar	agarose	auto_derived	False	permissive
+agar	anhydro	auto_derived	False	permissive
+agar	galactofuranosidase	auto_derived	False	permissive
+agar	galactosidase	auto_derived	False	permissive
+agar	neoagaro	auto_derived	False	strict
+agar	neoagarose	auto_derived	False	strict
+agar	porphyranase	auto_derived	False	strict
+alginate	alginate	auto_derived	False	strict
+alginate	glucuronan	auto_derived	False	strict
+alginate	guluronate	auto_derived	False	strict
+alginate	mannuronate	auto_derived	False	strict
+alginate	oligoalginate	auto_derived	False	strict
+arabinogalactan	antigen	auto_derived	False	permissive
+arabinogalactan	arabinan	auto_derived	False	permissive
+arabinogalactan	arabinofuranosidase	auto_derived	False	permissive
+arabinogalactan	arabinogalactan	auto_derived	False	permissive
+arabinogalactan	arabinogalactans	auto_derived	False	strict
+arabinogalactan	arabinopyranosidase	auto_derived	False	permissive
+arabinogalactan	arabinoxylans	auto_derived	False	strict
+arabinogalactan	galactan	auto_derived	False	permissive
+arabinogalactan	galactanase	auto_derived	False	permissive
+arabinogalactan	galactofuranosidase	auto_derived	False	permissive
+arabinogalactan	galactomannan	auto_derived	False	permissive
+arabinogalactan	galactosidase	auto_derived	False	permissive
+arabinogalactan	galactoside	auto_derived	False	permissive
+arabinogalactan	glucuronate	auto_derived	False	strict
+arabinogalactan	glucuronidase	auto_derived	False	permissive
+arabinogalactan	methyl	auto_derived	False	permissive
+arabinogalactan	rhamnose	auto_derived	False	permissive
+arabinogalactan	rhamnosidase	auto_derived	False	permissive
+arabinoxylan	arabinan	auto_derived	False	permissive
+arabinoxylan	arabinofuranosidase	auto_derived	False	permissive
+arabinoxylan	arabinogalactans	auto_derived	False	strict
+arabinoxylan	arabinopyranosidase	auto_derived	False	permissive
+arabinoxylan	arabinoxylan	auto_derived	False	permissive
+arabinoxylan	arabinoxylans	auto_derived	False	strict
+arabinoxylan	xylanase	auto_derived	False	permissive
+arabinoxylan	xylosidase	auto_derived	False	permissive
+beta_mannan	acetyl	auto_derived	False	permissive
+beta_mannan	acetylmannan	auto_derived	False	strict
+beta_mannan	galactofuranosidase	auto_derived	False	permissive
+beta_mannan	galactomannan	auto_derived	False	permissive
+beta_mannan	galactomannans	auto_derived	False	permissive
+beta_mannan	galactosidase	auto_derived	False	permissive
+beta_mannan	galactoxyloglucan	auto_derived	False	strict
+beta_mannan	glucomannan	auto_derived	False	permissive
+beta_mannan	glucosamine	auto_derived	False	strict
+beta_mannan	glucosidase	auto_derived	False	permissive
+beta_mannan	glycan	auto_derived	False	permissive
+beta_mannan	mannan	auto_derived	False	permissive
+beta_mannan	mannanase	auto_derived	False	permissive
+beta_mannan	mannans	auto_derived	False	strict
+beta_mannan	mannobiohydrolase	auto_derived	False	strict
+beta_mannan	mannobiose	auto_derived	False	strict
+beta_mannan	mannooligosaccharide	auto_derived	False	strict
+beta_mannan	mannooligosaccharides	auto_derived	False	strict
+beta_mannan	mannosidase	auto_derived	False	permissive
+beta_mannan	mannoside	auto_derived	False	permissive
+beta_mannan	mannosyl	auto_derived	False	permissive
+beta_mannan	mannosylglucose	auto_derived	False	strict
+beta_mannan	oligomannan	auto_derived	False	strict
+carrageenan	anhydro	auto_derived	False	permissive
+carrageenan	carrageenan	auto_derived	False	permissive
+carrageenan	carrageenans	auto_derived	False	strict
+carrageenan	carrageenase	auto_derived	False	strict
+carrageenan	galactosidase	auto_derived	False	permissive
+cellulose	carboxymethyl	auto_derived	False	strict
+cellulose	cellobiohydrolase	auto_derived	False	permissive
+cellulose	cellobiose	auto_derived	False	permissive
+cellulose	cellobiosidase	auto_derived	False	strict
+cellulose	cellodextrinase	auto_derived	False	permissive
+cellulose	cellotetraose	auto_derived	False	strict
+cellulose	cellulase	auto_derived	False	strict
+cellulose	cellulose	auto_derived	False	permissive
+cellulose	dehydrogenase	auto_derived	False	strict
+cellulose	endoglucanase	auto_derived	False	permissive
+cellulose	glucan	auto_derived	False	permissive
+cellulose	glucanase	auto_derived	False	permissive
+cellulose	glucomannan	auto_derived	False	permissive
+cellulose	glucosidase	auto_derived	False	permissive
+cellulose	lichenase	auto_derived	False	permissive
+cellulose	lichenin	auto_derived	False	permissive
+cellulose	mannan	auto_derived	False	permissive
+chitin	acetylglucosaminidase	auto_derived	False	permissive
+chitin	acetylhexosaminidase	auto_derived	False	permissive
+chitin	chitin	auto_derived	False	permissive
+chitin	chitinase	auto_derived	False	permissive
+chitin	chitobiose	auto_derived	False	strict
+chitin	chitodextrin	auto_derived	False	strict
+chitin	chitosan	auto_derived	False	permissive
+chitin	diacetylchitobiose	auto_derived	False	strict
+chitin	glcnac	auto_derived	False	permissive
+chitin	glucan	auto_derived	False	permissive
+chitin	glucanosyltransferase	auto_derived	False	strict
+chitin	glucosaminidase	auto_derived	False	permissive
+chitin	hexosaminidase	auto_derived	False	strict
+chitin	peptidoglycan	auto_derived	False	permissive
+chondroitin_sulfate	acetylglucosaminidase	auto_derived	False	permissive
+chondroitin_sulfate	chondroitin	auto_derived	False	permissive
+chondroitin_sulfate	chondroitinase	auto_derived	False	strict
+chondroitin_sulfate	dermatan	auto_derived	False	strict
+chondroitin_sulfate	glucuronyl	auto_derived	False	strict
+chondroitin_sulfate	glycan	auto_derived	False	permissive
+chondroitin_sulfate	glycosaminoglycans	auto_derived	False	permissive
+chondroitin_sulfate	hyaluronan	auto_derived	False	strict
+chondroitin_sulfate	iduronidase	auto_derived	False	strict
+chondroitin_sulfate	sulfate	auto_derived	False	permissive
+chondroitin_sulfate	sulfated	auto_derived	False	permissive
+chondroitin_sulfate	unsaturated	auto_derived	False	permissive
+fucoidan	fucan	auto_derived	False	strict
+fucoidan	fucanase	auto_derived	False	strict
+fucoidan	fucans	auto_derived	False	strict
+fucoidan	fucoidan	auto_derived	False	strict
+fucoidan	fucosidase	auto_derived	False	permissive
+fucoidan	sulfated	auto_derived	False	permissive
+glycogen	amylase	auto_derived	False	permissive
+glycogen	amylo	auto_derived	False	strict
+glycogen	amylose	auto_derived	False	strict
+glycogen	glucan	auto_derived	False	permissive
+glycogen	glucanotransferase	auto_derived	False	permissive
+glycogen	glucodextranase	auto_derived	False	strict
+glycogen	glucosidase	auto_derived	False	permissive
+glycogen	glucosyltransferase	auto_derived	False	permissive
+glycogen	glycogen	auto_derived	False	permissive
+glycogen	isoamylase	auto_derived	False	strict
+heparan_sulfate	glucuronidase	auto_derived	False	permissive
+heparan_sulfate	glycan	auto_derived	False	permissive
+heparan_sulfate	heparan	auto_derived	False	permissive
+heparan_sulfate	heparanase	auto_derived	False	strict
+heparan_sulfate	heparin	auto_derived	False	strict
+heparan_sulfate	iduronidase	auto_derived	False	strict
+heparan_sulfate	proteoglycans	auto_derived	False	strict
+heparan_sulfate	sulfate	auto_derived	False	permissive
+hyaluronic_acid	acetylglucosaminidase	auto_derived	False	permissive
+hyaluronic_acid	chondroitin	auto_derived	False	permissive
+hyaluronic_acid	glycan	auto_derived	False	permissive
+hyaluronic_acid	glycosaminoglycan	auto_derived	False	strict
+hyaluronic_acid	hyaluronan	auto_derived	False	strict
+hyaluronic_acid	hyaluronate	auto_derived	False	permissive
+hyaluronic_acid	hyaluronidase	auto_derived	False	strict
+hyaluronic_acid	hyaluronoglucuronidase	auto_derived	False	strict
+inulin	cycloinulo	auto_derived	False	strict
+inulin	fructan	auto_derived	False	permissive
+inulin	fructanotransferase	auto_derived	False	strict
+inulin	fructosyltransferase	auto_derived	False	permissive
+inulin	inulin	auto_derived	False	strict
+inulin	inulinase	auto_derived	False	strict
+inulin	invertase	auto_derived	False	strict
+inulin	levanbiohydrolase	auto_derived	False	strict
+laminarin	glucan	auto_derived	False	permissive
+laminarin	glucanase	auto_derived	False	permissive
+laminarin	glucanotransferase	auto_derived	False	permissive
+laminarin	glucans	auto_derived	False	permissive
+laminarin	glucosidase	auto_derived	False	permissive
+laminarin	laminaribiose	auto_derived	False	strict
+laminarin	laminarin	auto_derived	False	strict
+laminarin	laminarinase	auto_derived	False	strict
+laminarin	lichenase	auto_derived	False	permissive
+laminarin	lichenin	auto_derived	False	permissive
+laminarin	licheninase	auto_derived	False	permissive
+laminarin	pustulan	auto_derived	False	strict
+levan	fructan	auto_derived	False	permissive
+levan	fructanotransferase	auto_derived	False	strict
+levan	fructans	auto_derived	False	strict
+levan	fructosyltransferase	auto_derived	False	permissive
+levan	graminan	auto_derived	False	strict
+levan	levan	auto_derived	False	permissive
+levan	levanase	auto_derived	False	strict
+levan	levanbiohydrolase	auto_derived	False	strict
+levan	levansucrase	auto_derived	False	strict
+lichenan	endoglucanase	auto_derived	False	permissive
+lichenan	glucan	auto_derived	False	permissive
+lichenan	glucanase	auto_derived	False	permissive
+lichenan	glucanotransferase	auto_derived	False	permissive
+lichenan	glucans	auto_derived	False	permissive
+lichenan	glucosidase	auto_derived	False	permissive
+lichenan	laminarinase	auto_derived	False	permissive
+lichenan	lichenan	auto_derived	False	strict
+lichenan	lichenase	auto_derived	False	permissive
+lichenan	lichenin	auto_derived	False	permissive
+lichenan	licheninase	auto_derived	False	strict
+lichenan	linkage	auto_derived	False	strict
+lichenan	maltose	auto_derived	False	permissive
+lichenan	mixed	auto_derived	False	permissive
+pectin	aceric	auto_derived	False	strict
+pectin	acetylesterase	auto_derived	False	permissive
+pectin	amylopectin	auto_derived	False	permissive
+pectin	apiosidase	auto_derived	False	strict
+pectin	arabinan	auto_derived	False	permissive
+pectin	arabinanase	auto_derived	False	strict
+pectin	arabinofuranosidase	auto_derived	False	permissive
+pectin	arabinopyranosidase	auto_derived	False	permissive
+pectin	deoxy	auto_derived	False	strict
+pectin	endolyase	auto_derived	False	strict
+pectin	esterified	auto_derived	False	strict
+pectin	exolyase	auto_derived	False	strict
+pectin	exopolygalacturonate	auto_derived	False	strict
+pectin	fucosidase	auto_derived	False	permissive
+pectin	galactosidase	auto_derived	False	permissive
+pectin	galactoside	auto_derived	False	permissive
+pectin	galacturonan	auto_derived	False	strict
+pectin	galacturonase	auto_derived	False	strict
+pectin	galacturonate	auto_derived	False	strict
+pectin	galacturonidase	auto_derived	False	strict
+pectin	galacturonides	auto_derived	False	strict
+pectin	galacturonohydrolase	auto_derived	False	strict
+pectin	glucosidase	auto_derived	False	permissive
+pectin	heptulosaric	auto_derived	False	strict
+pectin	homogalacturonan	auto_derived	False	strict
+pectin	kdnase	auto_derived	False	strict
+pectin	methylesterase	auto_derived	False	strict
+pectin	nononic	auto_derived	False	strict
+pectin	oligo	auto_derived	False	strict
+pectin	oligogalacturonate	auto_derived	False	strict
+pectin	oligogalacturonide	auto_derived	False	strict
+pectin	pectate	auto_derived	False	permissive
+pectin	pectin	auto_derived	False	permissive
+pectin	polygalacturonan	auto_derived	False	strict
+pectin	polygalacturonase	auto_derived	False	strict
+pectin	polygalacturonate	auto_derived	False	strict
+pectin	polygalacturonic	auto_derived	False	permissive
+pectin	polygalacturonosidase	auto_derived	False	strict
+pectin	rhamnogalacturonan	auto_derived	False	permissive
+pectin	rhamnogalacturonase	auto_derived	False	strict
+pectin	rhamnogalacturonyl	auto_derived	False	strict
+pectin	rhamnohydrolase	auto_derived	False	strict
+pectin	rhamnosidase	auto_derived	False	permissive
+pectin	unsaturated	auto_derived	False	permissive
+pectin	xylogalacturonan	auto_derived	False	strict
+porphyran	agarase	auto_derived	False	permissive
+porphyran	agarose	auto_derived	False	permissive
+porphyran	galactose	auto_derived	False	permissive
+porphyran	porphyran	auto_derived	False	strict
+porphyran	porphyranase	auto_derived	False	strict
+porphyran	sulfate	auto_derived	False	permissive
+pullulan	amylopullulanase	auto_derived	False	strict
+pullulan	cyclodextrin	auto_derived	False	permissive
+pullulan	cyclomaltodextrinase	auto_derived	False	strict
+pullulan	degradation	auto_derived	False	strict
+pullulan	isopullulanase	auto_derived	False	strict
+pullulan	maltodextrins	auto_derived	False	strict
+pullulan	neopullulanase	auto_derived	False	strict
+pullulan	pullulan	auto_derived	False	permissive
+pullulan	pullulanase	auto_derived	False	strict
+starch	amylase	auto_derived	False	permissive
+starch	amylopectin	auto_derived	False	permissive
+starch	amylose	auto_derived	False	strict
+starch	cyclodextrin	auto_derived	False	permissive
+starch	cyclomaltodextrin	auto_derived	False	strict
+starch	glucan	auto_derived	False	permissive
+starch	glucanotransferase	auto_derived	False	permissive
+starch	glucoamylase	auto_derived	False	strict
+starch	glucodextranase	auto_derived	False	strict
+starch	glucosidase	auto_derived	False	permissive
+starch	glucosyltransferase	auto_derived	False	permissive
+starch	granular	auto_derived	False	strict
+starch	isoamylase	auto_derived	False	strict
+starch	isopullulanase	auto_derived	False	strict
+starch	maltogenic	auto_derived	False	strict
+starch	maltopentaose	auto_derived	False	strict
+starch	maltose	auto_derived	False	permissive
+starch	maltotetraose	auto_derived	False	strict
+starch	maltotriose	auto_derived	False	strict
+starch	neopullulanase	auto_derived	False	strict
+starch	oligo	auto_derived	False	strict
+starch	oligosyltrehalose	auto_derived	False	strict
+starch	pullulanase	auto_derived	False	strict
+starch	starch	auto_derived	False	permissive
+starch	trehalohydrolase	auto_derived	False	strict
+sucrose	amylosucrase	auto_derived	False	strict
+sucrose	dextransucrase	auto_derived	False	strict
+sucrose	disaccharides	auto_derived	False	strict
+sucrose	fructan	auto_derived	False	permissive
+sucrose	fructanotransferase	auto_derived	False	strict
+sucrose	fructosidase	auto_derived	False	strict
+sucrose	fructosyltransferase	auto_derived	False	permissive
+sucrose	glucosidase	auto_derived	False	permissive
+sucrose	invertase	auto_derived	False	strict
+sucrose	isomaltase	auto_derived	False	strict
+sucrose	isomaltulose	auto_derived	False	strict
+sucrose	levanbiohydrolase	auto_derived	False	strict
+sucrose	levansucrase	auto_derived	False	strict
+sucrose	maltose	auto_derived	False	permissive
+sucrose	phosphate	auto_derived	False	permissive
+sucrose	sucrase	auto_derived	False	strict
+sucrose	sucrose	auto_derived	False	permissive
+ulvan	glucuronyl	auto_derived	False	strict
+ulvan	rhamnosidase	auto_derived	False	permissive
+ulvan	ulvan	auto_derived	False	strict
+ulvan	unsaturated	auto_derived	False	permissive
+xylan	acetyl	auto_derived	False	permissive
+xylan	acetylesterase	auto_derived	False	permissive
+xylan	acetylxylan	auto_derived	False	strict
+xylan	arabinan	auto_derived	False	permissive
+xylan	arabinofuranosidase	auto_derived	False	permissive
+xylan	arabinogalactans	auto_derived	False	strict
+xylan	arabinopyranosidase	auto_derived	False	permissive
+xylan	arabinoxylans	auto_derived	False	strict
+xylan	endotransglycosylase	auto_derived	False	strict
+xylan	galactosidase	auto_derived	False	permissive
+xylan	glucan	auto_derived	False	permissive
+xylan	glucanase	auto_derived	False	permissive
+xylan	glucanotransferase	auto_derived	False	permissive
+xylan	glucans	auto_derived	False	permissive
+xylan	glucuronidase	auto_derived	False	permissive
+xylan	glucuronide	auto_derived	False	strict
+xylan	glucuronoarabinoxylan	auto_derived	False	strict
+xylan	glucuronoxylan	auto_derived	False	permissive
+xylan	maltose	auto_derived	False	permissive
+xylan	mannan	auto_derived	False	permissive
+xylan	oligoxylanase	auto_derived	False	strict
+xylan	pectic	auto_derived	False	strict
+xylan	xylan	auto_derived	False	permissive
+xylan	xylanase	auto_derived	False	permissive
+xylan	xylans	auto_derived	False	strict
+xylan	xylooligosaccharide	auto_derived	False	strict
+xylan	xylose	auto_derived	False	strict
+xylan	xylosidase	auto_derived	False	permissive
+xyloglucan	acetylesterase	auto_derived	False	permissive
+xyloglucan	cellobiohydrolase	auto_derived	False	permissive
+xyloglucan	galactomannan	auto_derived	False	permissive
+xyloglucan	galactoxyloglucan	auto_derived	False	strict
+xyloglucan	glucomannan	auto_derived	False	permissive
+xyloglucan	isoprimeverose	auto_derived	False	strict
+xyloglucan	oligoxyloglucan	auto_derived	False	strict
+xyloglucan	xyloglucan	auto_derived	False	permissive
+xyloglucan	xyloglucanase	auto_derived	False	strict
+xyloglucan	xyloglucosyltransferase	auto_derived	False	strict
+xyloglucan	xylosidase	auto_derived	False	permissive

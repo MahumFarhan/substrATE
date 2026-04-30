@@ -87,11 +87,6 @@ SUBSTRATE_SEARCH_CONFIG = {
                   'mixed-linkage glucan'],
         'curated_only': True,
     },
-    'mixed_linkage_glucan': {
-        'terms': ['beta-1,3-1,4', 'mixed-linkage glucan',
-                  'mixed linked glucan'],
-        'curated_only': True,
-    },
     'inulin': {
         'terms': ['inulin'],
         'curated_only': True,
@@ -245,8 +240,97 @@ def extract_tokens(name_string):
     return result
 
 
-def derive_patterns_for_substrate(substrate, config, df):
-    """Derive activity patterns for a substrate from matching rows."""
+# Tokens that are highly substrate-specific (appear in <=2 substrate contexts
+# in the dbCAN fam-substrate-mapping). These are assigned mode='strict'.
+# All other tokens default to mode='permissive'.
+# This classification is used at runtime to filter patterns via --pattern_mode.
+STRICT_TOKENS_OVERRIDE = {
+    # Explicitly force strict for key substrate-name tokens that appear in
+    # many dbCAN rows as co-substrates but are definitionally specific.
+    'laminarin':   {'laminarin', 'laminarinase', 'laminaribiose'},
+    'porphyran':   {'porphyran', 'porphyranase'},
+    'fucoidan':    {'fucoidan', 'fucanase', 'fucan', 'fucans'},
+    'carrageenan': {'carrageenan', 'carrageenase', 'carrageenans'},
+    'alginate':    {'alginate', 'guluronate', 'mannuronate',
+                    'glucuronan', 'oligoalginate'},
+    'ulvan':       {'ulvan'},
+    'chitin':      {'chitinase', 'chitobiose', 'chitodextrin',
+                    'diacetylchitobiose'},
+    'inulin':      {'inulin', 'inulinase'},
+    'levan':       {'levan', 'levanase', 'levansucrase'},
+    'pullulan':    {'pullulan', 'pullulanase', 'isopullulanase'},
+}
+
+# Tokens to remove entirely (noise, parse artifacts, or wrong substrate)
+REMOVE_TOKENS = {
+    'alginate':            {'diversity', 'unspecified', 'polygm', 'polymg'},
+    'carrageenan':         {'glucan', 'kappa'},
+    'cellulose':           {'acting', 'substrates'},
+    'chitin':              {'favor', 'nonacetylated', 'glycan'},
+    'chondroitin_sulfate': {'glycosaminoglycan,', 'hyaluronan,'},
+    'fucoidan':            {'brown', 'sulfo'},
+    'heparan_sulfate':     {'baicalin'},
+    'inulin':              {'forming'},
+    'laminarin':           {'degrading'},
+    'porphyran':           {'retaining', 'algal'},
+    'starch':              {'degradation'},
+    'sucrose':             {'isomeric'},
+    'xylan':               {'acting', 'beechwood', 'birchwood', 'carboxylic',
+                            'ester', 'lectin', 'releasing', 'retaining',
+                            'spelt'},
+    'xyloglucan':          {'producing'},
+}
+
+
+def classify_token_mode(token, substrate, n_contexts):
+    """
+    Classify a pattern token as 'strict' or 'permissive'.
+
+    Strict tokens are highly specific to a single substrate and are
+    included in both strict and permissive mode runs.
+    Permissive tokens are shared across multiple substrates and are
+    only included in permissive mode runs (the default).
+
+    Args:
+        token:      pattern string
+        substrate:  substrate name
+        n_contexts: number of distinct Substrate_curated values in the
+                    dbCAN mapping that contain this token
+
+    Returns:
+        'strict' or 'permissive'
+    """
+    if token in STRICT_TOKENS_OVERRIDE.get(substrate, set()):
+        return 'strict'
+    return 'strict' if n_contexts <= 2 else 'permissive'
+
+
+def _build_token_context_map(df):
+    """
+    Build a mapping of token -> number of distinct Substrate_curated
+    values that contain the token.  Used to classify strict vs permissive.
+    """
+    token_substrates = {}
+    for _, row in df.iterrows():
+        sub = row['Substrate_curated'].strip().lower()
+        if not sub:
+            continue
+        for col in ['Name', 'Substrate_curated']:
+            for tok in extract_tokens(row[col]):
+                if tok not in token_substrates:
+                    token_substrates[tok] = set()
+                token_substrates[tok].add(sub)
+    return {tok: len(subs) for tok, subs in token_substrates.items()}
+
+
+def derive_patterns_for_substrate(substrate, config, df,
+                                   token_context_map=None):
+    """
+    Derive activity patterns for a substrate from matching rows.
+
+    Returns a list of (pattern, mode) tuples where mode is 'strict'
+    or 'permissive'.
+    """
     search_terms = config['terms']
     curated_only = config.get('curated_only', False)
 
@@ -279,7 +363,6 @@ def derive_patterns_for_substrate(substrate, config, df):
 
     # Remove any tokens that are themselves substrate names of other
     # substrates — prevents cross-contamination
-    # (applied after collection so search terms are protected)
     other_substrate_names = {
         s.replace('_', '') for s in SUBSTRATE_SEARCH_CONFIG
         if s != substrate
@@ -289,7 +372,19 @@ def derive_patterns_for_substrate(substrate, config, df):
         if t not in other_substrate_names
     }
 
-    return sorted(all_tokens)
+    # Remove known noise tokens for this substrate
+    remove = REMOVE_TOKENS.get(substrate, set())
+    all_tokens -= remove
+
+    # Classify each token as strict or permissive
+    ctx = token_context_map or {}
+    result = []
+    for token in sorted(all_tokens):
+        n_contexts = ctx.get(token, 1)
+        mode = classify_token_mode(token, substrate, n_contexts)
+        result.append((token, mode))
+
+    return result
 
 
 def generate_patterns(fam_sub_map, output_file):
@@ -300,23 +395,30 @@ def generate_patterns(fam_sub_map, output_file):
           f"{df['Substrate_high_level'].nunique()} high-level categories, "
           f"{df['Substrate_curated'].nunique()} curated substrates\n")
 
+    print("Building token context map for strict/permissive classification...")
+    token_context_map = _build_token_context_map(df)
+
     rows = []
     print(f"Deriving patterns for "
           f"{len(SUBSTRATE_SEARCH_CONFIG)} substrates...\n")
 
     for substrate, config in sorted(SUBSTRATE_SEARCH_CONFIG.items()):
-        patterns = derive_patterns_for_substrate(substrate, config, df)
+        patterns = derive_patterns_for_substrate(
+            substrate, config, df,
+            token_context_map=token_context_map,
+        )
 
         if not patterns:
             print(f"  SKIPPING {substrate} — no patterns derived")
             continue
 
-        for pattern in patterns:
+        for pattern, mode in patterns:
             rows.append({
                 'substrate': substrate,
                 'pattern':   pattern,
                 'source':    'auto_derived',
                 'reviewed':  False,
+                'mode':      mode,
             })
 
     result_df = pd.DataFrame(rows)
@@ -324,23 +426,31 @@ def generate_patterns(fam_sub_map, output_file):
     print(f"\nSummary:")
     print(f"  Total substrates: {result_df['substrate'].nunique()}")
     print(f"  Total patterns:   {len(result_df)}")
+    print(f"  Strict patterns:  {(result_df['mode'] == 'strict').sum()}")
+    print(f"  Permissive:       {(result_df['mode'] == 'permissive').sum()}")
     print(f"\nPatterns per substrate:")
-    for sub, count in result_df.groupby(
-            'substrate').size().sort_values(
-            ascending=False).items():
-        print(f"  {sub:<25} {count:>3} patterns")
+    summary = result_df.groupby('substrate').agg(
+        total=('pattern', 'count'),
+        strict=('mode', lambda x: (x == 'strict').sum()),
+        permissive=('mode', lambda x: (x == 'permissive').sum()),
+    )
+    for sub, row in summary.iterrows():
+        print(f"  {sub:<25} {row['total']:>3} total  "
+              f"({row['strict']} strict, {row['permissive']} permissive)")
 
-    # Report cross-substrate overlap
-    print(f"\nCross-substrate pattern overlap:")
+    # Report cross-substrate overlap (permissive tokens only)
+    print(f"\nCross-substrate permissive pattern overlap:")
     substrates = result_df['substrate'].unique()
     for i, s1 in enumerate(sorted(substrates)):
-        p1 = set(result_df[result_df['substrate'] == s1]['pattern'])
+        p1 = set(result_df[(result_df['substrate'] == s1) &
+                            (result_df['mode'] == 'permissive')]['pattern'])
         for s2 in sorted(substrates)[i+1:]:
-            p2 = set(result_df[result_df['substrate'] == s2]['pattern'])
+            p2 = set(result_df[(result_df['substrate'] == s2) &
+                                (result_df['mode'] == 'permissive')]['pattern'])
             overlap = p1 & p2
             if len(overlap) > 5:
                 print(f"  {s1} / {s2}: "
-                      f"{len(overlap)} shared patterns")
+                      f"{len(overlap)} shared permissive patterns")
 
     os.makedirs(os.path.dirname(os.path.abspath(output_file)),
                 exist_ok=True)
@@ -349,6 +459,8 @@ def generate_patterns(fam_sub_map, output_file):
     print(f"\nAll patterns written with reviewed=False.")
     print(f"Run the pipeline on your test dataset, then inspect")
     print(f"the output and set reviewed=True for correct patterns.")
+    print(f"\nUse --pattern_mode strict for conservative matching,")
+    print(f"or --pattern_mode permissive (default) for broader matching.")
 
 
 def main():

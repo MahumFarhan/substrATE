@@ -24,6 +24,66 @@ from substrate.classify_pul import FAMILY_MAP, SUBSTRATE_TERMS
 _DATA_DIR              = os.path.join(os.path.dirname(__file__), 'data')
 ACTIVITY_PATTERNS_FILE = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
 
+PATTERN_MODES = ('permissive', 'strict')
+
+
+# ── Pattern loading ───────────────────────────────────────────────────────────
+
+def load_patterns(substrate=None, patterns_file=None,
+                  pattern_mode='permissive'):
+    """
+    Load activity patterns from activity_patterns.tsv.
+
+    In permissive mode (default), all patterns are loaded.
+    In strict mode, only patterns with mode='strict' are loaded,
+    giving conservative, substrate-specific matching that avoids
+    false positives from shared enzyme activities.
+
+    The 'mode' column is optional for backwards compatibility — files
+    without it are treated as all-permissive.
+
+    Args:
+        substrate:     optional substrate name to filter by
+        patterns_file: path to activity_patterns.tsv (uses default
+                       if None)
+        pattern_mode:  'permissive' (default) or 'strict'
+
+    Returns:
+        DataFrame with columns: substrate, pattern, source, reviewed,
+        mode.  Empty DataFrame if file does not exist.
+
+    Raises:
+        ValueError if pattern_mode is not 'permissive' or 'strict'
+    """
+    if pattern_mode not in PATTERN_MODES:
+        raise ValueError(
+            f"pattern_mode must be one of {PATTERN_MODES}, "
+            f"got '{pattern_mode}'"
+        )
+
+    if patterns_file is None:
+        patterns_file = ACTIVITY_PATTERNS_FILE
+
+    if not os.path.exists(patterns_file):
+        return pd.DataFrame(
+            columns=['substrate', 'pattern', 'source',
+                     'reviewed', 'mode']
+        )
+
+    df = pd.read_csv(patterns_file, sep='\t', dtype=str)
+
+    # Back-compat: files without a mode column are treated as permissive
+    if 'mode' not in df.columns:
+        df['mode'] = 'permissive'
+
+    if substrate is not None:
+        df = df[df['substrate'] == substrate]
+
+    if pattern_mode == 'strict':
+        df = df[df['mode'] == 'strict']
+
+    return df.reset_index(drop=True)
+
 
 # ── Family derivation ─────────────────────────────────────────────────────────
 
@@ -164,7 +224,8 @@ def list_builtin_substrates():
 # ── Pattern overlap checking ──────────────────────────────────────────────────
 
 def check_pattern_overlap(substrates, patterns_file=None,
-                          overlap_threshold=5):
+                          overlap_threshold=5,
+                          pattern_mode='permissive'):
     """
     Check for significant pattern overlap between each substrate being
     analysed and ALL other substrates in activity_patterns.tsv.
@@ -186,6 +247,7 @@ def check_pattern_overlap(substrates, patterns_file=None,
                            if None)
         overlap_threshold: minimum shared patterns to trigger warning
                            (default: 5)
+        pattern_mode:      'permissive' (default) or 'strict'
 
     Returns:
         list of (substrate1, substrate2, shared_patterns, in_session)
@@ -193,13 +255,11 @@ def check_pattern_overlap(substrates, patterns_file=None,
         True if both substrates are being analysed in this run.
         Returns empty list if no overlaps found.
     """
-    if patterns_file is None:
-        patterns_file = ACTIVITY_PATTERNS_FILE
-
-    if not os.path.exists(patterns_file):
+    df = load_patterns(patterns_file=patterns_file,
+                       pattern_mode=pattern_mode)
+    if df.empty:
         return []
 
-    df = pd.read_csv(patterns_file, sep='\t')
     session_set = set(substrates)
 
     # Build pattern sets for ALL substrates in the file
@@ -242,7 +302,8 @@ def check_pattern_overlap(substrates, patterns_file=None,
         ]
 
         print(f"\n{'='*60}")
-        print(f"WARNING: Activity pattern overlap detected")
+        print(f"WARNING: Activity pattern overlap detected "
+              f"[mode: {pattern_mode}]")
         print(f"{'='*60}")
 
         if in_session_pairs:
@@ -268,6 +329,8 @@ def check_pattern_overlap(substrates, patterns_file=None,
 
         print(f"\n--overlap_threshold {overlap_threshold} "
               f"(use 0 to suppress this warning)")
+        print(f"--pattern_mode {pattern_mode} "
+              f"(use 'strict' to reduce overlap)")
         print(f"{'='*60}\n")
 
     return overlapping_pairs
@@ -380,7 +443,8 @@ def auto_derive_patterns(substrate, fam_sub_map, substrate_terms=None):
 
 
 def write_pattern_review_report(substrate, hits_df, activity_file,
-                                patterns, output_dir):
+                                patterns, output_dir,
+                                pattern_mode='permissive'):
     """
     Write a pattern review report TSV to help users curate patterns.
 
@@ -390,6 +454,7 @@ def write_pattern_review_report(substrate, hits_df, activity_file,
         activity_file: path to <substrate>_activity_annotated.tsv
         patterns:      list of pattern strings used
         output_dir:    substrate output directory
+        pattern_mode:  'permissive' or 'strict' — recorded in report
     """
     if not os.path.exists(activity_file):
         return
@@ -407,6 +472,7 @@ def write_pattern_review_report(substrate, hits_df, activity_file,
             'pattern':       pattern,
             'genes_matched': len(matched),
             'activities':    '|'.join(matched['activity'].unique()),
+            'pattern_mode':  pattern_mode,
             'reviewed':      False,
         })
 
@@ -418,7 +484,8 @@ def write_pattern_review_report(substrate, hits_df, activity_file,
 
 
 def update_patterns_file(substrate, patterns, patterns_file=None,
-                         source='auto_derived', reviewed=False):
+                         source='auto_derived', reviewed=False,
+                         mode='permissive'):
     """
     Add new patterns for a substrate to activity_patterns.tsv.
 
@@ -432,18 +499,22 @@ def update_patterns_file(substrate, patterns, patterns_file=None,
                        if None)
         source:        'auto_derived' or 'curated'
         reviewed:      whether patterns have been manually reviewed
+        mode:          'permissive' (default) or 'strict'
     """
     if patterns_file is None:
         patterns_file = ACTIVITY_PATTERNS_FILE
 
     if os.path.exists(patterns_file):
-        existing          = pd.read_csv(patterns_file, sep='\t')
+        existing = pd.read_csv(patterns_file, sep='\t')
+        if 'mode' not in existing.columns:
+            existing['mode'] = 'permissive'
         existing_patterns = set(
             existing[existing['substrate'] == substrate]['pattern']
         )
     else:
-        existing          = pd.DataFrame(
-            columns=['substrate', 'pattern', 'source', 'reviewed'])
+        existing = pd.DataFrame(
+            columns=['substrate', 'pattern', 'source',
+                     'reviewed', 'mode'])
         existing_patterns = set()
 
     new_rows = []
@@ -454,6 +525,7 @@ def update_patterns_file(substrate, patterns, patterns_file=None,
                 'pattern':   pattern,
                 'source':    source,
                 'reviewed':  reviewed,
+                'mode':      mode,
             })
 
     if new_rows:

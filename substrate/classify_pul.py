@@ -87,8 +87,6 @@ FAMILY_MAP = {
     'lichenan':            ['CBM4', 'CBM6', 'GH12', 'GH131', 'GH148',
                             'GH16', 'GH17', 'GH3', 'GH44', 'GH45',
                             'GH5', 'GH7', 'GH70', 'GH8', 'GH9'],
-    'mixed_linkage_glucan':['CBM11', 'CBM4', 'CBM6', 'CBM72', 'GH12',
-                            'GH16', 'GH17', 'GH3'],
     'pectin':              ['AA17', 'CBM41', 'CBM95', 'CBM97', 'CBM98',
                             'CE12', 'CE13', 'CE19', 'CE8', 'GH105',
                             'GH106', 'GH127', 'GH13', 'GH137', 'GH138',
