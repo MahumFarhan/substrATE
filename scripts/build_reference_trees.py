@@ -216,7 +216,8 @@ def build_reference_tree(family, faa_path, output_dir, threads=8,
         treefile_out = build_tree(
             ref_trim, tree_pfx,
             threads=threads,
-            log_path=iqtree_log
+            log_path=iqtree_log,
+            fast=True,
         )
 
         print(f"  {family:<12} done -> {treefile_out}")
