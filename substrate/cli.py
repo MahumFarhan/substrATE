@@ -1278,7 +1278,7 @@ def build_reference_db(email, api_key, output, substrates,
 @click.option('--families', multiple=True, default=None,
               help='Families to build trees for '
                    '(default: all in reference_seqs/by_family/)')
-@click.option('--max_seqs', type=int, default=None,
+@click.option('--max_seqs', type=int, default=150, show_default=True,
               help='Maximum sequences per family tree after subsampling')
 @click.option('--threads', default=8, show_default=True,
               help='Number of threads for MAFFT and IQ-TREE2')
@@ -1321,7 +1321,7 @@ def build_reference_trees(families, max_seqs, threads, min_seqs,
     ]
     if families:
         argv += ['--families'] + list(families)
-    if max_seqs:
+    if max_seqs is not None:
         argv += ['--max_seqs_per_family', str(max_seqs)]
     if force:
         argv.append('--force')

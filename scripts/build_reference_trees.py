@@ -249,7 +249,7 @@ def main():
         help='Families to build trees for (default: all in by_family/)'
     )
     parser.add_argument(
-        '--max_seqs_per_family', type=int, default=None,
+        '--max_seqs_per_family', type=int, default=150,
         help='Maximum sequences per family tree after subsampling '
              'using proportional subfamily representation. '
              'Default: no limit.'
