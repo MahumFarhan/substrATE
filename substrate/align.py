@@ -103,6 +103,7 @@ def add_fragments(query_path, reference_aln_path, output_path,
 
     with open(output_path, 'w') as out:
         if log_path:
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             with open(log_path, 'a') as log:
                 subprocess.run(cmd, stdout=out, stderr=log, check=True)
         else:
@@ -143,6 +144,7 @@ def align(fasta_path, output_path, threads=8, log_path=None):
 
     with open(output_path, 'w') as out:
         if log_path:
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             with open(log_path, 'a') as log:
                 subprocess.run(cmd, stdout=out, stderr=log, check=True)
         else:

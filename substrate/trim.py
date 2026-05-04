@@ -90,6 +90,7 @@ def trim(alignment_path, output_path, log_path=None):
     cmd = ['trimal', '-in', alignment_path, '-out', output_path, '-automated1']
 
     if log_path:
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
         with open(log_path, 'a') as log:
             subprocess.run(cmd, stderr=log, check=True)
     else:
