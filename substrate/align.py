@@ -95,7 +95,7 @@ def add_fragments(query_path, reference_aln_path, output_path,
 
     cmd = [
         'mafft',
-        '--addfragments', query_path,
+        '--add', query_path,
         '--thread', str(threads),
         '--quiet',
         reference_aln_path,
