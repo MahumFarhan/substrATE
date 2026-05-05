@@ -88,14 +88,13 @@ MIN_SEQUENCES = 4
 def place_sequences(combined_aln_path, ref_treefile, output_prefix,
                     threads=8, log_path=None):
     """
-    Place sequences onto a fixed reference tree topology using IQ-TREE2
-    --tree-fix.
+    Build a tree using a reference tree as a starting topology.
 
-    The reference tree topology is held fixed while branch lengths are
-    re-optimised and query sequences are inserted. This is much faster
-    than a full de novo tree build for large families like GH16, and
-    produces trees that are directly comparable across different runs
-    since the reference backbone is always the same.
+    Uses the reference tree (-t) as a starting point for a fast
+    IQ-TREE2 search (LG+G4 + --fast), which is much faster than a
+    full de novo build while producing a tree rooted in the reference
+    phylogeny. New genomic sequences are added alongside reference
+    sequences in the combined alignment.
 
     Args:
         combined_aln_path: path to combined alignment FASTA containing
@@ -131,9 +130,9 @@ def place_sequences(combined_aln_path, ref_treefile, output_prefix,
         binary,
         '-s',        combined_aln_path,
         '-t',        ref_treefile,
-        '--tree-fix',
         '--prefix',  output_prefix,
-        '-m',        'TEST',
+        '-m',        'LG+G4',
+        '--fast',
         '-T',        str(threads),
         '--quiet',
         '--redo',
