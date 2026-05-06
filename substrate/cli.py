@@ -601,9 +601,9 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                                 1 for line in open(ref_trim_file)
                                 if line.startswith('>'))
                             click.echo(
-                                f"  {family}: placing {n_query} genomic "
-                                f"sequences onto reference tree "
-                                f"({n_ref} reference sequences)")
+                                f"  {family}: fast tree with "
+                                f"{n_query} genomic + {n_ref} "
+                                f"reference sequences (LG+G4 --fast)")
                             tree_mode = 'place'
 
                         elif os.path.exists(ref_faa):
@@ -640,6 +640,12 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                             log_sub_dir, f'{family}_iqtree.log')
 
                         if tree_mode == 'place':
+                            # Add genomic sequences to reference
+                            # alignment then build fast de novo tree.
+                            # IQ-TREE2 does not support adding new
+                            # taxa to an existing tree topology, so
+                            # we use the combined alignment with
+                            # LG+G4 --fast for speed.
                             combined = os.path.join(
                                 align_dir, f'{family}_combined.aln')
                             align.add_fragments(
@@ -649,13 +655,20 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                                 threads=threads,
                                 log_path=mafft_log,
                             )
-                            tree.place_sequences(
-                                combined_aln_path=combined,
-                                ref_treefile=ref_treefile,
+                            trimmed = trim.trim(
+                                alignment_path=combined,
+                                output_path=os.path.join(
+                                    trimmed_dir,
+                                    f'{family}_combined.trim'),
+                                log_path=trimal_log,
+                            )
+                            tree.build_tree(
+                                trimmed_path=trimmed,
                                 output_prefix=os.path.join(
                                     tree_dir, family),
                                 threads=threads,
                                 log_path=iqtree_log,
+                                fast=True,
                             )
                         else:
                             aligned = align.align(
