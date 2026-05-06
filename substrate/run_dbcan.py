@@ -151,13 +151,17 @@ def run_prodigal(sample, nucleotide_fasta, prodigal_dir,
     os.makedirs(prodigal_dir, exist_ok=True)
 
     faa_path = os.path.join(prodigal_dir, f"{sample}.faa")
-    gbk_path = os.path.join(prodigal_dir, f"{sample}.gbk")
+    gff_path = os.path.join(prodigal_dir, f"{sample}.gff")
+    gff_path = os.path.join(prodigal_dir, f"{sample}.gff")
 
     cmd = [
         'prodigal',
         '-i', nucleotide_fasta,
         '-a', faa_path,
-        '-o', gbk_path,
+        '-f', 'gff',
+        '-o', gff_path,
+        '-f', 'gff',
+        '-s', gff_path,
         '-p', 'single',
         '-q',
     ]
@@ -221,7 +225,7 @@ def normalise_db_dir(db_dir):
 
 
 def run_dbcan_sample(sample, faa_path, cgc_output_dir, db_dir,
-                     threads=8, log_path=None):
+                     threads=8, log_path=None, gff_path=None):
     """
     Run dbCAN easy_substrate on a single protein FASTA.
 
@@ -256,6 +260,9 @@ def run_dbcan_sample(sample, faa_path, cgc_output_dir, db_dir,
         '--db_dir',         db_dir,
         '--threads',        str(threads),
     ]
+    if gff_path and os.path.exists(gff_path):
+        cmd += ['--input_gff', gff_path,
+                '--gff_type',  'prodigal']
 
     print(f"  Running dbCAN on {sample}...")
 
@@ -333,12 +340,16 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
             faa_path = run_prodigal(
                 sample, filepath, prodigal_dir,
                 log_path=prodigal_log)
+            gff_path = os.path.join(
+                prodigal_dir, f'{sample}.gff')
         else:
             faa_path = filepath
+            gff_path = None
 
         run_dbcan_sample(
             sample, faa_path, cgc_output_dir, db_dir,
-            threads=threads, log_path=dbcan_log
+            threads=threads, log_path=dbcan_log,
+            gff_path=gff_path,
         )
 
     print(f"\nAnnotation complete. dbCAN output: {cgc_output_dir}")
