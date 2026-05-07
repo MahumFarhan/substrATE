@@ -150,9 +150,9 @@ def run_prodigal(sample, nucleotide_fasta, prodigal_dir,
     check_prodigal()
     os.makedirs(prodigal_dir, exist_ok=True)
 
-    faa_path = os.path.join(prodigal_dir, f"{sample}.faa")
-    gff_path = os.path.join(prodigal_dir, f"{sample}.gff")
-    gff_path = os.path.join(prodigal_dir, f"{sample}.gff")
+    faa_path   = os.path.join(prodigal_dir, f"{sample}.faa")
+    gff_path   = os.path.join(prodigal_dir, f"{sample}.gff")
+    score_path = os.path.join(prodigal_dir, f"{sample}.scores")
 
     cmd = [
         'prodigal',
@@ -160,8 +160,7 @@ def run_prodigal(sample, nucleotide_fasta, prodigal_dir,
         '-a', faa_path,
         '-f', 'gff',
         '-o', gff_path,
-        '-f', 'gff',
-        '-s', gff_path,
+        '-s', score_path,
         '-p', 'single',
         '-q',
     ]
@@ -224,8 +223,9 @@ def normalise_db_dir(db_dir):
                 break
 
 
-def run_dbcan_sample(sample, faa_path, cgc_output_dir, db_dir,
-                     threads=8, log_path=None, gff_path=None):
+def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
+                     threads=8, log_path=None, gff_path=None,
+                     mode='protein'):
     """
     Run dbCAN easy_substrate on a single protein FASTA.
 
@@ -254,14 +254,42 @@ def run_dbcan_sample(sample, faa_path, cgc_output_dir, db_dir,
 
     cmd = [
         'run_dbcan', 'easy_substrate',
-        '--mode',           'protein',
-        '--input_raw_data', faa_path,
+        '--mode',           mode,
+        '--input_raw_data', input_path,
         '--output_dir',     sample_output_dir,
         '--db_dir',         db_dir,
         '--threads',        str(threads),
     ]
     if gff_path and os.path.exists(gff_path):
-        cmd += ['--input_gff', gff_path,
+        # Rewrite GFF IDs to match dbCAN overview.tsv format.
+        # Prodigal GFF uses ID=seqnum_genenum but dbCAN renames
+        # proteins to contig_startpos format in overview.tsv.
+        # We rewrite the GFF ID attribute to contig_startpos
+        # so CGCFinder can match GFF genes to annotated proteins.
+        # Also filter score lines (lines starting with a digit).
+        clean_gff_path = gff_path.replace('.gff', '_clean.gff')
+        with open(gff_path) as fin, open(clean_gff_path, 'w') as fout:
+            for line in fin:
+                stripped = line.strip()
+                if not stripped or stripped[0] == '#':
+                    fout.write(line)
+                    continue
+                if stripped[0].isdigit():
+                    continue  # skip score lines
+                parts = line.rstrip('\n').split('\t')
+                if len(parts) >= 9:
+                    contig   = parts[0]
+                    start    = parts[3]
+                    new_id   = f'{contig}_{start}'
+                    attrs    = parts[8]
+                    # Replace ID=... with position-based ID
+                    import re
+                    attrs = re.sub(r'ID=[^;]+', f'ID={new_id}', attrs)
+                    parts[8] = attrs
+                    fout.write('\t'.join(parts) + '\n')
+                else:
+                    fout.write(line)
+        cmd += ['--input_gff', clean_gff_path,
                 '--gff_type',  'prodigal']
 
     print(f"  Running dbCAN on {sample}...")
@@ -337,20 +365,20 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
         print(f"\nProcessing {sample} ({input_type})...")
 
         if input_type == 'nucleotide':
-            faa_path = run_prodigal(
-                sample, filepath, prodigal_dir,
-                log_path=prodigal_log)
-            gff_path = os.path.join(
-                prodigal_dir, f'{sample}.gff')
+            # Pass nucleotide FASTA directly to dbCAN in meta mode.
+            # dbCAN uses pyrodigal internally for gene prediction
+            # and generates correctly formatted GFF for CGCFinder.
+            run_dbcan_sample(
+                sample, filepath, cgc_output_dir, db_dir,
+                threads=threads, log_path=dbcan_log,
+                mode='meta',
+            )
         else:
-            faa_path = filepath
-            gff_path = None
-
-        run_dbcan_sample(
-            sample, faa_path, cgc_output_dir, db_dir,
-            threads=threads, log_path=dbcan_log,
-            gff_path=gff_path,
-        )
+            run_dbcan_sample(
+                sample, filepath, cgc_output_dir, db_dir,
+                threads=threads, log_path=dbcan_log,
+                mode='protein',
+            )
 
     print(f"\nAnnotation complete. dbCAN output: {cgc_output_dir}")
     return cgc_output_dir
