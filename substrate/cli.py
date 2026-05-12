@@ -456,9 +456,12 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
         try:
 
             # ── 1. Classification ─────────────────────────────────────────
-            n_steps = 6 if not skip_tree else 5
-            if not skip_clinker:
-                n_steps += 1
+            if skip_tree and skip_clinker:
+                n_steps = 5
+            elif skip_tree or skip_clinker:
+                n_steps = 6
+            else:
+                n_steps = 7
             t = _step(1, n_steps, "PUL classification")
 
             substrate_hits, family_hits, overview_df = (
@@ -702,7 +705,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                         skipped_families.append((sub, family, str(e)))
 
             # ── GenBank step number depends on skip_tree ──────────────────
-            gbk_step = 4 if skip_tree else 6
+            gbk_step = 4 if skip_tree else 5
 
             # ── GenBank ───────────────────────────────────────────────────
             _step(gbk_step, n_steps, "GenBank file generation")

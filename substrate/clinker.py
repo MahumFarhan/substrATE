@@ -166,6 +166,10 @@ def get_gene_label(feature):
     product   = feature.qualifiers.get('product', [''])[0]
 
     if 'CAZyme' in note:
+        # Check for bifunctional CAZyme+Sulfatase genes
+        # e.g. product = 'CAZyme|GH16_3+Sulfatase|S1_7'
+        if 'sulfatase' in product.lower() or 'SULFATLAS' in note:
+            return 'sulfatase'
         # Collapse subfamily to top-level family
         raw = gene.split('_e')[0] if gene else product
         return _top_level_family(raw)
@@ -187,7 +191,19 @@ def get_gene_label(feature):
 
     if 'TC' in note:
         tc_id = product.split('|')[-1] if '|' in product else product
-        return tc_id if tc_id else 'transporter'
+        # Map TC family to display category
+        tc_family = tc_id.split('.')[0] + '.' + tc_id.split('.')[1] \
+            if tc_id.count('.') >= 1 else tc_id
+        if tc_id.startswith('1.B.14'):
+            return 'SusC/TonB-dep.'
+        elif tc_id.startswith('8.A.46'):
+            return 'SusD-like'
+        elif tc_id.startswith('3.A.1'):
+            return 'ABC transporter'
+        elif tc_id.startswith('2.A.1') or tc_id.startswith('2.A.'):
+            return 'MFS transporter'
+        else:
+            return 'other transporter'
 
     if 'TF' in note:
         return 'TF'
