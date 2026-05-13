@@ -48,3 +48,9 @@ substrate/data/reference_seqs.zip
 # egg-info
 *.egg-info/
 tests/test_data/
+# Stray output directories in repo root
+*__outside_CGC
+*__canonical_PUL
+*__non_canonical_CGC
+# Reference seqs zip in repo root
+reference_seqs.zip
