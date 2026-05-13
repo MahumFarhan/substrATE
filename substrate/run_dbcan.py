@@ -131,52 +131,6 @@ def find_input_fastas(input_dir):
     return samples
 
 
-# ── Prodigal gene prediction ──────────────────────────────────────────────────
-
-def run_prodigal(sample, nucleotide_fasta, prodigal_dir,
-                 log_path=None):
-    """
-    Run Prodigal on a nucleotide FASTA to predict protein sequences.
-
-    Args:
-        sample:           sample name string
-        nucleotide_fasta: path to input nucleotide FASTA
-        prodigal_dir:     directory to write Prodigal output
-        log_path:         path to append Prodigal log output (optional)
-
-    Returns:
-        path to predicted protein FASTA (.faa)
-    """
-    check_prodigal()
-    os.makedirs(prodigal_dir, exist_ok=True)
-
-    faa_path   = os.path.join(prodigal_dir, f"{sample}.faa")
-    gff_path   = os.path.join(prodigal_dir, f"{sample}.gff")
-    score_path = os.path.join(prodigal_dir, f"{sample}.scores")
-
-    cmd = [
-        'prodigal',
-        '-i', nucleotide_fasta,
-        '-a', faa_path,
-        '-f', 'gff',
-        '-o', gff_path,
-        '-s', score_path,
-        '-p', 'single',
-        '-q',
-    ]
-
-    print(f"  Running Prodigal on {sample}...")
-
-    if log_path:
-        with open(log_path, 'a') as log:
-            subprocess.run(cmd, stderr=log, check=True)
-    else:
-        subprocess.run(cmd, stderr=subprocess.DEVNULL, check=True)
-
-    print(f"  Prodigal done -> {faa_path}")
-    return faa_path
-
-
 # ── dbCAN annotation ──────────────────────────────────────────────────────────
 
 # Files that dbCAN expects with specific casing. On some systems
@@ -224,8 +178,7 @@ def normalise_db_dir(db_dir):
 
 
 def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
-                     threads=8, log_path=None, gff_path=None,
-                     mode='protein'):
+                     threads=8, log_path=None, mode='protein'):
     """
     Run dbCAN easy_substrate on a single protein FASTA.
 
@@ -260,37 +213,6 @@ def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
         '--db_dir',         db_dir,
         '--threads',        str(threads),
     ]
-    if gff_path and os.path.exists(gff_path):
-        # Rewrite GFF IDs to match dbCAN overview.tsv format.
-        # Prodigal GFF uses ID=seqnum_genenum but dbCAN renames
-        # proteins to contig_startpos format in overview.tsv.
-        # We rewrite the GFF ID attribute to contig_startpos
-        # so CGCFinder can match GFF genes to annotated proteins.
-        # Also filter score lines (lines starting with a digit).
-        clean_gff_path = gff_path.replace('.gff', '_clean.gff')
-        with open(gff_path) as fin, open(clean_gff_path, 'w') as fout:
-            for line in fin:
-                stripped = line.strip()
-                if not stripped or stripped[0] == '#':
-                    fout.write(line)
-                    continue
-                if stripped[0].isdigit():
-                    continue  # skip score lines
-                parts = line.rstrip('\n').split('\t')
-                if len(parts) >= 9:
-                    contig   = parts[0]
-                    start    = parts[3]
-                    new_id   = f'{contig}_{start}'
-                    attrs    = parts[8]
-                    # Replace ID=... with position-based ID
-                    import re
-                    attrs = re.sub(r'ID=[^;]+', f'ID={new_id}', attrs)
-                    parts[8] = attrs
-                    fout.write('\t'.join(parts) + '\n')
-                else:
-                    fout.write(line)
-        cmd += ['--input_gff', clean_gff_path,
-                '--gff_type',  'prodigal']
 
     print(f"  Running dbCAN on {sample}...")
 
@@ -325,13 +247,11 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
     check_dbcan()
     normalise_db_dir(db_dir)
 
-    prodigal_dir   = os.path.join(output_dir, 'prodigal')
     cgc_output_dir = os.path.join(output_dir, 'cgc_output')
     log_dir        = os.path.join(output_dir, 'logs')
     os.makedirs(log_dir, exist_ok=True)
 
-    prodigal_log = os.path.join(log_dir, 'prodigal.log')
-    dbcan_log    = os.path.join(log_dir, 'dbcan.log')
+    dbcan_log = os.path.join(log_dir, 'dbcan.log')
 
     samples = find_input_fastas(input_dir)
 
