@@ -411,6 +411,31 @@ transporter co-localisation is not expected.
 > gene cluster systems. Archaeal genomes are not currently supported.
 > Use `--pul_mode cazyme_only` with caution for non-Bacteroidetes
 > organisms and interpret results accordingly.
+>
+> ### Metagenomic input
+
+SubstrATE supports metagenomic-assembled genomes (MAGs) as input, with
+the following expectations and caveats:
+
+- **Binned MAGs only.** Each input file must be a single-organism bin.
+  Unbinned metagenomic assemblies are not supported — CGCFinder links
+  genes into clusters based on genomic proximity, and fragmented or
+  mixed-organism contigs will produce incomplete or spurious CGCs.
+
+- **Use `--pul_mode generic` or `--pul_mode cazyme_only`.** The default
+  `bacteroidetes` mode requires SusC/SusD-type transporters and will
+  miss PULs from non-Bacteroidetes organisms common in metagenomic
+  datasets.
+
+- **Contig fragmentation reduces CGC recovery.** PULs that span contig
+  boundaries will be split or missed entirely. This is a fundamental
+  limitation of short-read assemblies and cannot be resolved within
+  substrATE.
+
+- **Taxonomy is not built in.** To link substrATE results to taxonomic
+  annotations, join your taxonomy table against
+  `{substrate}_family_hits.tsv` on the sample name column. Tools such
+  as GTDB-Tk are recommended for MAG taxonomic classification.
 
 ---
 
