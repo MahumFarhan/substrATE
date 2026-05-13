@@ -78,15 +78,13 @@ def _validate_paths(**kwargs):
             )
 
 
-def _validate_tools(skip_tree=False, skip_clinker=False,
-                    needs_prodigal=False):
+def _validate_tools(skip_tree=False, skip_clinker=False):
     """
     Check all required external tools are available.
 
     Args:
         skip_tree:      if True, skip MAFFT/trimAl/IQ-TREE2 checks
         skip_clinker:   if True, skip clinker check
-        needs_prodigal: if True, check for Prodigal
 
     Raises:
         click.ClickException if any required tool is missing
@@ -96,8 +94,6 @@ def _validate_tools(skip_tree=False, skip_clinker=False,
     checks = [
         ('dbCAN',   run_dbcan.check_dbcan),
     ]
-    if needs_prodigal:
-        checks.append(('Prodigal', run_dbcan.check_prodigal))
     if not skip_tree:
         checks.extend([
             ('MAFFT',   align.check_mafft),
@@ -297,20 +293,11 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
     # Locate fam-substrate-mapping.tsv
     fam_sub_map = _get_fam_sub_map(db_dir)
 
-    # Determine if Prodigal is needed
-    needs_prodigal = (
-        genomes is not None and
-        dbcan_output is None and
-        any(f.endswith(('.fna', '.fasta', '.fa'))
-            for f in os.listdir(genomes)
-            if os.path.isfile(os.path.join(genomes, f)))
-    )
 
     # ── Validate tools ────────────────────────────────────────────────────────
     _validate_tools(
         skip_tree=skip_tree,
         skip_clinker=skip_clinker,
-        needs_prodigal=needs_prodigal,
     )
 
     # ── dbCAN annotation ──────────────────────────────────────────────────────
