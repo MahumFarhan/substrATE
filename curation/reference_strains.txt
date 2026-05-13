@@ -1,0 +1,298 @@
+================================================================================
+REFERENCE STRAINS FOR substrATE TESTING AND DEVELOPMENT
+================================================================================
+
+This document lists reference strains with well-characterised polysaccharide
+degradation activity, organised by substrate. All strains have fully sequenced
+genomes available on NCBI. Strains marked with * are priority downloads for
+initial testing as they cover multiple substrates.
+
+NCBI accession numbers are provided where known. All genomes can be downloaded
+from https://www.ncbi.nlm.nih.gov/genome/
+
+================================================================================
+PRIORITY STRAINS (cover multiple substrates, recommended for initial testing)
+================================================================================
+
+* Zobellia galactanivorans DsiJT
+  Accession:   GCA_000227045.1
+  Environment: Marine
+  Covers:      Laminarin, agar, carrageenan, alginate, fucoidan, porphyran
+  Notes:       Model organism for marine polysaccharide degradation in
+               Bacteroidetes. Extremely well characterised PULs. Already
+               present in the development dataset.
+
+* Bacteroides thetaiotaomicron VPI-5482
+  Accession:   GCA_000011065.1
+  Environment: Gut
+  Covers:      Starch, pectin, chondroitin sulfate, heparan sulfate,
+               hyaluronic acid, inulin, levan, sucrose/raffinose
+  Notes:       The model gut Bacteroidetes. One of the most extensively
+               characterised PUL systems in the literature. Essential
+               reference for gut-relevant substrates.
+
+* Bacteroides ovatus ATCC 8483
+  Accession:   GCA_000310825.1
+  Environment: Gut
+  Covers:      Xylan, arabinoxylan, beta-mannan, cellulose, lichenan, starch
+  Notes:       The model organism for plant polysaccharide degradation in
+               gut Bacteroidetes. Xylan and arabinoxylan PULs extremely
+               well characterised.
+
+================================================================================
+MARINE / ALGAL SUBSTRATES
+================================================================================
+
+--- Laminarin ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Gramella forsetii KT0803                GCA_000172835.1  Already in dataset
+Polaribacter sp. Hel1_88               GCA_000626085.1  Already in dataset
+
+--- Agar / Agarose ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Catenovulum agarivorans YM01            GCA_000386645.1
+  Notes: Dedicated agarase producer, well characterised agarolytic system
+Saccharophagus degradans 2-40           GCA_000013225.1
+  Notes: Broad polysaccharide degrader, degrades agar among many others
+
+--- Carrageenan ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Pseudoalteromonas carrageenovora IAM 12662
+  Notes: Classical carrageenan degrader. Check NCBI for current accession
+         as this strain has been reclassified.
+Cellulophaga lytica DSM 7489            GCA_000164015.1
+  Notes: Several Cellulophaga species have characterised carrageenases
+
+--- Alginate ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Flavobacterium sp. UMI-01
+  Notes: Well characterised alginate PUL. Check NCBI for accession.
+Microbulbifer degradans 2-40            GCA_000013225.1
+  Notes: Extensive alginate degradation machinery, same strain as
+         Saccharophagus degradans 2-40 (reclassified)
+
+--- Fucoidan ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Wenyingzhuangia fucanilytica CZ1127     GCA_001682895.1
+  Notes: Dedicated fucoidan degrader, excellent reference for fucoidan PULs.
+         Highly recommended for fucoidan pattern curation.
+Leeuwenhoekiella blandensis MED217      GCA_000154785.1
+  Notes: Some strains have fucoidan activity. Already related to dataset
+         organisms.
+
+--- Ulvan ---
+Formosa agariphila KMM 3901             GCA_000512255.1
+  Notes: Best characterised ulvan PUL in marine Bacteroidetes. Essential
+         reference for ulvan testing.
+Nonlabens ulvanivorans PLR
+  Notes: Dedicated ulvan degrader. Check NCBI for current accession.
+
+--- Porphyran ---
+Zobellia galactanivorans DsiJT          GCA_000227045.1  (see priority strains)
+Formosa agariphila KMM 3901             GCA_000512255.1
+  Notes: Also has porphyran degradation capacity alongside ulvan
+
+================================================================================
+TERRESTRIAL / PLANT SUBSTRATES
+================================================================================
+
+--- Xylan ---
+Bacteroides ovatus ATCC 8483            GCA_000310825.1  (see priority strains)
+Prevotella bryantii B14                 GCA_000235305.1
+  Notes: Rumen organism, excellent xylan degrader, well characterised
+Caldanaerobacter subterraneus           GCA_000021065.1
+  Notes: Thermophilic xylanase producer, good for diversity
+
+--- Arabinoxylan ---
+Bacteroides ovatus ATCC 8483            GCA_000310825.1  (see priority strains)
+Butyrivibrio fibrisolvens 16/4          GCA_000212895.1
+  Notes: Rumen organism with extensive arabinoxylan machinery
+Ruminococcus champanellensis 18P13      GCA_000270705.1
+  Notes: Gut organism with characterised arabinoxylan PUL
+
+--- Pectin ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Prevotella ruminicola 23                GCA_000187345.1
+  Notes: Rumen organism with pectin PUL, good non-gut Bacteroidetes reference
+Erwinia chrysanthemi (Dickeya dadantii) GCA_000147055.1
+  Notes: Plant pathogen, classical pectin degrader, good outgroup
+
+--- Beta-mannan ---
+Bacteroides ovatus ATCC 8483            GCA_000310825.1  (see priority strains)
+Roseburia intestinalis L1-82            GCA_000210095.1
+  Notes: Gut Firmicutes with mannan degradation, good non-Bacteroidetes ref
+Caldanaerobacter subterraneus           GCA_000021065.1
+  Notes: Thermophilic mannanase producer
+
+--- Cellulose ---
+Cytophaga hutchinsonii ATCC 33406       GCA_000015065.1
+  Notes: Model cellulose-degrading Bacteroidetes, important reference
+Cellulomonas fimi ATCC 484              GCA_000269645.1
+  Notes: Classical cellulase producer, good Actinobacteria outgroup
+Clostridium thermocellum ATCC 27405     GCA_000011905.1
+  Notes: Cellulosome producer, extremely well characterised, good Firmicutes
+         outgroup
+
+--- Lichenan ---
+Bacteroides ovatus ATCC 8483            GCA_000310825.1  (see priority strains)
+Clostridium thermocellum ATCC 27405     GCA_000011905.1
+  Notes: Also degrades lichenan
+Bacillus subtilis 168                   GCA_000009045.1
+  Notes: Well characterised lichenase, good Firmicutes outgroup
+
+--- Starch ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Bacteroides ovatus ATCC 8483            GCA_000310825.1  (see priority strains)
+Halothermothrix orenii H 168            GCA_000019485.1
+  Notes: Thermophilic starch degrader, good environmental diversity
+
+--- Levan / Fructan ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Bacillus subtilis 168                   GCA_000009045.1
+  Notes: Classical levan producer and degrader
+Erwinia amylovora CFBP1430              GCA_000027205.1
+  Notes: Plant pathogen with levan degradation, good outgroup
+
+================================================================================
+GUT / CLINICAL SUBSTRATES
+================================================================================
+
+--- Chondroitin Sulfate ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Bacteroides fragilis NCTC 9343          GCA_000025985.1
+  Notes: Well characterised chondroitin sulfate PUL
+Edwardsiella tarda FL6-60               GCA_000181695.1
+  Notes: Characterised chondroitin lyases, good Gammaproteobacteria outgroup
+
+--- Heparan Sulfate ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Pedobacter saltans DSM 12145            GCA_000196795.1
+  Notes: Soil organism with characterised heparan sulfate PUL, good
+         non-gut Bacteroidetes reference
+Flavobacterium heparinum (Pedobacter heparinus)
+  Notes: Classical heparinase producer. Check NCBI for current accession
+         following reclassification.
+
+--- Hyaluronic Acid ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Streptococcus pyogenes M1 GAS           GCA_000006785.1
+  Notes: Classical hyaluronidase producer, good Firmicutes outgroup
+Bacillus subtilis 168                   GCA_000009045.1
+  Notes: Also has hyaluronidase activity
+
+--- Chitin ---
+Flavobacterium johnsoniae UW101         GCA_000016645.1
+  Notes: Model chitinase producer in Bacteroidetes, important reference
+Serratia marcescens 2170
+  Notes: Classical chitinase producer. Check NCBI for current accession.
+Vibrio harveyi ATCC BAA-1116            GCA_000196535.1
+  Notes: Marine chitin degrader, well characterised, good Vibrio outgroup
+
+================================================================================
+GENERAL SUBSTRATES
+================================================================================
+
+--- Inulin ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Lactobacillus acidophilus NCFM          GCA_000011405.1
+  Notes: Well characterised inulinase, good Firmicutes outgroup
+Bifidobacterium longum NCC2705          GCA_000007525.1
+  Notes: Gut organism with inulin degradation, good Actinobacteria outgroup
+
+--- Sucrose / Raffinose ---
+Bacteroides thetaiotaomicron VPI-5482   GCA_000011065.1  (see priority strains)
+Bifidobacterium longum NCC2705          GCA_000007525.1
+  Notes: Raffinose degradation well characterised
+Leuconostoc mesenteroides ATCC 8293     GCA_000023165.1
+  Notes: Classical sucrose degradation model, good outgroup
+
+--- Glycogen ---
+Already in development dataset — see existing pipeline results
+
+--- Pullulan ---
+Already in development dataset — see existing pipeline results
+
+================================================================================
+SUGGESTED OUTGROUPS FOR PHYLOGENETIC DIVERSITY
+================================================================================
+
+The following strains are recommended as outgroups to ensure the tool works
+beyond Bacteroidetes and across diverse environments. Each represents a
+different phylum with well-characterised CAZyme systems.
+
+--- Firmicutes (Bacillota) ---
+Clostridium thermocellum ATCC 27405     GCA_000011905.1
+  Substrates: Cellulose, lichenan, xylan
+  Notes:      Cellulosome producer, one of the most studied CAZyme systems.
+              Good thermophile representative.
+
+Bacillus subtilis 168                   GCA_000009045.1
+  Substrates: Lichenan, levan, hyaluronic acid, starch
+  Notes:      Model Firmicutes organism, extremely well characterised.
+              Good soil/terrestrial representative.
+
+Ruminococcus champanellensis 18P13      GCA_000270705.1
+  Substrates: Arabinoxylan, cellulose
+  Notes:      Gut Firmicutes with well characterised PUL-like systems.
+
+--- Proteobacteria ---
+Saccharophagus degradans 2-40           GCA_000013225.1
+  Substrates: Agar, alginate, cellulose, chitin, xylan (broad degrader)
+  Notes:      Gammaproteobacteria, marine environment, one of the broadest
+              known polysaccharide degraders. Excellent multi-substrate
+              reference and good non-Bacteroidetes marine representative.
+
+Erwinia chrysanthemi (Dickeya dadantii) GCA_000147055.1
+  Substrates: Pectin, levan
+  Notes:      Plant pathogen, good terrestrial Gammaproteobacteria outgroup.
+
+Vibrio harveyi ATCC BAA-1116            GCA_000196535.1
+  Substrates: Chitin
+  Notes:      Marine Gammaproteobacteria, well characterised chitinase system.
+              Good Vibrio representative.
+
+--- Actinobacteria (Actinomycetota) ---
+Cellulomonas fimi ATCC 484              GCA_000269645.1
+  Substrates: Cellulose, xylan, mannan
+  Notes:      Classical cellulase producer. Good soil/terrestrial
+              Actinobacteria representative.
+
+Bifidobacterium longum NCC2705          GCA_000007525.1
+  Substrates: Inulin, sucrose, raffinose
+  Notes:      Gut Actinobacteria, well characterised carbohydrate metabolism.
+
+--- Spirochaetes ---
+Spirochaeta thermophila DSM 6578        GCA_000153485.1
+  Substrates: Cellulose, xylan, mannan, pectin
+  Notes:      Thermophilic broad polysaccharide degrader. Represents an
+              underappreciated phylum for CAZyme diversity. Good for
+              testing tool robustness on non-Bacteroidetes PUL-like systems.
+
+--- Archaea (for robustness testing) ---
+Thermococcus kodakarensis KOD1          GCA_000009965.1
+  Substrates: Starch, chitin
+  Notes:      Hyperthermophilic archaeon with well characterised amylase
+              and chitinase systems. Useful for testing tool behaviour on
+              non-bacterial genomes — the pipeline should either handle
+              these gracefully or produce a clear error.
+
+================================================================================
+NOTES ON GENOME DOWNLOADS
+================================================================================
+
+All genomes can be downloaded from NCBI using:
+  https://www.ncbi.nlm.nih.gov/genome/
+
+Or via the NCBI datasets command line tool:
+  datasets download genome accession GCA_XXXXXXXXX.X --include genome
+
+For strains without confirmed accessions listed above, search NCBI with
+the strain name. Some strains have been reclassified or had their genomes
+updated since original characterisation — always check for the most
+recent assembly.
+
+Protein FASTAs (.faa) can be provided directly to substrATE if available,
+skipping the Prodigal gene prediction step. These are available alongside
+genome assemblies on NCBI for most well-annotated strains.
+
+================================================================================
