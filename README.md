@@ -230,34 +230,30 @@ substrate run \
 ## Usage
 
 ### Full pipeline
-
-```
 substrate run [OPTIONS]
-
 Options:
-  --substrate TEXT         Target substrate(s). Can be specified multiple
-                           times. If omitted, runs survey mode.
-  --genomes PATH           Path to genome FASTA directory
-  --dbcan_output PATH      Path to existing dbCAN cgc_output directory
-                           (skips annotation step)
-  --db_dir PATH            Path to dbCAN database directory  [required]
-  --expasy PATH            Path to EXPASY enzyme.dat  [required]
-  --tcdb PATH              Path to TCDB tc_family_definitions.tsv  [required]
-  --ref_metadata PATH      Path to reference sequence metadata TSV
-  --ref_seqs PATH          Path to reference sequence FASTA directory
-  --output PATH            Base output directory  [required]
-  --threads INTEGER        Threads for MAFFT and IQ-TREE2  [default: 8]
-  --pul_mode CHOICE        PUL classification mode  [default: bacteroidetes]
-  --min_substrate_cazymes  Minimum substrate CAZymes per CGC  [default: 2]
-  --pattern_mode CHOICE    Activity pattern stringency  [default: permissive]
-  --skip_tree              Skip alignment, trimming, and tree building
-  --skip_clinker           Skip clinker synteny plot
-  --denovo                 Force de novo tree building for all families
-  --force                  Overwrite existing output files
-  --overlap_threshold INT  Pattern overlap warning threshold  [default: 5]
-  --substrate_terms TEXT   Search terms for custom substrate derivation
-  --max_colours INT        Maximum samples before HSL colour generation
-```
+--substrate TEXT         Target substrate(s). Can be specified multiple
+times. If omitted, runs survey mode.
+--genomes PATH           Path to genome FASTA directory
+--dbcan_output PATH      Path to existing dbCAN cgc_output directory
+(skips annotation step)
+--db_dir PATH            Path to dbCAN database directory  [required]
+--expasy PATH            Path to EXPASY enzyme.dat  [required]
+--tcdb PATH              Path to TCDB tc_family_definitions.tsv  [required]
+--ref_metadata PATH      Path to reference sequence metadata TSV
+--ref_seqs PATH          Path to reference sequence FASTA directory
+--output PATH            Base output directory  [required]
+--threads INTEGER        Threads for MAFFT and IQ-TREE2  [default: 8]
+--pul_mode CHOICE        PUL classification mode  [default: bacteroidetes]
+--min_substrate_cazymes  Minimum substrate CAZymes per CGC  [default: 2]
+--pattern_mode CHOICE    Activity pattern stringency  [default: permissive]
+--skip_tree              Skip alignment, trimming, and tree building
+--skip_clinker           Skip clinker synteny plot
+--denovo                 Force de novo tree building for all families
+--force                  Overwrite existing output files
+--overlap_threshold INT  Pattern overlap warning threshold  [default: 5]
+--substrate_terms TEXT   Search terms for custom substrate derivation
+--max_colours INT        Maximum samples before HSL colour generation
 
 ### Survey mode
 
@@ -273,22 +269,19 @@ substrate run \
     --tcdb /path/to/tc_family_definitions.tsv \
     --output results/
 ```
-
-```
-  Substrate              Genomes    Canonical PULs    Non-canonical
-  ─────────────────────────────────────────────────────────────────
-  laminarin              9          14                3
-  alginate               6          9                 1
-  fucoidan               3          4                 1
-  ...
-
+Substrate              Genomes    Canonical PULs    Non-canonical
+─────────────────────────────────────────────────────────────────
+laminarin              9          14                3
+alginate               6          9                 1
+fucoidan               3          4                 1
+...
 Which substrates would you like to analyse?
-  all        — all substrates with hits
-  min:N      — substrates with >= N canonical PULs
-  a,b,c      — comma-separated substrate names
+all        — all substrates with hits
+min:N      — substrates with >= N canonical PULs
+a,b,c      — comma-separated substrate names
 
-> laminarin, alginate
-```
+laminarin, alginate
+
 
 The survey can also be run independently on existing dbCAN output:
 
@@ -333,25 +326,22 @@ substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db
 ---
 
 ## Output structure
-
-```
 results/
 ├── logs/                          # Tool log files
 ├── cgc_output/                    # dbCAN output per genome
 └── laminarin/                     # Per-substrate outputs
-    ├── laminarin_family_hits.tsv      # CAZyme family hits with localisation
-    ├── laminarin_substrate_hits.tsv   # Substrate prediction hits
-    ├── laminarin_activity_annotated.tsv  # Activity annotations
-    ├── laminarin_colour_config.tsv    # Editable colour assignments
-    ├── laminarin_pattern_review.tsv   # Activity pattern review report
-    ├── sequences/                     # Per-family FASTA files
-    ├── alignments/                    # MAFFT alignments
-    ├── trimmed/                       # trimAl trimmed alignments
-    ├── trees/                         # IQ-TREE2 treefiles
-    ├── itol_annotations/              # iTOL annotation files
-    ├── genbank/                       # GenBank files per CGC
-    └── clinker/                       # Clinker HTML and TSV outputs
-```
+├── laminarin_family_hits.tsv      # CAZyme family hits with localisation
+├── laminarin_substrate_hits.tsv   # Substrate prediction hits
+├── laminarin_activity_annotated.tsv  # Activity annotations
+├── laminarin_colour_config.tsv    # Editable colour assignments
+├── laminarin_pattern_review.tsv   # Activity pattern review report
+├── sequences/                     # Per-family FASTA files
+├── alignments/                    # MAFFT alignments
+├── trimmed/                       # trimAl trimmed alignments
+├── trees/                         # IQ-TREE2 treefiles
+├── itol_annotations/              # iTOL annotation files
+├── genbank/                       # GenBank files per CGC
+└── clinker/                       # Clinker HTML and TSV outputs
 
 ### Key output files
 
