@@ -2,15 +2,15 @@
 dbCAN annotation wrapper.
 
 Handles two input cases:
-  1. Protein FASTA (.faa) — runs dbCAN directly in protein mode
-  2. Nucleotide FASTA (.fna/.fasta/.fa) — runs Prodigal first to
-     predict proteins, then runs dbCAN on the predicted .faa
+  1. Protein FASTA (.faa) — runs dbCAN in protein mode
+  2. Nucleotide FASTA (.fna/.fasta/.fa) — runs dbCAN in meta mode,
+     which uses pyrodigal internally for gene prediction and generates
+     correctly formatted GFF for CGCFinder.
 
 Uses run_dbcan easy_substrate which performs CAZyme annotation,
 GFF processing, CGC identification, and substrate prediction in
 one step.
 
-Prodigal output is written to <output_dir>/prodigal/
 dbCAN output is written to <output_dir>/cgc_output/output_<sample>/
 """
 import os
@@ -50,27 +50,6 @@ def check_dbcan():
         raise ToolNotFoundError(
             "run_dbcan not found on PATH. "
             "Install with: conda install -c bioconda dbcan"
-        )
-
-
-def check_prodigal():
-    """
-    Check that Prodigal is available and return its version string.
-
-    Raises:
-        ToolNotFoundError if prodigal is not found on PATH
-    """
-    try:
-        result = subprocess.run(
-            ['prodigal', '-v'],
-            capture_output=True, text=True
-        )
-        version = result.stderr.strip() or result.stdout.strip()
-        return version
-    except FileNotFoundError:
-        raise ToolNotFoundError(
-            "Prodigal not found on PATH. "
-            "Install with: conda install -c bioconda prodigal"
         )
 
 
@@ -180,7 +159,7 @@ def normalise_db_dir(db_dir):
 def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
                      threads=8, log_path=None, mode='protein'):
     """
-    Run dbCAN easy_substrate on a single protein FASTA.
+    Run dbCAN easy_substrate on a single FASTA file.
 
     Uses easy_substrate which performs CAZyme annotation, GFF
     processing, CGC identification, and substrate prediction in
@@ -190,11 +169,12 @@ def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
 
     Args:
         sample:         sample name string
-        faa_path:       path to protein FASTA (.faa)
+        input_path:     path to input FASTA (protein or nucleotide)
         cgc_output_dir: directory to write dbCAN output
         db_dir:         path to dbCAN database directory
         threads:        number of threads (default: 8)
         log_path:       path to append dbCAN log output (optional)
+        mode:           'protein' or 'meta' (default: 'protein')
 
     Returns:
         path to dbCAN output directory for this sample
@@ -231,14 +211,17 @@ def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
 def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
                      force=False):
     """
-    Run gene prediction (if needed) and dbCAN annotation on all
-    input FASTA files in input_dir.
+    Run dbCAN annotation on all input FASTA files in input_dir.
+
+    Nucleotide FASTAs are run in meta mode (pyrodigal gene prediction
+    handled internally by dbCAN). Protein FASTAs are run in protein
+    mode directly.
 
     Args:
         input_dir:  path to directory containing input FASTA files
         output_dir: base output directory
         db_dir:     path to dbCAN database directory
-        threads:    number of threads for dbCAN and Prodigal
+        threads:    number of threads for dbCAN
         force:      if True, rerun even if output already exists
 
     Returns:
@@ -269,9 +252,7 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
     if n_protein > 0:
         print(f"  {n_protein} protein FASTA(s) — dbCAN direct")
     if n_nucleotide > 0:
-        print(f"  {n_nucleotide} nucleotide FASTA(s) — "
-              f"Prodigal + dbCAN")
-        check_prodigal()
+        print(f"  {n_nucleotide} nucleotide FASTA(s) — dbCAN meta mode")
 
     for sample, filepath, input_type in samples:
         sample_output = os.path.join(
@@ -285,9 +266,6 @@ def annotate_genomes(input_dir, output_dir, db_dir, threads=8,
         print(f"\nProcessing {sample} ({input_type})...")
 
         if input_type == 'nucleotide':
-            # Pass nucleotide FASTA directly to dbCAN in meta mode.
-            # dbCAN uses pyrodigal internally for gene prediction
-            # and generates correctly formatted GFF for CGCFinder.
             run_dbcan_sample(
                 sample, filepath, cgc_output_dir, db_dir,
                 threads=threads, log_path=dbcan_log,

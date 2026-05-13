@@ -6,7 +6,12 @@ edge cases. Uses synthetic DataFrames — no database files needed.
 """
 import pytest
 import pandas as pd
-from substrate.classify_pul import classify_cgc, SUSC_FAMILIES
+from substrate.classify_pul import (
+    classify_cgc,
+    SUSC_FAMILIES,
+    SUBSTRATE_TERMS,
+    FAMILY_MAP,
+)
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -247,3 +252,96 @@ class TestSuscFamilies:
 
     def test_susc_families_is_list(self):
         assert isinstance(SUSC_FAMILIES, list)
+
+
+# ── SUBSTRATE_TERMS constant ──────────────────────────────────────────────────
+
+EXPECTED_SUBSTRATES = {
+    'agar', 'alginate', 'arabinogalactan', 'arabinoxylan', 'beta_mannan',
+    'carrageenan', 'cellulose', 'chitin', 'chondroitin_sulfate', 'fucoidan',
+    'glycogen', 'heparan_sulfate', 'hyaluronic_acid', 'inulin', 'laminarin',
+    'levan', 'lichenan', 'pectin', 'porphyran', 'pullulan', 'starch',
+    'sucrose', 'ulvan', 'xylan', 'xyloglucan',
+}
+
+
+class TestSubstrateTerms:
+
+    def test_all_25_substrates_present(self):
+        """SUBSTRATE_TERMS contains all 25 expected substrates."""
+        assert set(SUBSTRATE_TERMS.keys()) == EXPECTED_SUBSTRATES
+
+    def test_mixed_linkage_glucan_absent(self):
+        """mixed_linkage_glucan was permanently removed."""
+        assert 'mixed_linkage_glucan' not in SUBSTRATE_TERMS
+
+    def test_each_substrate_has_at_least_one_term(self):
+        """Every substrate maps to a non-empty list of search terms."""
+        for substrate, terms in SUBSTRATE_TERMS.items():
+            assert isinstance(terms, list), (
+                f"{substrate}: expected list, got {type(terms)}")
+            assert len(terms) >= 1, (
+                f"{substrate}: search terms list is empty")
+
+    def test_all_terms_are_strings(self):
+        """Every search term is a non-empty string."""
+        for substrate, terms in SUBSTRATE_TERMS.items():
+            for term in terms:
+                assert isinstance(term, str) and term, (
+                    f"{substrate}: invalid term {term!r}")
+
+    def test_laminarin_terms(self):
+        assert 'laminarin' in SUBSTRATE_TERMS['laminarin']
+
+    def test_xylan_terms(self):
+        assert 'xylan' in SUBSTRATE_TERMS['xylan']
+
+
+# ── FAMILY_MAP constant ───────────────────────────────────────────────────────
+
+class TestFamilyMap:
+
+    def test_all_25_substrates_present(self):
+        """FAMILY_MAP contains all 25 expected substrates."""
+        assert set(FAMILY_MAP.keys()) == EXPECTED_SUBSTRATES
+
+    def test_mixed_linkage_glucan_absent(self):
+        """mixed_linkage_glucan was permanently removed."""
+        assert 'mixed_linkage_glucan' not in FAMILY_MAP
+
+    def test_each_substrate_has_families(self):
+        """Every substrate maps to a non-empty list of family strings."""
+        for substrate, families in FAMILY_MAP.items():
+            assert isinstance(families, list), (
+                f"{substrate}: expected list, got {type(families)}")
+            assert len(families) >= 1, (
+                f"{substrate}: family list is empty")
+
+    def test_all_families_are_strings(self):
+        """Every family entry is a non-empty string."""
+        for substrate, families in FAMILY_MAP.items():
+            for fam in families:
+                assert isinstance(fam, str) and fam, (
+                    f"{substrate}: invalid family {fam!r}")
+
+    def test_family_map_and_substrate_terms_keys_match(self):
+        """FAMILY_MAP and SUBSTRATE_TERMS have exactly the same keys."""
+        assert set(FAMILY_MAP.keys()) == set(SUBSTRATE_TERMS.keys())
+
+    def test_laminarin_contains_gh16(self):
+        assert 'GH16' in FAMILY_MAP['laminarin']
+
+    def test_laminarin_contains_gh17(self):
+        assert 'GH17' in FAMILY_MAP['laminarin']
+
+    def test_xylan_contains_gh10(self):
+        assert 'GH10' in FAMILY_MAP['xylan']
+
+    def test_starch_contains_gh13(self):
+        assert 'GH13' in FAMILY_MAP['starch']
+
+    def test_no_duplicate_families_per_substrate(self):
+        """No substrate has the same family listed twice."""
+        for substrate, families in FAMILY_MAP.items():
+            assert len(families) == len(set(families)), (
+                f"{substrate}: duplicate families found")
