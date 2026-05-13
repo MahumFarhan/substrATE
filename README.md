@@ -24,6 +24,11 @@ polysaccharides, plant cell wall components, gut glycans, and general
 carbohydrates. Custom substrates can be derived automatically from the
 dbCAN fam-substrate-mapping database at runtime.
 
+> **Maintenance notice:** SubstrATE is developed and maintained on a
+> best-effort basis. Issues and pull requests may not always receive a
+> timely response. The tool is provided as-is for the community to use
+> and adapt freely under the MIT licence.
+
 ---
 
 ## Table of contents
@@ -40,7 +45,7 @@ dbCAN fam-substrate-mapping database at runtime.
 - [Supported substrates](#supported-substrates)
 - [PUL classification modes](#pul-classification-modes)
 - [Activity patterns](#activity-patterns)
-- [Citation](#citation)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ---
@@ -71,7 +76,6 @@ The main external tools are:
 | Tool | Version | Purpose |
 |---|---|---|
 | dbCAN | 5.2.8 | CAZyme annotation and CGC prediction |
-| Prodigal | latest | Gene prediction (nucleotide input only) |
 | MAFFT | 7.525 | Multiple sequence alignment |
 | trimAl | 1.5 | Alignment trimming |
 | IQ-TREE2 | 3.1.1 | Phylogenetic tree inference |
@@ -117,9 +121,10 @@ wget https://www.tcdb.org/public/tcdb -O tc_family_definitions.tsv
 
 ## Reference sequence database
 
-SubstrATE uses a database of characterised CAZyme sequences from CAZy to enrich
-phylogenetic trees with biological context. This database is not included in the
-repository and must be built once after installation.
+SubstrATE uses a database of characterised CAZyme sequences from CAZy
+to enrich phylogenetic trees with biological context. This database is
+not included in the repository and must be built once after
+installation.
 
 ### Step 1 — Download characterised sequences
 
@@ -130,40 +135,49 @@ substrate build-reference-db \
     --output substrate/data/reference_seqs
 ```
 
-An NCBI API key is recommended for faster downloads (10 requests/second vs 3).
-Register at https://www.ncbi.nlm.nih.gov/account/
+An NCBI API key is recommended for faster downloads (10 requests/second
+vs 3). Register at https://www.ncbi.nlm.nih.gov/account/
 
-This downloads characterised enzyme sequences from CAZy for all 25 built-in
-substrates and caches them locally. The download takes approximately 30–60
-minutes depending on your connection and NCBI load.
+This downloads characterised enzyme sequences from CAZy for all 25
+built-in substrates. The download takes approximately 30–60 minutes
+depending on your connection and NCBI load.
 
 ### Step 2 — Build reference trees (optional)
 
-Reference trees are only required if you plan to use `--tree_mode place`, which
-fixes the reference tree topology and places your genomic sequences onto it.
-This gives reproducible, directly comparable trees across different runs and
-datasets.
+Reference trees are pre-built from characterised sequences and used
+when SubstrATE auto-selects place mode for a CAZyme family. Place mode
+fixes the reference topology and places genomic sequences onto it,
+giving reproducible trees that are directly comparable across runs.
 
 ```bash
 substrate build-reference-trees \
     --threads 8 \
+    --max_seqs 150 \
     --output substrate/data/reference_trees
 ```
 
-This step is not required for the default `--tree_mode merge`, where SubstrATE
-automatically merges your genomic sequences with reference sequences from
-`substrate/data/reference_seqs/by_family/` before building each family tree de
-novo, producing trees with biological context without any additional setup.
+This step is not required if you are happy with the default merge
+behaviour, where SubstrATE builds a de novo tree per family with
+reference sequences merged in automatically.
 
 ### Tree building modes
 
-SubstrATE supports three tree building modes via `--tree_mode`:
+SubstrATE auto-selects a tree building mode per CAZyme family based
+on what reference data is available:
 
-| Mode | Description | Requires reference db | Requires reference trees |
-|---|---|---|---|
-| `merge` | De novo tree with reference sequences merged in (default) | Yes | No |
-| `denovo` | De novo tree from genomic sequences only | No | No |
-| `place` | Genomic sequences placed onto fixed reference tree topology | Yes | Yes |
+| Mode | Description | When selected |
+|---|---|---|
+| `place` | Genomic sequences placed onto fixed reference tree topology | Reference tree exists for family |
+| `merge` | De novo tree with reference sequences merged in | Reference seqs exist, no reference tree |
+| `denovo` | De novo tree from genomic sequences only | No reference data, or --denovo flag set |
+
+Use `--denovo` to force de novo building for all families regardless
+of available reference data.
+
+> **Note on tree quality:** Reference trees are built with
+> `LG+G4 --fast` (no bootstrap) — sufficient as a placement backbone
+> but not publication quality. Per-family pipeline trees use full model
+> selection and bootstrap (`-m TEST -B 1000`).
 
 ---
 
@@ -184,8 +198,8 @@ substrate run \
 ### From genome assemblies
 
 SubstrATE accepts nucleotide assemblies (`.fna`, `.fasta`, `.fa`) or
-protein FASTAs (`.faa`). For nucleotide input, Prodigal is run
-automatically:
+protein FASTAs (`.faa`). For nucleotide input, dbCAN runs in meta mode
+and handles gene prediction internally using pyrodigal:
 
 ```bash
 substrate run \
@@ -232,15 +246,17 @@ Options:
   --ref_metadata PATH      Path to reference sequence metadata TSV
   --ref_seqs PATH          Path to reference sequence FASTA directory
   --output PATH            Base output directory  [required]
-  --threads INTEGER        Threads for MAFFT, IQ-TREE2 and EPA-ng
-                           [default: 8]
+  --threads INTEGER        Threads for MAFFT and IQ-TREE2  [default: 8]
   --pul_mode CHOICE        PUL classification mode  [default: bacteroidetes]
   --min_substrate_cazymes  Minimum substrate CAZymes per CGC  [default: 2]
-  --skip_tree              Skip all tree building
+  --pattern_mode CHOICE    Activity pattern stringency  [default: permissive]
+  --skip_tree              Skip alignment, trimming, and tree building
   --skip_clinker           Skip clinker synteny plot
+  --denovo                 Force de novo tree building for all families
   --force                  Overwrite existing output files
   --overlap_threshold INT  Pattern overlap warning threshold  [default: 5]
   --substrate_terms TEXT   Search terms for custom substrate derivation
+  --max_colours INT        Maximum samples before HSL colour generation
 ```
 
 ### Survey mode
@@ -303,8 +319,12 @@ substrate visualise --substrate laminarin --output results/
 # Clinker synteny only
 substrate synteny --substrate laminarin --output results/
 
-# List built-in substrates
+# List built-in substrates and reference sequence counts
 substrate list-substrates
+substrate family-sizes --substrate laminarin
+
+# Test installation on bundled Gramella forsetii genome
+substrate test-install
 
 # Survey existing dbCAN output
 substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db
@@ -317,7 +337,6 @@ substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db
 ```
 results/
 ├── logs/                          # Tool log files
-├── prodigal/                      # Prodigal output (if nucleotide input)
 ├── cgc_output/                    # dbCAN output per genome
 └── laminarin/                     # Per-substrate outputs
     ├── laminarin_family_hits.tsv      # CAZyme family hits with localisation
@@ -326,9 +345,9 @@ results/
     ├── laminarin_colour_config.tsv    # Editable colour assignments
     ├── laminarin_pattern_review.tsv   # Activity pattern review report
     ├── sequences/                     # Per-family FASTA files
-    ├── alignments/                    # MAFFT alignments (de novo only)
+    ├── alignments/                    # MAFFT alignments
     ├── trimmed/                       # trimAl trimmed alignments
-    ├── trees/                         # IQ-TREE2 treefiles (de novo)
+    ├── trees/                         # IQ-TREE2 treefiles
     ├── itol_annotations/              # iTOL annotation files
     ├── genbank/                       # GenBank files per CGC
     └── clinker/                       # Clinker HTML and TSV outputs
@@ -348,7 +367,7 @@ interpretation.
 **`{substrate}_colour_config.tsv`** — Colour assignments for samples,
 activities, and localisations. Edit this file and rerun
 `substrate visualise` to regenerate iTOL annotations with custom
-colours without rebuilding the tree.
+colours without rebuilding trees.
 
 **`clinker/{substrate}_all_cgcs.html`** — Interactive clinker synteny
 plot comparing all qualifying CGCs for the substrate.
@@ -357,17 +376,17 @@ plot comparing all qualifying CGCs for the substrate.
 
 ## Supported substrates
 
-SubstrATE includes 26 built-in substrates. Run `substrate list-substrates`
+SubstrATE includes 25 built-in substrates. Run `substrate list-substrates`
 to see the full list with family counts.
 
 | Category | Substrates |
 |---|---|
 | Marine/algal | laminarin, agar, carrageenan, alginate, fucoidan, ulvan, porphyran |
-| Plant/terrestrial | xylan, arabinoxylan, pectin, chitin, cellulose, starch, beta_mannan, lichenan, mixed_linkage_glucan |
+| Plant/terrestrial | xylan, arabinoxylan, pectin, chitin, cellulose, starch, beta_mannan, lichenan, xyloglucan |
 | Fructans | inulin, levan |
 | Alpha-glucans | glycogen, pullulan |
 | Host glycans | chondroitin_sulfate, heparan_sulfate, hyaluronic_acid |
-| General | sucrose, xyloglucan, arabinogalactan |
+| General | sucrose, arabinogalactan |
 
 ### Custom substrates
 
@@ -399,28 +418,37 @@ count, with no transporter requirement. Useful for organisms where
 transporter co-localisation is not expected.
 
 > **Note:** SubstrATE is designed for bacteria with PUL-type CAZyme
-> gene cluster systems. Archaeal genomes are not currently supported
-> due to fundamental differences in CGC architecture. Use
-> `--pul_mode cazyme_only` with caution for non-Bacteroidetes organisms
-> and interpret results accordingly.
+> gene cluster systems. Archaeal genomes are not currently supported.
+> Use `--pul_mode cazyme_only` with caution for non-Bacteroidetes
+> organisms and interpret results accordingly.
 
 ---
 
 ## Activity patterns
 
 SubstrATE uses activity patterns to filter CGCs during GenBank file
-generation, retaining only CGCs with a minimum number of genes with
+generation, retaining only CGCs with a minimum number of genes bearing
 substrate-relevant enzymatic activities.
 
 Patterns are stored in `substrate/data/activity_patterns.tsv` and
 are derived automatically from the dbCAN fam-substrate-mapping
 database. All patterns are initially marked `reviewed=False`.
 
-After running the pipeline on your dataset, inspect the
+After running the pipeline, inspect the
 `{substrate}_pattern_review.tsv` report in each substrate output
-directory. Once you are satisfied the patterns are appropriate for
-your data, set `reviewed=True` in `activity_patterns.tsv` to suppress
-the auto-derived patterns warning.
+directory. Once satisfied, set `reviewed=True` in
+`activity_patterns.tsv` to suppress the auto-derived patterns warning.
+
+### Pattern stringency
+
+Use `--pattern_mode strict` to apply only manually curated, highly
+specific patterns, reducing false positives from shared enzyme
+activities across substrates. The default `permissive` mode applies
+all patterns.
+
+```bash
+substrate run --pattern_mode strict ...
+```
 
 To regenerate patterns from a new version of the dbCAN database:
 
@@ -433,26 +461,18 @@ python scripts/generate_patterns.py \
 ### Pattern overlap warnings
 
 SubstrATE warns when activity patterns for a substrate overlap
-significantly with another substrate, since this may affect how
-results should be interpreted:
+significantly with another substrate:
 
 ```bash
-# Suppress overlap warnings
-substrate run --overlap_threshold 0 ...
-
-# Increase sensitivity
-substrate run --overlap_threshold 3 ...
+substrate run --overlap_threshold 0 ...   # suppress warnings
+substrate run --overlap_threshold 3 ...   # increase sensitivity
 ```
 
 ---
 
-## Citation
+## Acknowledgements
 
-If you use SubstrATE in your research, please cite:
-
-> [CITATION PLACEHOLDER — add when preprint/paper is available]
-
-Please also cite the underlying tools:
+Please cite the underlying tools that SubstrATE depends on:
 
 - **dbCAN**: Zheng J et al. (2023) dbCAN3: automated CAZyme and
   substrate annotation. *Nucleic Acids Research*.
@@ -476,10 +496,11 @@ details.
 
 ## Contributing
 
-Bug reports, feature requests, and pull requests are welcome via the
+Bug reports and pull requests are welcome via the
 [GitHub issue tracker](https://github.com/MahumFarhan/substrATE/issues).
+Please note that responses may be delayed and fixes are not guaranteed.
 
-When adding a new built-in substrate, please:
+When adding a new built-in substrate:
 1. Add entries to `FAMILY_MAP` and `SUBSTRATE_TERMS` in
    `substrate/classify_pul.py`
 2. Add the substrate to `SUBSTRATE_SEARCH_CONFIG` in
