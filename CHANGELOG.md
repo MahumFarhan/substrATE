@@ -15,8 +15,8 @@ All notable changes to SubstrATE will be documented here.
     - merge: de novo with CAZy reference sequences merged in (fallback
       when no reference tree exists)
     - denovo: genomic sequences only (fallback or via --denovo flag)
-- add_fragments() in align.py using MAFFT --addfragments
-- place_sequences() in tree.py using IQ-TREE2 --tree-fix
+- add_fragments() in align.py using MAFFT --add
+- place_sequences() in tree.py using IQ-TREE2 with reference tree as starting topology
 - --denovo flag to force de novo tree building for all families
 - normalise_db_dir() in run_dbcan.py to handle case mismatches between
   dbCAN expected filenames and Windows/WSL2 filesystem conventions
@@ -81,3 +81,34 @@ All notable changes to SubstrATE will be documented here.
 - --max_colours flag for datasets with >19 samples planned for v0.2.0
 - Dynamic substrate TSV replacing hardcoded FAMILY_MAP planned for v0.2.0
 - Transporter phylogenetic tree planned for v0.2.0
+
+### Fixed (session 2)
+- dbCAN now runs in meta mode for nucleotide input, enabling correct
+  CGC prediction via pyrodigal (root cause of all CGCs showing as
+  outside_CGC)
+- MAFFT --addfragments replaced with --add (--addfragments caused
+  segfaults on large reference alignments)
+- IQ-TREE2 --tree-fix removed from place mode; reference tree now used
+  as starting topology (-t), which does not require all sequences to be
+  present in the tree
+- Step counter 8/7 bug fixed (gbk_step was 6 instead of 5 in default
+  run)
+- Log directory now created before opening log file in trim.py and
+  align.py
+- S1 sulfatase colour correctly applied for bifunctional CAZyme+Sulfatase
+  genes (e.g. GH16_3+Sulfatase|S1_7)
+- TC family IDs now mapped to display categories in clinker.py
+- SUBSTRATE_TERMS populated for all 25 substrates (previously only 3
+  entries, causing KeyError in multi-substrate runs)
+
+### Removed (session 2)
+- check_prodigal() removed from run_dbcan.py (Prodigal no longer used)
+- run_prodigal() removed from run_dbcan.py (dead code)
+
+### Tests (session 2)
+- test_activity.py written from scratch: normalise_activity,
+  extract_primary_ec, get_activity_label, load_ec_names,
+  load_family_activities, annotate_references, load_patterns
+- test_classify_pul.py: added TestSubstrateTerms and TestFamilyMap
+  covering all 25 substrates and removal of mixed_linkage_glucan
+- test_extract_seqs.py: no changes needed (signatures unchanged)
