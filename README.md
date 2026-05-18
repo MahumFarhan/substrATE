@@ -456,10 +456,23 @@ directory. Once satisfied, set `reviewed=True` in
 
 ### Pattern stringency
 
-Use `--pattern_mode strict` to apply only manually curated, highly
-specific patterns, reducing false positives from shared enzyme
-activities across substrates. The default `permissive` mode applies
-all patterns.
+Activity patterns are assigned one of two modes, which determine how
+they are applied during CGC filtering:
+
+**`permissive`** — the pattern is relevant for the substrate but the
+enzyme may also act on other substrates. Applied in both permissive
+and strict pipeline runs. Examples: `arabinosidase` for arabinoxylan
+(also acts on arabinogalactan), `glucosidase` for starch (broad
+substrate range).
+
+**`strict`** — the pattern is highly specific to the substrate and
+unlikely to produce false positives. Only applied when running with
+`--pattern_mode strict`. Examples: `xylanase` for xylan,
+`laminarinase` for laminarin, `chitinase` for chitin.
+
+Use `--pattern_mode strict` for conservative filtering that reduces
+false positives from enzymes active on multiple substrates. Use the
+default `--pattern_mode permissive` for maximum sensitivity.
 
 ```bash
 substrate run --pattern_mode strict ...
