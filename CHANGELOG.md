@@ -112,3 +112,16 @@ All notable changes to SubstrATE will be documented here.
 - test_classify_pul.py: added TestSubstrateTerms and TestFamilyMap
   covering all 25 substrates and removal of mixed_linkage_glucan
 - test_extract_seqs.py: no changes needed (signatures unchanged)
+
+### Fixed (session 3)
+- check_prodigal and needs_prodigal references removed from cli.py
+  _validate_tools() — caused AttributeError for any nucleotide input
+  after check_prodigal was removed from run_dbcan.py in session 2
+
+### Curation (session 3)
+- Batch 1 activity patterns curated: starch, cellulose, chitin, xylan,
+  pectin, beta_mannan, arabinoxylan, xyloglucan
+- 84 patterns marked reviewed=True across 8 substrates
+- Strict/permissive mode assigned per pattern based on substrate
+  specificity
+- Reviewed pattern files archived in curation/activity_patterns/
