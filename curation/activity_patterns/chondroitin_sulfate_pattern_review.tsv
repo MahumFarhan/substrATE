@@ -1,0 +1,13 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetylglucosaminidase	0		permissive	FALSE
+chondroitin	0		permissive	FALSE
+chondroitinase	0		permissive	FALSE
+dermatan	0		permissive	FALSE
+glucuronyl	2	"d-4,5-unsaturated beta-glucuronyl hydrolase"	permissive	TRUE
+glycan	0		permissive	FALSE
+glycosaminoglycans	0		permissive	FALSE
+hyaluronan	0		permissive	FALSE
+iduronidase	0		permissive	FALSE
+sulfate	0		permissive	FALSE
+sulfated	0		permissive	FALSE
+unsaturated	2	"d-4,5-unsaturated beta-glucuronyl hydrolase"	permissive	TRUE

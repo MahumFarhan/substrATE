@@ -1,0 +1,10 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+amylopullulanase	0		permissive	FALSE
+cyclodextrin	0		permissive	FALSE
+cyclomaltodextrinase	1	cyclomaltodextrinase	permissive	TRUE
+degradation	0		permissive	FALSE
+isopullulanase	0		permissive	FALSE
+maltodextrins	0		permissive	FALSE
+neopullulanase	0		permissive	FALSE
+pullulan	2	pullulanase	permissive	TRUE
+pullulanase	2	pullulanase	permissive	TRUE

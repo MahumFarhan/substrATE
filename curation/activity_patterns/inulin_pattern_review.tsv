@@ -1,0 +1,9 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+cycloinulo	0		permissive	FALSE
+fructan	0		permissive	FALSE
+fructanotransferase	0		permissive	FALSE
+fructosyltransferase	11	levan fructosyltransferase	permissive	TRUE
+inulin	0		permissive	FALSE
+inulinase	0		permissive	FALSE
+invertase	0		permissive	FALSE
+levanbiohydrolase	0		permissive	FALSE

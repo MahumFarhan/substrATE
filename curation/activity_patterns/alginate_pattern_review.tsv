@@ -1,0 +1,6 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+alginate	13	poly(beta-mannuronate) lyase / M-specific alginate lyase|alginate lyase (unspecified)|oligoalginate lyase / exo-alginate lyase|mannuronate-specific alginate lyase|guluronate-specific alginate lyase|oligo-alginate lyase	strict	TRUE
+glucuronan	0		permissive	FALSE
+guluronate	3	guluronate-specific alginate lyase	strict	TRUE
+mannuronate	4	poly(beta-mannuronate) lyase / M-specific alginate lyase|mannuronate-specific alginate lyase	strict	TRUE
+oligoalginate	1	oligoalginate lyase / exo-alginate lyase	strict	TRUE

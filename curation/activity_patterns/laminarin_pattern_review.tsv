@@ -1,0 +1,13 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+glucan	122	"xyloglucan:xyloglucosyl transferase|xyloglucan-specific endo-beta-1,4-glucanase|beta-1,3-glucanosyltransglycosylase|glucan endo-1,3-beta-D-glucosidase|endo-beta-1,4-glucanase (xanthanase)|endo-1,3(4)-beta-glucanase"	permissive	TRUE
+glucanase	29	"xyloglucan-specific endo-beta-1,4-glucanase|endo-beta-1,4-glucanase (xanthanase)|endo-1,3(4)-beta-glucanase"	permissive	TRUE
+glucanotransferase	0		permissive	FALSE
+glucans	0		permissive	FALSE
+glucosidase	23	"betalpha-glucosidase|glucan endo-1,3-beta-D-glucosidase|beta-D-glucopyranosyl abscisate betalpha-glucosidase"	permissive	TRUE
+laminaribiose	0		permissive	FALSE
+laminarin	0		permissive	FALSE
+laminarinase	0		permissive	FALSE
+lichenase	0		permissive	FALSE
+lichenin	0		permissive	FALSE
+licheninase	0		permissive	FALSE
+pustulan	0		permissive	FALSE

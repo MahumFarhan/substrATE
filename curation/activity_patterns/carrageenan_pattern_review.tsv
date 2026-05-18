@@ -1,0 +1,6 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+anhydro	0		permissive	FALSE
+carrageenan	0		permissive	FALSE
+carrageenans	0		permissive	FALSE
+carrageenase	4	kappa-carrageenase|Œπ-carrageenase|iota-carrageenase	strict	TRUE
+galactosidase	0		permissive	FALSE

@@ -1,0 +1,9 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetylglucosaminidase	0		permissive	FALSE
+chondroitin	1	chondroitin-sulfate-ABC endolyase	permissive	TRUE
+glycan	0		permissive	FALSE
+glycosaminoglycan	0		permissive	FALSE
+hyaluronan	0		permissive	FALSE
+hyaluronate	1	hyaluronate lyase	permissive	TRUE
+hyaluronidase	0		permissive	FALSE
+hyaluronoglucuronidase	0		permissive	FALSE

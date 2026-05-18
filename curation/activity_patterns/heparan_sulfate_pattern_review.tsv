@@ -1,0 +1,9 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+glucuronidase	0		permissive	FALSE
+glycan	0		permissive	FALSE
+heparan	0		permissive	FALSE
+heparanase	0		permissive	FALSE
+heparin	4	heparin-sulfate lyase|heparin lyase|heparin lyase / heparin lyase I	strict	TRUE
+iduronidase	0		permissive	FALSE
+proteoglycans	0		permissive	FALSE
+sulfate	2	heparin-sulfate lyase|chondroitin-sulfate-ABC endolyase	permissive	TRUE

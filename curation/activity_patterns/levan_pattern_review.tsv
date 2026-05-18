@@ -1,0 +1,10 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+fructan	0		permissive	FALSE
+fructanotransferase	0		permissive	FALSE
+fructans	0		permissive	FALSE
+fructosyltransferase	11	levan fructosyltransferase	permissive	TRUE
+graminan	0		permissive	FALSE
+levan	14	levanase|levan fructosyltransferase	strict	TRUE
+levanase	3	levanase	strict	TRUE
+levanbiohydrolase	0		permissive	FALSE
+levansucrase	0		permissive	FALSE
