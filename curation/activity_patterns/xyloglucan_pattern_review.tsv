@@ -1,0 +1,12 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetylesterase	1	Acetylesterase	permissive	TRUE
+cellobiohydrolase	0		permissive	FALSE
+galactomannan	0		permissive	FALSE
+galactoxyloglucan	0		permissive	FALSE
+glucomannan	0		permissive	FALSE
+isoprimeverose	0		permissive	FALSE
+oligoxyloglucan	0		permissive	FALSE
+xyloglucan	0		permissive	FALSE
+xyloglucanase	0		permissive	FALSE
+xyloglucosyltransferase	0		permissive	FALSE
+xylosidase	6	"xylan 1,4-betalpha-xylosidase"	strict	TRUE

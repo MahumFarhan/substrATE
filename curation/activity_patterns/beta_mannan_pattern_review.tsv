@@ -1,0 +1,24 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetyl	2	Acetylmannan esterase	permissive	TRUE
+acetylmannan	2	Acetylmannan esterase	permissive	TRUE
+galactofuranosidase	29	beta-D-galactofuranosidase|betalpha-galactofuranosidase	strict	TRUE
+galactomannan	0		permissive	FALSE
+galactomannans	0		permissive	FALSE
+galactosidase	34	"alphalpha-galactosidase|betalpha-galactosidase|raffinose exo-a-1,6-galactosidase"	permissive	TRUE
+galactoxyloglucan	0		permissive	FALSE
+glucomannan	0		permissive	FALSE
+glucosamine	0		permissive	FALSE
+glucosidase	7	alphalpha-glucosidase	permissive	TRUE
+glycan	0		permissive	FALSE
+mannan	10	"Acetylmannan esterase|mannan endo-1,6-alphalpha-mannosidase|reducing end mannan exo-b1,4-mannosidase|mannan 1,4-mannobiosidase"	strict	TRUE
+mannanase	0		permissive	FALSE
+mannans	0		permissive	FALSE
+mannobiohydrolase	0		permissive	FALSE
+mannobiose	0		permissive	FALSE
+mannooligosaccharide	2	"beta-1,4-mannooligosaccharide phosphorylase"	permissive	TRUE
+mannooligosaccharides	0		permissive	FALSE
+mannosidase	12	"beta-1,2-mannosidase|betalpha-mannosidase|mannan endo-1,6-alphalpha-mannosidase|reducing end mannan exo-b1,4-mannosidase"	strict	TRUE
+mannoside	6	betalpha-mannoside phosphorylase	strict	TRUE
+mannosyl	2	4-O-beta-D-mannosyl-D-glucose phosphorylase	strict	TRUE
+mannosylglucose	0		permissive	FALSE
+oligomannan	0		permissive	FALSE

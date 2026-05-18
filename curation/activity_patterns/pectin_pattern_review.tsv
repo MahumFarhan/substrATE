@@ -1,0 +1,46 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+aceric	0		permissive	FALSE
+acetylesterase	9	pectin acetylesterase	strict	TRUE
+amylopectin	0		permissive	FALSE
+apiosidase	0		permissive	FALSE
+arabinan	1	"exo-alpha-L-1,5-arabinanase"	strict	TRUE
+arabinanase	1	"exo-alpha-L-1,5-arabinanase"	strict	TRUE
+arabinofuranosidase	5	beta-L-arabinofuranosidase|non-reducing end beta-L-arabinofuranosidase	strict	TRUE
+arabinopyranosidase	0		permissive	FALSE
+deoxy	1	2-keto-3-deoxy-D-lyxo-heptulosaric acid hydrolase	permissive	TRUE
+endolyase	6	rhamnogalacturonan endolyase	permissive	TRUE
+esterified	0		permissive	FALSE
+exolyase	1	rhamnogalacturonan exolyase	permissive	TRUE
+exopolygalacturonate	0		permissive	FALSE
+fucosidase	4	alpha-L-fucosidase	strict	TRUE
+galactosidase	16	betalpha-galactosidase	permissive	TRUE
+galactoside	0		permissive	FALSE
+galacturonan	44	"rhamnogalacturonan alpha-L-rhamnohydrolase|rhamnogalacturonan rhamnohydrolase|rhamnogalacturonan galacturonohydrolase|galacturonan 1,4-alpha-galacturonidase|xylogalacturonan hydrolase|rhamnogalacturonan endolyase|rhamnogalacturonan exolyase"	permissive	TRUE
+galacturonase	0		permissive	FALSE
+galacturonate	0		permissive	FALSE
+galacturonidase	12	"d-4,5-unsaturated alpha-galacturonidase|galacturonan 1,4-alpha-galacturonidase"	strict	TRUE
+galacturonides	0		permissive	FALSE
+galacturonohydrolase	6	rhamnogalacturonan galacturonohydrolase	permissive	TRUE
+glucosidase	10	"alphalpha-glucosidase|6-phospho-betalpha-glucosidase|glucan endo-1,3-beta-D-glucosidase|oligo-1,6-glucosidase"	permissive	TRUE
+heptulosaric	1	2-keto-3-deoxy-D-lyxo-heptulosaric acid hydrolase	strict	TRUE
+homogalacturonan	0		permissive	FALSE
+kdnase	0		permissive	FALSE
+methylesterase	9	pectin methylesterase|Pectin methylesterase	strict	TRUE
+nononic	0		permissive	FALSE
+oligo	1	"oligo-1,6-glucosidase"	permissive	TRUE
+oligogalacturonate	0		permissive	FALSE
+oligogalacturonide	0		permissive	FALSE
+pectate	5	pectate lyase	strict	TRUE
+pectin	19	pectin acetylesterase|pectinesterase|pectin methylesterase|Pectin methylesterase	strict	TRUE
+polygalacturonan	0		permissive	FALSE
+polygalacturonase	0		permissive	FALSE
+polygalacturonate	0		permissive	FALSE
+polygalacturonic	0		permissive	FALSE
+polygalacturonosidase	0		permissive	FALSE
+rhamnogalacturonan	16	rhamnogalacturonan alpha-L-rhamnohydrolase|rhamnogalacturonan rhamnohydrolase|rhamnogalacturonan galacturonohydrolase|rhamnogalacturonan endolyase|rhamnogalacturonan exolyase	strict	TRUE
+rhamnogalacturonase	0		permissive	FALSE
+rhamnogalacturonyl	3	unsaturated rhamnogalacturonyl hydrolase	strict	TRUE
+rhamnohydrolase	3	rhamnogalacturonan alpha-L-rhamnohydrolase|rhamnogalacturonan rhamnohydrolase	strict	TRUE
+rhamnosidase	15	alpha-L-rhamnosidase	strict	TRUE
+unsaturated	9	"d-4,5-unsaturated alpha-galacturonidase|unsaturated rhamnogalacturonyl hydrolase"	permissive	TRUE
+xylogalacturonan	22	xylogalacturonan hydrolase	strict	TRUE

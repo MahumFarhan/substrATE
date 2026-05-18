@@ -1,0 +1,15 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetylglucosaminidase	12	"mannosyl-glycoprotein endo-beta-N-acetylglucosaminidase|beta-1,6-N-acetylglucosaminidase"	strict	TRUE
+acetylhexosaminidase	15	beta-N-acetylhexosaminidase|beta-N-acetylhexosaminidase (favor GlcNAc)	strict	TRUE
+chitin	45	chitin deacetylase|chitinase|lytic chitin monooxygenase	strict	TRUE
+chitinase	40	chitinase	strict	TRUE
+chitobiose	7	diacetylchitobiose deacetylase	strict	TRUE
+chitodextrin	0		permissive	FALSE
+chitosan	0		permissive	FALSE
+diacetylchitobiose	7	diacetylchitobiose deacetylase	strict	TRUE
+glcnac	2	beta-N-acetylhexosaminidase (favor GlcNAc)	permissive	FALSE
+glucan	1	"glucan endo-1,3-beta-D-glucosidase"	permissive	TRUE
+glucanosyltransferase	0		permissive	FALSE
+glucosaminidase	12	"mannosyl-glycoprotein endo-beta-N-acetylglucosaminidase|beta-1,6-N-acetylglucosaminidase"	permissive	TRUE
+hexosaminidase	15	beta-N-acetylhexosaminidase|beta-N-acetylhexosaminidase (favor GlcNAc)	strict	TRUE
+peptidoglycan	4	peptidoglycan-N-acetylglucosamine deacetylase	strict	TRUE

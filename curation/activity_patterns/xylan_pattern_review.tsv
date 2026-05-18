@@ -1,0 +1,29 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+acetyl	57	pectin acetylesterase|chitin deacetylase|Acetylmannan esterase|acetylxylan esterase|chitooligosaccharide deacetylase|acetyl xylan esterase|cephalosporin-C deacetylase|peptidoglycan-N-acetylglucosamine deacetylase|Acetylesterase|beta-N-acetylhexosaminidase	permissive	TRUE
+acetylesterase	10	pectin acetylesterase|Acetylesterase	permissive	TRUE
+acetylxylan	4	acetylxylan esterase	strict	TRUE
+arabinan	37	"arabinan exo-a-1,2-L-arabinofuranosidase|arabinan endo-1,5-alpha-L-arabinosidase"	strict	TRUE
+arabinofuranosidase	91	"non-reducing end alpha-L-arabinofuranosidase|alpha-L-arabinofuranosidase|arabinogalactan a-1,3-(arabinosyl)-L-arabinofuranosidase|arabinan exo-a-1,2-L-arabinofuranosidase"	strict	TRUE
+arabinogalactans	0		permissive	FALSE
+arabinopyranosidase	1	alpha-L-arabinopyranosidase	strict	TRUE
+arabinoxylans	0		permissive	FALSE
+endotransglycosylase	0		permissive	FALSE
+galactosidase	5	"betalpha-galactosidase|alphalpha-galactosidase|galactan 1,3-betalpha-galactosidase|alpha-L-galactosidase"	permissive	TRUE
+glucan	8	"glucan endo-1,6-betalpha-glucosidase|endo-beta-1,4-glucanase|lichenase / endo-beta-1,3-1,4-glucanase|endo-beta-1,3(4)-glucanase / lichenase-laminarinase"	permissive	TRUE
+glucanase	4	"endo-beta-1,4-glucanase|lichenase / endo-beta-1,3-1,4-glucanase|endo-beta-1,3(4)-glucanase / lichenase-laminarinase"	permissive	TRUE
+glucanotransferase	0		permissive	FALSE
+glucans	0		permissive	FALSE
+glucuronidase	3	alpha-(4-O-methyl)-glucuronidase|alpha-glucuronidase	strict	TRUE
+glucuronide	0		permissive	FALSE
+glucuronoarabinoxylan	0		permissive	FALSE
+glucuronoxylan	0		permissive	FALSE
+maltose	0		permissive	FALSE
+mannan	3	"Acetylmannan esterase|mannan 1,4-mannobiosidase"	strict	TRUE
+oligoxylanase	0		permissive	FALSE
+pectic	0		permissive	FALSE
+xylan	22	"Binding to xylans (birchwood and oat spelt)|acetylxylan esterase|acetyl xylan esterase|xylan 1,4-betalpha-xylosidase|endo-1,4-beta-xylanase|xylan alpha-1,2-glucuronosidase|oligosaccharide reducing-end xylanase"	strict	TRUE
+xylanase	3	"endo-1,4-beta-xylanase|oligosaccharide reducing-end xylanase"	strict	TRUE
+xylans	5	Binding to xylans (birchwood and oat spelt)	permissive	TRUE
+xylooligosaccharide	0		permissive	FALSE
+xylose	0		permissive	FALSE
+xylosidase	8	"xylan 1,4-betalpha-xylosidase"	strict	TRUE

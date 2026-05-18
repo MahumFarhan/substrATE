@@ -1,0 +1,9 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+arabinan	37	"arabinan exo-a-1,2-L-arabinofuranosidase|arabinan endo-1,5-alpha-L-arabinosidase"	strict	TRUE
+arabinofuranosidase	80	"alpha-L-arabinofuranosidase|non-reducing end alpha-L-arabinofuranosidase|arabinan exo-a-1,2-L-arabinofuranosidase"	permissive	TRUE
+arabinogalactans	0		permissive	FALSE
+arabinopyranosidase	1	alpha-L-arabinopyranosidase	permissive	TRUE
+arabinoxylan	0		permissive	FALSE
+arabinoxylans	0		permissive	FALSE
+xylanase	2	"endo-1,4-beta-xylanase"	strict	TRUE
+xylosidase	7	"xylan 1,4-betalpha-xylosidase"	strict	TRUE
