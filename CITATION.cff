@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use SubstrATE in your research, please cite it as below."
+message: "If you use SubstrATE in your research, please acknowledge it as below."
 type: software
 title: "SubstrATE: Substrate Annotation Tool for Enzymes"
 abstract: "A command-line pipeline for identifying and annotating
