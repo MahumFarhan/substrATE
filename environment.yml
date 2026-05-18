@@ -6,16 +6,15 @@ channels:
 dependencies:
   - python=3.13
   - pip
-  - biopython
-  - pandas
-  - click
+  - biopython=1.87
+  - pandas=3.0.2
+  - click=8.3.2
   - mafft=7.525
   - trimal=1.5
   - iqtree=3.1.1
   - clinker-py=0.0.32
-  - prodigal
   - dbcan=5.2.8
-  - requests
-  - beautifulsoup4
+  - requests=2.33.1
+  - beautifulsoup4=4.14.3
   - pip:
     - -e .
