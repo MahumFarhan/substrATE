@@ -28,9 +28,31 @@ SUSC_FAMILIES = ['1.B.14', '8.A.46']
 # Each substrate maps to a list of terms used as case-insensitive
 # substring matches against dbcan_pul_substrate and dbcansub_substrate.
 SUBSTRATE_TERMS = {
-    'laminarin': ['laminarin', 'beta-glucan'],
-    'glycogen':  ['glycogen', 'alpha-glucan'],
-    'pullulan':  ['pullulan', 'alpha-glucan'],
+    'agar':               ['agar', 'agarose', 'agaran'],
+    'alginate':           ['alginate'],
+    'arabinogalactan':    ['arabinogalactan', 'galactan'],
+    'arabinoxylan':       ['arabinoxylan', 'arabinan', 'xylan'],
+    'beta_mannan':        ['beta-mannan', 'mannan', 'glucomannan'],
+    'carrageenan':        ['carrageenan'],
+    'cellulose':          ['cellulose'],
+    'chitin':             ['chitin', 'peptidoglycan'],
+    'chondroitin_sulfate':['chondroitin'],
+    'fucoidan':           ['fucoidan', 'fucan'],
+    'glycogen':           ['glycogen', 'alpha-glucan'],
+    'heparan_sulfate':    ['heparan', 'heparin'],
+    'hyaluronic_acid':    ['hyaluronan', 'hyaluronic'],
+    'inulin':             ['inulin', 'fructan'],
+    'laminarin':          ['laminarin', 'beta-glucan'],
+    'levan':              ['levan', 'fructan'],
+    'lichenan':           ['lichenan', 'beta-glucan'],
+    'pectin':             ['pectin', 'polygalacturonate'],
+    'porphyran':          ['porphyran'],
+    'pullulan':           ['pullulan', 'alpha-glucan'],
+    'starch':             ['starch', 'alpha-glucan'],
+    'sucrose':            ['sucrose'],
+    'ulvan':              ['ulvan'],
+    'xylan':              ['xylan'],
+    'xyloglucan':         ['xyloglucan'],
 }
 
 # CAZyme families per substrate, derived from dbCAN fam-substrate-mapping.tsv.
