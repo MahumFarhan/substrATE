@@ -122,7 +122,7 @@ is the core output table — one row per gene hit, with columns for:
   `outside_CGC`
 - `activity` — enzymatic activity label from EXPASY/dbCAN
 
-![Family hits table](images/family_hits_table.png)
+![Family hits table](../Images/Tutorial_9.png)
 
 *The family hits table showing laminarin-relevant CAZymes in
 C. forsetii KT0803, with localisation and activity annotations.*
@@ -167,9 +167,9 @@ The annotation files colour sequences by:
 - **Activity** — enzymatic activity label
 - **Localisation** — canonical PUL, non-canonical CGC, or outside CGC
 
-![iTOL tree](images/Tutorial_5)
-![iTOL tree](images/Tutorial_6)
-![iTOL tree](images/Tutorial_8)
+![iTOL tree](../Images/Tutorial_5.png)
+![iTOL tree](../Images/Tutorial_6.png)
+![iTOL tree](../Images/Tutorial_8.png)
 
 *GH16 tree for C. forsetii KT0803 with sample and activity
 annotations. Reference sequences from CAZy are shown in grey.*
@@ -195,10 +195,11 @@ SubstrATE generates an interactive clinker synteny plot comparing all
 qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was run on *Christiangramia forsettii* KT0803 and *Zobellia galactanivorans* DSIJ. Open
 `clinker/laminarin_all_cgcs.html` in a web browser:
 
-![Clinker synteny plot](images/clinker_plot.png)
+![Clinker synteny plot](../Images/Tutorial_7.png)
+![Clinker synteny plot](../Images/Tutorial_10.png)
 
 *Clinker synteny plot showing gene organisation and homology across
-laminarin CGCs in C. forsetii KT0803. Coloured blocks represent
+laminarin CGCs in C. forsetii KT0803 and Zobellia galactanivorans DSIJ. Coloured blocks represent
 genes, connecting lines show homology.*
 
 The plot is interactive — hover over genes to see annotations, click
