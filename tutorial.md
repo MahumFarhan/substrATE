@@ -154,6 +154,14 @@ designed for use with [iTOL](https://itol.embl.de/) — upload the
 treefile and the annotation files from `itol_annotations/` to
 visualise them.
 
+> **Note on reproducibility:** Trees built in merge or denovo mode
+> are not fully reproducible between runs due to IQ-TREE2's stochastic
+> tree search. For reproducible results, fix the random seed:
+> ```bash
+> substrate run --seed 42 --substrate laminarin ...
+> ```
+> Place mode trees are fully reproducible without a seed.
+
 ### Uploading to iTOL
 
 1. Go to [itol.embl.de](https://itol.embl.de/) and create a free

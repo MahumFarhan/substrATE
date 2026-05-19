@@ -178,6 +178,16 @@ of available reference data.
 > `LG+G4 --fast` (no bootstrap) — sufficient as a placement backbone
 > but not publication quality. Per-family pipeline trees use full model
 > selection and bootstrap (`-m TEST -B 1000`).
+>
+> **Note on reproducibility:** Merge and denovo mode trees are not
+> fully reproducible between runs — IQ-TREE2 uses stochastic
+> hill-climbing and random starting trees. For reproducible results,
+> use `--seed` to fix the random seed:
+> ```bash
+> substrate run --seed 42 ...
+> ```
+> Place mode trees are fully reproducible without a seed since the
+> reference topology is fixed.
 
 ---
 
