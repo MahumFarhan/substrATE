@@ -7,9 +7,9 @@ as the target substrate.
 
 *Christiangramia forsetii* KT0803 is a marine Flavobacteriia isolated
 from the North Sea. It encodes a well-characterised laminarin PUL,
-making it an ideal test case for SubstrATE.
+making it an ideal test case for SubstrATE. CAUTION: Synteny plots will not render properly when only running one genome. See below for more detail. 
 
-**Time required:** ~20 minutes (dominated by dbCAN annotation)
+**Time required:** ~30 minutes with default 8 threads(dominated by dbCAN annotation)
 
 ---
 
@@ -84,7 +84,6 @@ Step 7/7: Clinker synteny plot...
   Pipeline complete (X.X min)
   ✓ laminarin    SUCCESS
 ```
-
 ---
 
 ## 3. Explore the output
@@ -168,7 +167,9 @@ The annotation files colour sequences by:
 - **Activity** — enzymatic activity label
 - **Localisation** — canonical PUL, non-canonical CGC, or outside CGC
 
-![iTOL tree](images/itol_tree.png)
+![iTOL tree](images/Tutorial_5)
+![iTOL tree](images/Tutorial_6)
+![iTOL tree](images/Tutorial_8)
 
 *GH16 tree for C. forsetii KT0803 with sample and activity
 annotations. Reference sequences from CAZy are shown in grey.*
@@ -191,7 +192,7 @@ substrate visualise \
 ## 5. Synteny plot
 
 SubstrATE generates an interactive clinker synteny plot comparing all
-qualifying laminarin CGCs. Open
+qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was run on *Christiangramia forsettii* KT0803 and *Zobellia galactanivorans* DSIJ. Open
 `clinker/laminarin_all_cgcs.html` in a web browser:
 
 ![Clinker synteny plot](images/clinker_plot.png)
@@ -295,3 +296,4 @@ substrate run \
 - **Custom substrates** — for substrates not in the built-in list,
   use `--substrate_terms` to provide search terms for automatic family
   derivation from the dbCAN database.
+
