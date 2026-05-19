@@ -264,6 +264,7 @@ times. If omitted, runs survey mode.
 --overlap_threshold INT  Pattern overlap warning threshold  [default: 5]
 --substrate_terms TEXT   Search terms for custom substrate derivation
 --max_colours INT        Maximum samples before HSL colour generation
+--seed INT               Random seed for IQ-TREE2 (reproducible trees)
 
 ### Survey mode
 
