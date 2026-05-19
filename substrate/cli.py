@@ -232,6 +232,8 @@ def main():
 @click.option('--output', required=True, type=click.Path(),
               help='Base output directory. Each substrate gets its own '
                    'subdirectory: <output>/<substrate>/')
+@click.option('--seed', default=None, type=int,
+              help='Random seed for IQ-TREE2 (for reproducible trees).')
 @click.option('--threads', default=8, show_default=True,
               help='Number of threads for MAFFT and IQ-TREE2')
 @click.option('--pul_mode', default='bacteroidetes', show_default=True,
@@ -270,7 +272,7 @@ def main():
               help='Comma-separated search terms for custom substrate '
                    'family derivation (only needed for substrates not '
                    'in the built-in list)')
-def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
+def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
         ref_metadata, ref_seqs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
         max_colours, denovo, pattern_mode, overlap_threshold,
@@ -659,6 +661,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                                 threads=threads,
                                 log_path=iqtree_log,
                                 fast=True,
+                                seed=seed,
                             )
                         else:
                             aligned = align.align(
@@ -680,6 +683,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb,
                                     tree_dir, family),
                                 threads=threads,
                                 log_path=iqtree_log,
+                                seed=seed,
                             )
 
                         _success(f"{family} tree built [{tree_mode}]")
@@ -912,7 +916,8 @@ def tree_cmd(substrate, output, threads):
                                        f'{sub}_trimal.log'))
                 tree.build_tree(trimmed, tree_prefix, threads,
                                 log_path=os.path.join(
-                                    log_dir, f'{sub}_iqtree.log'))
+                                    log_dir, f'{sub}_iqtree.log'),
+                                seed=seed)
                 _success(f"{family} done")
             except TooFewSequencesError as e:
                 _warn(f"Skipping {family}: {e}")

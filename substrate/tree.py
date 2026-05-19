@@ -86,7 +86,7 @@ MIN_SEQUENCES = 4
 
 
 def place_sequences(combined_aln_path, ref_treefile, output_prefix,
-                    threads=8, log_path=None):
+                    threads=8, log_path=None, seed=None):
     """
     Build a tree using a reference tree as a starting topology.
 
@@ -137,6 +137,8 @@ def place_sequences(combined_aln_path, ref_treefile, output_prefix,
         '--quiet',
         '--redo',
     ]
+    if seed is not None:
+        cmd.extend(['-seed', str(seed)])
 
     if log_path:
         with open(log_path, 'a') as log:
@@ -154,7 +156,8 @@ def place_sequences(combined_aln_path, ref_treefile, output_prefix,
 
 
 def build_tree(trimmed_path, output_prefix, threads=8,
-               bootstrap=1000, log_path=None, fast=False):
+               bootstrap=1000, log_path=None, fast=False,
+               seed=None):
     """
     Build a maximum likelihood tree using IQ-TREE2.
 
@@ -198,6 +201,8 @@ def build_tree(trimmed_path, output_prefix, threads=8,
             '--quiet',
             '--redo',
         ]
+        if seed is not None:
+            cmd.extend(['-seed', str(seed)])
     else:
         cmd = [
             binary,
@@ -209,6 +214,8 @@ def build_tree(trimmed_path, output_prefix, threads=8,
             '--quiet',
             '--redo',
         ]
+        if seed is not None:
+            cmd.extend(['-seed', str(seed)])
 
     if log_path:
         with open(log_path, 'a') as log:
