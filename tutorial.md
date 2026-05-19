@@ -7,9 +7,9 @@ as the target substrate.
 
 *Christiangramia forsetii* KT0803 is a marine Flavobacteriia isolated
 from the North Sea. It encodes a well-characterised laminarin PUL,
-making it an ideal test case for SubstrATE. CAUTION: Synteny plots will not render properly when only running one genome. See below for more detail. 
+making it an ideal test case for SubstrATE. **CAUTION: Synteny plots will not render properly when only running one genome. See below for more detail.** 
 
-**Time required:** ~30 minutes with default 8 threads(dominated by dbCAN annotation)
+**Time required:** ~30 minutes with default 8 threads (dominated by dbCAN annotation)
 
 ---
 
@@ -111,7 +111,7 @@ results/tutorial/
 
 ### Family hits
 
-Open `laminarin_family_hits.tsv` in a spreadsheet application. This
+To see family hits, open `laminarin_family_hits.tsv` in a spreadsheet application. This
 is the core output table — one row per gene hit, with columns for:
 
 - `sample` — genome name
@@ -129,14 +129,14 @@ C. forsetii KT0803, with localisation and activity annotations.*
 
 ### Activity annotation
 
-Open `laminarin_activity_annotated.tsv`. This extends the family hits
+To see activity annotation, open `laminarin_activity_annotated.tsv`. This extends the family hits
 table with primary EC numbers and includes reference sequences from
 CAZy alongside your genomic sequences. It is used as input for iTOL
 annotations and tree interpretation.
 
 ### Substrate hits
 
-Open `laminarin_substrate_hits.tsv`. This shows CGCs where dbCAN's
+To see substrate hits, open `laminarin_substrate_hits.tsv`. This shows CGCs where dbCAN's
 substrate prediction tool identified laminarin as a likely substrate,
 providing an independent line of evidence alongside the CAZyme family
 matching.
@@ -167,8 +167,10 @@ The annotation files colour sequences by:
 - **Activity** — enzymatic activity label
 - **Localisation** — canonical PUL, non-canonical CGC, or outside CGC
 
-![iTOL tree](Images/Tutorial_5.png)
+![iTOL tree](Images/Tutorial_11.png)
+
 ![iTOL tree](Images/Tutorial_6.png)
+
 ![iTOL tree](Images/Tutorial_8.png)
 
 *GH16 tree for C. forsetii KT0803 with sample and activity
@@ -177,7 +179,7 @@ annotations. Reference sequences from CAZy are shown in grey.*
 ### Customising colours
 
 SubstrATE generates a colour configuration file at
-`laminarin_colour_config.tsv`. Open it in a spreadsheet, edit the
+`laminarin_colour_config.tsv`. If you want to adjust the colours used for the tree, open this file as a spreadsheet, edit the
 colour assignments, and regenerate the iTOL annotations without
 rebuilding the tree:
 
@@ -192,10 +194,13 @@ substrate visualise \
 ## 5. Synteny plot
 
 SubstrATE generates an interactive clinker synteny plot comparing all
-qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was run on *Christiangramia forsettii* KT0803 and *Zobellia galactanivorans* DSIJ. Open
+qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsettii* KT0803 and *Zobellia galactanivorans* DSIJ. Open
 `clinker/laminarin_all_cgcs.html` in a web browser:
 
 ![Clinker synteny plot](Images/Tutorial_7.png)
+
+*Clinker synteny plot showing a greyed out PUL CGC diagram for the singular C. forsettii KT0803 genome which has nothing to compare to.*
+
 ![Clinker synteny plot](Images/Tutorial_10.png)
 
 *Clinker synteny plot showing gene organisation and homology across
