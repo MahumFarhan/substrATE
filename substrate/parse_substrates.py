@@ -17,7 +17,7 @@ via --substrate_terms in a future update.
 import os
 import re
 import pandas as pd
-from substrate.classify_pul import FAMILY_MAP, SUBSTRATE_TERMS
+from substrate.classify_pul import FAMILY_MAP, SUBSTRATE_TERMS, classify_cgc
 
 # ── Path to data files ────────────────────────────────────────────────────────
 
