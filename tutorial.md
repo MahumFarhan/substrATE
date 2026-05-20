@@ -202,20 +202,20 @@ substrate visualise \
 ## 5. Synteny plot
 
 SubstrATE generates an interactive clinker synteny plot comparing all
-qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsettii* KT0803 and *Zobellia galactanivorans* DSIJ. Open
+qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsettii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212 for the sake of showing what the plot should actually look like. Open
 `clinker/laminarin_all_cgcs.html` in a web browser:
 
 ![Clinker synteny plot](Images/Tutorial_7.png)
 
 *Clinker synteny plot showing a greyed out PUL CGC diagram for the singular C. forsettii KT0803 genome which has nothing to compare to.*
 
-![Clinker synteny plot](Images/Tutorial_10.png)
+![Clinker synteny plot](Images/Tutorial_12.png)
 
 *Clinker synteny plot showing gene organisation and homology across
-laminarin CGCs in C. forsetii KT0803 and Zobellia galactanivorans DSIJ. Coloured blocks represent
+laminarin CGCs in *Christiangramia forsettii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212. Coloured blocks represent
 genes, connecting lines show homology.*
 
-The plot is interactive — hover over genes to see annotations, click
+The plot is interactive (when opened as an .html in browser) — hover over genes to see annotations, click
 to highlight homologous groups, and use the controls to adjust the
 layout.
 
