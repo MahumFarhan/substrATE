@@ -2,9 +2,14 @@
 
 All notable changes to SubstrATE will be documented here.
 
-## [Unreleased]
+## [0.1.0] - 2025-05-21
 
 ### Added
+- download-patterns command — downloads latest curated activity_patterns.tsv
+  from GitHub releases, checks installed version, prompts for confirmation
+  before overwriting; --force flag skips prompt
+- activity_patterns_version.txt written to substrate/data/ on download,
+  tracks installed release tag for version comparison
 - Strict/permissive activity pattern modes via --pattern_mode flag
   (default: permissive)
 - load_patterns() as single authoritative pattern loader in
@@ -47,7 +52,7 @@ All notable changes to SubstrATE will be documented here.
 - Noise tokens removed from activity_patterns.tsv across all substrates
 - Parse artifacts removed (glycosaminoglycan, with trailing comma)
 
-## [0.1.0] - 2025-04-24
+## [0.0.1] - 2025-04-24
 
 ### Initial release
 - Full pipeline from genome FASTA to phylogenetic trees and synteny plots
