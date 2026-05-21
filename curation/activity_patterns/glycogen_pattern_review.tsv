@@ -1,0 +1,11 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+amylase	20	alpha-amylase|isoamylase|beta-amylase	permissive	TRUE
+amylo	1	"amylo-alpha-1,6-glucosidase"	strict	TRUE
+amylose	0		permissive	FALSE
+glucan	12	"1,4-alpha-glucan branching enzyme"	strict	TRUE
+glucanotransferase	0		permissive	FALSE
+glucodextranase	0		permissive	FALSE
+glucosidase	10	"alphalpha-glucosidase|amylo-alpha-1,6-glucosidase"	strict	TRUE
+glucosyltransferase	0		permissive	FALSE
+glycogen	1	glycogen phosphorylase	permissive	TRUE
+isoamylase	5	isoamylase	permissive	TRUE

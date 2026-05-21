@@ -1,0 +1,7 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+agarase	35	beta-agarase	permissive	TRUE
+agarose	0		permissive	FALSE
+galactose	0		permissive	FALSE
+porphyran	6	beta-porphyranase	strict	TRUE
+porphyranase	6	beta-porphyranase	strict	TRUE
+sulfate	0		permissive	FALSE

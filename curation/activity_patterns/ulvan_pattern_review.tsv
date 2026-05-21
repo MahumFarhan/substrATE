@@ -1,0 +1,5 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+glucuronyl	0		permissive	FALSE
+rhamnosidase	11	alpha-L-rhamnosidase	strict	TRUE
+ulvan	0		permissive	FALSE
+unsaturated	10	"d-4,5-unsaturated alpha-galacturonidase|unsaturated rhamnogalacturonyl hydrolase"	permissive	TRUE

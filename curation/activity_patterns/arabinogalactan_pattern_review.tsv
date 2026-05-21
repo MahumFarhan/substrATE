@@ -1,0 +1,19 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+antigen	0		permissive	FALSE
+arabinan	30	"arabinan exo-a-1,2-L-arabinofuranosidase|arabinan endo-1,5-alpha-L-arabinosidase"	strict	TRUE
+arabinofuranosidase	69	"beta-L-arabinofuranosidase|non-reducing end beta-L-arabinofuranosidase|non-reducing end alpha-L-arabinofuranosidase|arabinan exo-a-1,2-L-arabinofuranosidase|alpha-L-arabinofuranosidase"	strict	TRUE
+arabinogalactan	2	"arabinogalactan exo-b-1,6-galactobiosidase|arabinogalactan endo-beta-1,4-galactanase"	strict	TRUE
+arabinogalactans	0		permissive	FALSE
+arabinopyranosidase	0		permissive	FALSE
+arabinoxylans	0		permissive	FALSE
+galactan	30	"arabinogalactan exo-b-1,6-galactobiosidase|galactan exo-b-1,4-galactosidase|galactan 1,3-betalpha-galactosidase|arabinogalactan endo-beta-1,4-galactanase"	permissive	TRUE
+galactanase	1	"arabinogalactan endo-beta-1,4-galactanase"	permissive	FALSE
+galactofuranosidase	2	betalpha-galactofuranosidase	strict	TRUE
+galactomannan	0		permissive	FALSE
+galactosidase	39	"alphalpha-galactosidase|galactan exo-b-1,4-galactosidase|betalpha-galactosidase|galactan 1,3-betalpha-galactosidase"	strict	TRUE
+galactoside	0		permissive	FALSE
+glucuronate	0		permissive	FALSE
+glucuronidase	5	"alpha-(4-O-methyl)-glucuronidase|beta-1,6-D-glucuronidase"	permissive	TRUE
+methyl	2	alpha-(4-O-methyl)-glucuronidase	permissive	TRUE
+rhamnose	0		permissive	FALSE
+rhamnosidase	11	alpha-L-rhamnosidase	strict	TRUE

@@ -1,0 +1,18 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+amylosucrase	0		permissive	FALSE
+dextransucrase	0		permissive	FALSE
+disaccharides	0		permissive	FALSE
+fructan	0		permissive	FALSE
+fructanotransferase	0		permissive	FALSE
+fructosidase	0		permissive	FALSE
+fructosyltransferase	11	levan fructosyltransferase	strict	TRUE
+glucosidase	9	alphalpha-glucosidase	permissive	TRUE
+invertase	0		permissive	FALSE
+isomaltase	0		permissive	FALSE
+isomaltulose	2	isomaltulose synthase	strict	TRUE
+levanbiohydrolase	0		permissive	FALSE
+levansucrase	0		permissive	FALSE
+maltose	0		permissive	FALSE
+phosphate	0		permissive	FALSE
+sucrase	0		permissive	FALSE
+sucrose	0		permissive	FALSE

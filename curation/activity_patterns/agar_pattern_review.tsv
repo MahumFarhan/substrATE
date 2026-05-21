@@ -1,0 +1,10 @@
+pattern	genes_matched	activities	pattern_mode	reviewed
+agarase	35	beta-agarase	strict	TRUE
+agarobiose	7	"agarobiose exo-a-1,3-anhydro-L-galactosidase"	strict	TRUE
+agarose	0		permissive	FALSE
+anhydro	7	"agarobiose exo-a-1,3-anhydro-L-galactosidase"	permissive	TRUE
+galactofuranosidase	0		permissive	FALSE
+galactosidase	7	"agarobiose exo-a-1,3-anhydro-L-galactosidase"	permissive	TRUE
+neoagaro	5	alpha-neoagaro-oligosaccharide hydrolase	strict	TRUE
+neoagarose	0		permissive	FALSE
+porphyranase	5	beta-porphyranase	permissive	TRUE
