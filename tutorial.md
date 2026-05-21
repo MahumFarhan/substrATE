@@ -143,7 +143,47 @@ matching.
 
 ---
 
-## 4. Phylogenetic trees
+## 4. Activity patterns
+
+After each run, SubstrATE writes a `{substrate}_pattern_review.tsv` file
+to the substrate output directory. For this tutorial run it will be at:
+
+```
+results/laminarin/laminarin_pattern_review.tsv
+```
+
+Open it to see which activity patterns matched genes in your dataset,
+how many genes matched each pattern, and whether each pattern is marked
+`reviewed=True` or `reviewed=False`.
+
+Patterns marked `reviewed=True` have been manually inspected against
+characterised reference strains and are used preferentially. Patterns
+marked `reviewed=False` are auto-derived from the dbCAN
+fam-substrate-mapping database. If SubstrATE prints a warning about
+unreviewed patterns, it means the bundled `activity_patterns.tsv` has
+not yet been updated with the latest curated release.
+
+### Downloading the latest curated patterns
+
+To download the latest curated `activity_patterns.tsv` from GitHub
+releases:
+
+```bash
+substrate download-patterns
+```
+
+SubstrATE checks your installed version against the latest release and
+prompts for confirmation before overwriting. Use `--force` to skip the
+prompt:
+
+```bash
+substrate download-patterns --force
+```
+
+After downloading, re-run the pipeline to apply the updated patterns.
+
+---
+## 5. Phylogenetic trees
 
 SubstrATE builds a separate tree for each CAZyme family with enough
 sequences. For laminarin, trees are built for GH16, GH17, GH55, and
@@ -199,7 +239,7 @@ substrate visualise \
 
 ---
 
-## 5. Synteny plot
+## 6. Synteny plot
 
 SubstrATE generates an interactive clinker synteny plot comparing all
 qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsettii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212 for the sake of showing what the plot should actually look like. Open
@@ -221,7 +261,7 @@ layout.
 
 ---
 
-## 6. Interpreting results
+## 7. Interpreting results
 
 ### PUL classification
 
@@ -257,7 +297,7 @@ GH16 and GH17 family enzymes. You should see at least one
 
 ---
 
-## 7. Running on multiple genomes
+## 8. Running on multiple genomes
 
 To compare laminarin PULs across multiple genomes, place all FASTA
 files in a single directory and pass it to `--genomes`:
@@ -292,7 +332,7 @@ substrate run \
 
 ---
 
-## 8. Next steps
+## 9. Next steps
 
 - **Analyse additional substrates** — add `--substrate alginate`,
   `--substrate fucoidan` etc. to the same run. SubstrATE runs all
@@ -300,8 +340,16 @@ substrate run \
   regardless of how many substrates you analyse.
 
 - **Survey mode** — not sure which substrates are present in your
-  dataset? Run without `--substrate` to get a ranked overview of all
-  substrates with hits.
+  dataset? Omit `--substrate` from `substrate run` to get a ranked
+  overview of all substrates with hits, then select interactively.
+  To survey existing dbCAN output without re-running annotation:
+  ```bash
+  substrate survey \
+      --dbcan_output /path/to/cgc_output/ \
+      --db_dir ~/db \
+      --expasy /path/to/enzyme.dat \
+      --tcdb /path/to/tc_family_definitions.tsv
+  ```
 
 - **Strict pattern mode** — use `--pattern_mode strict` for more
   conservative CGC filtering, retaining only CGCs with highly
