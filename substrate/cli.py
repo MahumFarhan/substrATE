@@ -28,7 +28,8 @@ from substrate.run_dbcan import ToolNotFoundError as DbcanToolError
 
 _DATA_DIR      = os.path.join(os.path.dirname(__file__), 'data')
 _COLOURS_FILE  = os.path.join(_DATA_DIR, 'default_colours.tsv')
-_PATTERNS_FILE = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
+_PATTERNS_FILE         = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
+_PATTERNS_VERSION_FILE = os.path.join(_DATA_DIR, 'activity_patterns_version.txt')
 _REF_SEQS_DIR  = os.path.join(_DATA_DIR, 'reference_seqs', 'by_family')
 _REF_TREES_DIR = os.path.join(_DATA_DIR, 'reference_trees')
 
@@ -1069,6 +1070,97 @@ def list_substrates():
 
 
 
+
+
+# ── download-patterns subcommand ──────────────────────────────────────────────
+
+@main.command('download-patterns')
+@click.option('--force', is_flag=True, default=False,
+              help='Skip confirmation prompt and overwrite without asking')
+def download_patterns(force):
+    """
+    Download the latest curated activity_patterns.tsv from GitHub releases.
+
+    Checks the current installed version against the latest GitHub release
+    and skips the download if already up to date. If a newer version is
+    available, prompts for confirmation before overwriting the bundled
+    activity_patterns.tsv.
+
+    Use --force to skip the confirmation prompt.
+    """
+    import urllib.request
+    import json
+    import shutil
+    import tempfile
+
+    api_url = 'https://api.github.com/repos/MahumFarhan/substrATE/releases/latest'
+
+    # ── Check latest release ───────────────────────────────────────────────
+    click.echo("Checking latest release...")
+    try:
+        req = urllib.request.Request(api_url,
+                                     headers={'Accept': 'application/vnd.github+json',
+                                              'User-Agent': 'substrATE'})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            release = json.loads(resp.read().decode())
+    except Exception as e:
+        raise click.ClickException(f"Could not reach GitHub releases API: {e}")
+
+    latest_tag = release.get('tag_name', '').strip()
+    if not latest_tag:
+        raise click.ClickException("Could not determine latest release tag.")
+
+    # ── Check local version ────────────────────────────────────────────────
+    local_tag = None
+    if os.path.exists(_PATTERNS_VERSION_FILE):
+        with open(_PATTERNS_VERSION_FILE, 'r') as f:
+            local_tag = f.read().strip()
+
+    if local_tag == latest_tag:
+        click.echo(f"  activity_patterns.tsv is already up to date ({latest_tag}).")
+        return
+
+    if local_tag:
+        click.echo(f"  Installed version : {local_tag}")
+    else:
+        click.echo(f"  Installed version : unknown (no version file found)")
+    click.echo(f"  Latest version    : {latest_tag}")
+
+    # ── Find asset URL ─────────────────────────────────────────────────────
+    asset_url = None
+    for asset in release.get('assets', []):
+        if asset['name'] == 'activity_patterns.tsv':
+            asset_url = asset['browser_download_url']
+            break
+
+    if not asset_url:
+        raise click.ClickException(
+            f"activity_patterns.tsv not found as a release asset in {latest_tag}.")
+
+    # ── Confirm overwrite ──────────────────────────────────────────────────
+    if not force:
+        click.confirm(
+            f"  Download and overwrite activity_patterns.tsv with {latest_tag}?",
+            abort=True)
+
+    # ── Download to temp file then replace ─────────────────────────────────
+    click.echo(f"  Downloading activity_patterns.tsv {latest_tag}...")
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.tsv') as tmp:
+            tmp_path = tmp.name
+            req = urllib.request.Request(asset_url,
+                                         headers={'User-Agent': 'substrATE'})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                shutil.copyfileobj(resp, tmp)
+    except Exception as e:
+        raise click.ClickException(f"Download failed: {e}")
+
+    shutil.move(tmp_path, _PATTERNS_FILE)
+
+    with open(_PATTERNS_VERSION_FILE, 'w') as f:
+        f.write(latest_tag + '\n')
+
+    _success(f"activity_patterns.tsv updated to {latest_tag}")
 
 # ── test-install subcommand ───────────────────────────────────────────────────
 

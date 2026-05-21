@@ -294,12 +294,15 @@ a,b,c      — comma-separated substrate names
 laminarin, alginate
 
 
-The survey can also be run independently on existing dbCAN output:
+To survey existing dbCAN output without re-running annotation, use the
+standalone `survey` subcommand:
 
 ```bash
 substrate survey \
     --dbcan_output /path/to/cgc_output/ \
     --db_dir ~/db \
+    --expasy /path/to/enzyme.dat \
+    --tcdb /path/to/tc_family_definitions.tsv \
     --output results/
 ```
 
@@ -331,7 +334,9 @@ substrate family-sizes --substrate laminarin
 substrate test-install
 
 # Survey existing dbCAN output
-substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db
+substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db \
+    --expasy /path/to/enzyme.dat \
+    --tcdb /path/to/tc_family_definitions.tsv
 ```
 
 ---
@@ -456,9 +461,37 @@ SubstrATE uses activity patterns to filter CGCs during GenBank file
 generation, retaining only CGCs with a minimum number of genes bearing
 substrate-relevant enzymatic activities.
 
-Patterns are stored in `substrate/data/activity_patterns.tsv` and
-are derived automatically from the dbCAN fam-substrate-mapping
-database. All patterns are initially marked `reviewed=False`.
+Patterns are stored in `substrate/data/activity_patterns.tsv`.
+The bundled patterns are pre-curated across all 25 supported substrates
+using characterised reference strains. Patterns marked `reviewed=True`
+have been manually inspected against reference strain dbCAN output and
+are used preferentially. Patterns marked `reviewed=False` are
+auto-derived from the dbCAN fam-substrate-mapping database and serve
+as a fallback.
+
+### Downloading curated patterns
+
+The latest curated `activity_patterns.tsv` is attached as a release
+asset on GitHub. To download and install it:
+
+```bash
+substrate download-patterns
+```
+
+This checks the installed version against the latest GitHub release and
+prompts for confirmation before overwriting. To skip the confirmation
+prompt:
+
+```bash
+substrate download-patterns --force
+```
+
+The installed version is recorded in
+`substrate/data/activity_patterns_version.txt`. If this file is absent
+(e.g. on a fresh clone before any download), the installed version is
+reported as unknown and a download will be offered.
+
+### Reviewing and curating patterns
 
 After running the pipeline, inspect the
 `{substrate}_pattern_review.tsv` report in each substrate output
