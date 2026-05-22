@@ -872,7 +872,9 @@ def classify(substrate, dbcan_output, db_dir, output, pul_mode,
                    'sequences/ from a previous run)')
 @click.option('--threads', default=8, show_default=True,
               help='Number of threads')
-def tree_cmd(substrate, output, threads):
+@click.option('--seed', default=None, type=int,
+              help='Random seed for IQ-TREE2 (for reproducible trees)')
+def tree_cmd(substrate, output, threads, seed):
     """Run alignment, trimming and tree building only."""
     for sub in substrate:
         sub_output_dir = os.path.join(output, sub)
