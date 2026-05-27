@@ -280,6 +280,12 @@ def load_colour_config(colour_config_path):
 def write_colour_strip(out_file, leaf_data, colour_map, title,
                        legend_title):
     """Write an iTOL DATASET_COLORSTRIP annotation file."""
+    # Filter legend to only values present in this family's data
+    present_values = set(leaf_data.values())
+    filtered_map = {k: v for k, v in colour_map.items()
+                    if k in present_values}
+    if not filtered_map:
+        filtered_map = colour_map
     with open(out_file, 'w') as f:
         f.write('DATASET_COLORSTRIP\n')
         f.write('SEPARATOR TAB\n')
@@ -287,11 +293,11 @@ def write_colour_strip(out_file, leaf_data, colour_map, title,
         f.write('COLOR\t#000000\n')
         f.write(f'LEGEND_TITLE\t{legend_title}\n')
         f.write('LEGEND_SHAPES\t' +
-                '\t'.join(['1'] * len(colour_map)) + '\n')
+                '\t'.join(['1'] * len(filtered_map)) + '\n')
         f.write('LEGEND_COLORS\t' +
-                '\t'.join(colour_map.values()) + '\n')
+                '\t'.join(filtered_map.values()) + '\n')
         f.write('LEGEND_LABELS\t' +
-                '\t'.join(colour_map.keys()) + '\n')
+                '\t'.join(filtered_map.keys()) + '\n')
         f.write('DATA\n')
         for leaf_id, value in leaf_data.items():
             colour = colour_map.get(value, '#cccccc')
