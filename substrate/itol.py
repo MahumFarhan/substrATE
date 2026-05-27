@@ -405,6 +405,17 @@ def parse_faa_annotations(faa_path, activity_map, sample_labels,
     return samples, localisations, activities, labels
 
 
+def _get_tree_leaf_ids(treefile_path):
+    """Extract all leaf IDs from a Newick treefile."""
+    if not os.path.exists(treefile_path):
+        return None
+    with open(treefile_path) as f:
+        tree_str = f.read()
+    # Leaf IDs are strings before : that follow ( or ,
+    import re
+    return set(re.findall(r'[,(]([^,()\[\]:]+):', tree_str))
+
+
 # ── Phase 1: assign colours and write config ──────────────────────────────────
 
 def assign_colours(seq_dir, output_dir, substrate, colours_file,
@@ -530,6 +541,19 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
         sample_data, localisation_data, activity_data, label_data = (
             parse_faa_annotations(
                 faa_path, activity_map, sample_labels, ref_label_map))
+
+        if not sample_data:
+            continue
+
+        # Filter to sequences present in the treefile
+        family_key = family[len(substrate)+1:] if family.startswith(f'{substrate}_') else family
+        treefile = os.path.join(output_dir, 'trees', f'{family_key}.treefile')
+        tree_ids = _get_tree_leaf_ids(treefile)
+        if tree_ids:
+            sample_data       = {k: v for k, v in sample_data.items()       if k in tree_ids}
+            localisation_data = {k: v for k, v in localisation_data.items() if k in tree_ids}
+            activity_data     = {k: v for k, v in activity_data.items()     if k in tree_ids}
+            label_data        = {k: v for k, v in label_data.items()        if k in tree_ids}
 
         if not sample_data:
             continue
