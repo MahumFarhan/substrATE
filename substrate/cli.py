@@ -1076,6 +1076,161 @@ def list_substrates():
 
 
 
+
+# ── check-db subcommand ────────────────────────────────────────────────────────
+
+@main.command('check-db')
+@click.option('--db_dir', required=True, type=click.Path(),
+              help='Path to dbCAN database directory')
+@click.option('--ref_seqs', default=None, type=click.Path(),
+              help='Path to reference sequences directory '
+                   '[default: substrate/data/reference_seqs]')
+@click.option('--ref_trees', default=None, type=click.Path(),
+              help='Path to reference trees directory '
+                   '[default: substrate/data/reference_trees]')
+def check_db(db_dir, ref_seqs, ref_trees):
+    """
+    Report database versions and check for newer curated activity patterns.
+
+    Checks:
+      - dbCAN HMM database version and CAZyDB date
+      - Activity patterns installed version vs latest GitHub release
+      - Reference sequence counts per substrate
+      - Reference tree counts
+
+    To refresh databases:
+      substrate build-reference-db --force ...
+      substrate build-reference-trees --force ...
+    """
+    import re
+    import glob
+    import urllib.request
+    import json
+    from substrate.classify_pul import SUBSTRATE_TERMS
+
+    _section('SubstrATE database status')
+
+    # ── dbCAN database ─────────────────────────────────────────────────────
+    click.echo('\ndbCAN database')
+    click.echo('  Path: ' + db_dir)
+
+    if not os.path.exists(db_dir):
+        _warn('db_dir does not exist')
+    else:
+        # HMM version — find dbCAN-HMMdb-V*.txt
+        hmm_files = [f for f in os.listdir(db_dir)
+                     if re.match(r'dbCAN-HMMdb-V\d+\.txt$', f)]
+        if hmm_files:
+            version = re.search(r'V(\d+)', hmm_files[0]).group(1)
+            click.echo(f'  HMM version  : V{version} ({hmm_files[0]})')
+        else:
+            _warn('Could not detect HMM version (no dbCAN-HMMdb-V*.txt found)')
+
+        # CAZyDB date — find CAZyDB.MMDDYYYY.fa
+        cazydb_files = [f for f in os.listdir(db_dir)
+                        if re.match(r'CAZyDB\.\d+\.fa$', f)]
+        if cazydb_files:
+            date_str = re.search(r'CAZyDB\.(\d+)\.fa', cazydb_files[0]).group(1)
+            click.echo(f'  CAZyDB date  : {date_str} ({cazydb_files[0]})')
+        else:
+            _warn('Could not detect CAZyDB date (no CAZyDB.*.fa found)')
+
+        # README last updated
+        readme = os.path.join(db_dir, 'README.txt')
+        if os.path.exists(readme):
+            with open(readme) as f:
+                for line in f:
+                    if 'Last updated' in line:
+                        click.echo(f'  Last updated : {line.split(":", 1)[1].strip()}')
+                        break
+
+    # ── Activity patterns ──────────────────────────────────────────────────
+    click.echo('\nActivity patterns')
+    local_tag = None
+    if os.path.exists(_PATTERNS_VERSION_FILE):
+        with open(_PATTERNS_VERSION_FILE) as f:
+            local_tag = f.read().strip()
+        click.echo(f'  Installed version : {local_tag}')
+    else:
+        click.echo('  Installed version : unknown (no version file)')
+
+    try:
+        api_url = ('https://api.github.com/repos/MahumFarhan/substrATE'
+                   '/releases/latest')
+        req = urllib.request.Request(
+            api_url,
+            headers={'Accept': 'application/vnd.github+json',
+                     'User-Agent': 'substrATE'})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            release = json.loads(resp.read().decode())
+        latest_tag = release.get('tag_name', '').strip()
+        if latest_tag:
+            click.echo(f'  Latest version    : {latest_tag}')
+            if local_tag and local_tag == latest_tag:
+                click.echo('  Status            : up to date')
+            else:
+                _warn(f'Newer patterns available ({latest_tag}). '
+                      f'Run: substrate download-patterns')
+    except Exception:
+        click.echo('  Latest version    : could not reach GitHub API')
+
+    # ── Reference sequences ────────────────────────────────────────────────
+    click.echo('\nReference sequences')
+    ref_seqs_path = ref_seqs or _REF_SEQS_DIR
+    all_substrates = list(SUBSTRATE_TERMS.keys())
+
+    if not os.path.exists(ref_seqs_path):
+        _warn(f'Reference sequences directory not found: {ref_seqs_path}')
+    else:
+        total_seqs  = 0
+        missing     = []
+        present     = 0
+        for sub in sorted(all_substrates):
+            sub_dir = os.path.join(ref_seqs_path, '..', sub)
+            # also check by_family for sequences
+            faa_files = glob.glob(
+                os.path.join(ref_seqs_path, f'*{sub}*.faa')) +                 glob.glob(os.path.join(ref_seqs_path, '..', sub, '*.faa'))
+            if not faa_files:
+                missing.append(sub)
+            else:
+                present += 1
+                for faa in faa_files:
+                    with open(faa) as f:
+                        total_seqs += sum(1 for l in f if l.startswith('>'))
+
+        click.echo(f'  Path     : {ref_seqs_path}')
+        click.echo(f'  Covered  : {present}/{len(all_substrates)} substrates')
+        click.echo(f'  Total    : {total_seqs} sequences')
+        if missing:
+            click.echo(f'  Missing  : {", ".join(missing)}')
+        click.echo('  To refresh: substrate build-reference-db --force --email ...')
+
+    # ── Reference trees ────────────────────────────────────────────────────
+    click.echo('\nReference trees')
+    ref_trees_path = ref_trees or _REF_TREES_DIR
+    if not os.path.exists(ref_trees_path):
+        _warn(f'Reference trees directory not found: {ref_trees_path}')
+    else:
+        # Trees are stored as subdirectories with a .treefile inside
+        families = []
+        for entry in os.listdir(ref_trees_path):
+            entry_path = os.path.join(ref_trees_path, entry)
+            if os.path.isdir(entry_path):
+                has_tree = any(f.endswith('.treefile')
+                               for f in os.listdir(entry_path))
+                if has_tree:
+                    families.append(entry)
+            elif entry.endswith('.treefile'):
+                families.append(entry.replace('.treefile', ''))
+        click.echo(f'  Path     : {ref_trees_path}')
+        click.echo(f'  Trees    : {len(families)} families')
+        if families:
+            click.echo(f'  Families : {", ".join(sorted(families)[:10])}'
+                       + (' ...' if len(families) > 10 else ''))
+        click.echo('  To refresh: substrate build-reference-trees --force')
+
+    click.echo('')
+
 # ── download-patterns subcommand ──────────────────────────────────────────────
 
 @main.command('download-patterns')
