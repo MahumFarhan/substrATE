@@ -144,6 +144,16 @@ This downloads characterised enzyme sequences from CAZy for all 25
 built-in substrates. The download takes approximately 30–60 minutes
 depending on your connection and NCBI load.
 
+To re-download sequences for all families, overwriting existing files:
+```bash
+substrate build-reference-db --force --email your@email.com ...
+```
+To re-download only specific substrates or families:
+```bash
+substrate build-reference-db --force --email your@email.com \
+    --substrates laminarin alginate
+```
+
 ### Step 2 — Build reference trees (optional)
 
 Reference trees are pre-built from characterised sequences and used
@@ -161,6 +171,15 @@ substrate build-reference-trees \
 This step is not required if you are happy with the default merge
 behaviour, where SubstrATE builds a de novo tree per family with
 reference sequences merged in automatically.
+
+To rebuild all reference trees, overwriting existing ones:
+```bash
+substrate build-reference-trees --force --threads 8
+```
+To rebuild trees for specific families only:
+```bash
+substrate build-reference-trees --force --families GH16 GH17
+```
 
 ### Tree building modes
 
