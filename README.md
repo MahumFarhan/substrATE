@@ -1,5 +1,7 @@
 # SubstrATE — Substrate Annotation Tool for Enzymes
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20327350.svg)](https://doi.org/10.5281/zenodo.20327350)
+
 SubstrATE is a command-line pipeline for identifying and annotating
 polysaccharide utilisation loci (PULs) and CAZyme gene clusters (CGCs)
 in bacterial genomes, with a focus on substrate specificity.
@@ -458,8 +460,19 @@ transporter co-localisation is not expected.
 > gene cluster systems. Archaeal genomes are not currently supported.
 > Use `--pul_mode cazyme_only` with caution for non-Bacteroidetes
 > organisms and interpret results accordingly.
->
-> ### Metagenomic input
+
+### Dataset scale
+
+SubstrATE is designed for moderate-scale datasets. As a guide:
+
+| Dataset size | Notes |
+|---|---|
+| 5–20 genomes | Intended sweet spot. Fast annotation, manageable trees. |
+| 20–100 genomes | Works well. dbCAN annotation takes longer; trees remain meaningful. |
+| 100–500 genomes | Feasible with `--skip_tree` or `--skip_clinker`. At this scale, pre-run dbCAN separately and pass `--dbcan_output` to avoid re-annotating. |
+| 500+ genomes | Not designed for this scale. Tree building requires `--skip_tree` or manual subsampling. |
+
+### Metagenomic input
 
 SubstrATE supports metagenomic-assembled genomes (MAGs) as input, with
 the following expectations and caveats:
