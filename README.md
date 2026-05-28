@@ -308,24 +308,55 @@ substrate survey \
 
 ### Individual steps
 
-```bash
-# Annotation only
+#### Annotation only
+````bash
 substrate annotate --genomes /path/to/genomes/ --db_dir ~/db \
     --output results/
+````
 
-# Classification only
+#### Classification only
+````bash
 substrate classify --substrate laminarin \
     --dbcan_output /path/to/cgc_output/ --db_dir ~/db --output results/
+````
 
-# Tree building only (uses existing sequences/ directory)
+#### Tree building only
+Rebuilds alignment, trimming, and trees from the existing `sequences/`
+directory produced by a previous run. Use this to regenerate trees
+without re-running annotation or classification, or to add `--seed`
+for reproducibility:
+````bash
 substrate tree --substrate laminarin --output results/ --threads 8
 
-# iTOL annotations only (regenerate after editing colour config)
+# With a fixed random seed for reproducible trees
+substrate tree --substrate laminarin --output results/ --threads 8 --seed 42
+````
+The `sequences/` directory must already exist from a previous
+`substrate run` or `substrate annotate` + `substrate classify` run.
+
+#### Regenerating iTOL annotations
+Regenerates iTOL annotation files from the existing `sequences/`
+directory. Use this after editing `{substrate}_colour_config.tsv`
+to apply custom colours, or after rebuilding trees:
+````bash
 substrate visualise --substrate laminarin --output results/
 
-# Clinker synteny only
-substrate synteny --substrate laminarin --output results/
+# Preserve existing colour config instead of regenerating colours
+substrate visualise --substrate laminarin --output results/ \
+    --colour_config results/laminarin/laminarin_colour_config.tsv
+````
+Annotation files are written to `results/laminarin/itol_annotations/`
+and contain only sequences present in the corresponding treefile.
 
+#### Clinker synteny only
+Regenerates clinker synteny plots from existing GenBank files:
+````bash
+substrate synteny --substrate laminarin --output results/
+````
+The `genbank/` directory must already exist from a previous run.
+
+#### Other utilities
+````bash
 # List built-in substrates and reference sequence counts
 substrate list-substrates
 substrate family-sizes --substrate laminarin
