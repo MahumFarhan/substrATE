@@ -901,13 +901,15 @@ def tree_cmd(substrate, output, threads, seed):
                 continue
 
             family      = faa_file.replace('.faa', '')
+            # Strip substrate prefix if already present in filename
+            family_key  = family[len(sub)+1:] if family.startswith(f'{sub}_') else family
             fasta_path  = os.path.join(seq_dir, faa_file)
             aligned     = os.path.join(align_dir,
-                                       f'{sub}_{family}.aln')
+                                       f'{sub}_{family_key}.aln')
             trimmed     = os.path.join(trimmed_dir,
-                                       f'{sub}_{family}.trim')
+                                       f'{sub}_{family_key}.trim')
             tree_prefix = os.path.join(tree_dir,
-                                       f'{sub}_{family}')
+                                       f'{sub}_{family_key}')
 
             try:
                 click.echo(f"  {family}...")

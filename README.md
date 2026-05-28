@@ -575,7 +575,17 @@ substrate run --overlap_threshold 3 ...   # increase sensitivity
 
 ## Acknowledgements
 
-Please cite the underlying tools that SubstrATE depends on:
+### Citing SubstrATE
+
+If you use SubstrATE in your research, please cite it as:
+
+> Farhan, M., & Universität Bremen. (2026). SubstrATE: Substrate Annotation Tool for Enzymes (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.20327350
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20327350.svg)](https://doi.org/10.5281/zenodo.20327350)
+
+### Citing underlying tools
+
+Please also cite the underlying tools that SubstrATE depends on:
 
 - **dbCAN**: Zheng J et al. (2023) dbCAN3: automated CAZyme and
   substrate annotation. *Nucleic Acids Research*.
