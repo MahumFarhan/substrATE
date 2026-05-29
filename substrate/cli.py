@@ -231,6 +231,9 @@ def main():
 @click.option('--ref_seqs', type=click.Path(), default=_REF_SEQS_DIR,
               help='Path to directory containing characterised '
                    'reference sequences')
+@click.option('--max_ref_seqs', type=int, default=50, show_default=True,
+              help='Maximum number of reference sequences to include per family '
+                   '(randomly subsampled if exceeded). Set to 0 to disable.')
 @click.option('--output', required=True, type=click.Path(),
               help='Base output directory. Each substrate gets its own '
                    'subdirectory: <output>/<substrate>/')
@@ -275,7 +278,7 @@ def main():
                    'family derivation (only needed for substrates not '
                    'in the built-in list)')
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
-        ref_metadata, ref_seqs, output, threads, pul_mode,
+        ref_metadata, ref_seqs, max_ref_seqs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
         max_colours, denovo, pattern_mode, overlap_threshold,
         substrate_terms):
@@ -545,6 +548,8 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                 substrate=sub,
                 ref_metadata=ref_metadata,
                 ref_seq_dir=ref_seqs,
+                max_ref_seqs=max_ref_seqs,
+                seed=seed,
             )
 
             if not fasta_paths:

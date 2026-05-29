@@ -143,7 +143,7 @@ def extract_genome_sequences(cgc_output_dir, hits_df):
 
 # ── Reference sequence appending ──────────────────────────────────────────────
 
-def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup):
+def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=None, seed=None):
     """
     Append characterised reference sequences to the family_seqs dict.
 
@@ -165,32 +165,31 @@ def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup):
         return family_seqs
 
     print("\nAppending reference sequences...")
-
+    import random as _random
+    ref_by_family = {}
     for ref_file in sorted(os.listdir(ref_seq_dir)):
         if not is_protein_fasta(ref_file):
             continue
-
         ref_path = os.path.join(ref_seq_dir, ref_file)
         for record in SeqIO.parse(ref_path, 'fasta'):
             accession = record.id.split()[0].split('|')[0]
-
             if accession not in ref_lookup:
-                print(f"  SKIPPING {accession} ({ref_file}) "
-                      f"— not in metadata for current substrate")
                 continue
-
             meta   = ref_lookup[accession]
             family = str(meta['family'])
-
             record.id = (f"Reference__{_clean_id(accession)}"
                          f"__{family}__characterised_reference")
             record.description = ''
-
-            if family not in family_seqs:
-                family_seqs[family] = []
-            family_seqs[family].append(record)
-            print(f"  Added {accession} -> {family} ({meta['label']})")
-
+            ref_by_family.setdefault(family, []).append(record)
+    rng = _random.Random(seed)
+    for family, records in ref_by_family.items():
+        if max_ref_seqs is not None and len(records) > max_ref_seqs:
+            records = rng.sample(records, max_ref_seqs)
+            print(f"  {family}: subsampled to {max_ref_seqs} reference sequences")
+        if family not in family_seqs:
+            family_seqs[family] = []
+        family_seqs[family].extend(records)
+        print(f"  {family}: added {len(records)} reference sequences")
     return family_seqs
 
 
@@ -241,7 +240,7 @@ def write_family_fastas(family_seqs, seq_dir, substrate):
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def extract_sequences(cgc_output_dir, hits_df, output_dir, substrate,
-                      ref_metadata=None, ref_seq_dir=None):
+                      ref_metadata=None, ref_seq_dir=None, max_ref_seqs=None, seed=None):
     """
     Full sequence extraction pipeline for one substrate.
 
@@ -275,7 +274,7 @@ def extract_sequences(cgc_output_dir, hits_df, output_dir, substrate,
     # Append reference sequences if provided
     if ref_seq_dir:
         family_seqs = append_reference_sequences(
-            family_seqs, ref_seq_dir, ref_lookup)
+            family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=max_ref_seqs, seed=seed)
 
     # Write output FASTAs
     seq_dir = os.path.join(output_dir, 'sequences')
