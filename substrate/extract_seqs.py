@@ -59,13 +59,13 @@ def _clean_id(seq_id):
 
 # ── Reference metadata loading ────────────────────────────────────────────────
 
-def load_ref_metadata(ref_metadata, substrate):
+def load_ref_metadata(ref_metadata, families):
     """
     Load reference sequence metadata filtered to the current substrate.
 
     Args:
         ref_metadata: path to reference_metadata.tsv
-        substrate:    substrate name to filter by
+        families:     collection of family names to include (e.g. ['GH16', 'GH3'])
 
     Returns:
         dict mapping accession string to metadata row (pandas Series),
@@ -76,10 +76,10 @@ def load_ref_metadata(ref_metadata, substrate):
         return {}
 
     ref_meta = pd.read_csv(ref_metadata, sep='\t')
-    ref_meta = ref_meta[ref_meta['substrate'] == substrate].copy()
+    ref_meta = ref_meta[ref_meta['family'].astype(str).isin(families)].copy()
     ref_lookup = {str(row['accession']): row
                   for _, row in ref_meta.iterrows()}
-    print(f"Loaded {len(ref_meta)} reference sequences for {substrate}")
+    print(f"Loaded {len(ref_meta)} reference sequences for families: {sorted(families)}")
     return ref_lookup
 
 
@@ -172,7 +172,7 @@ def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup):
 
         ref_path = os.path.join(ref_seq_dir, ref_file)
         for record in SeqIO.parse(ref_path, 'fasta'):
-            accession = record.id.split()[0]
+            accession = record.id.split()[0].split('|')[0]
 
             if accession not in ref_lookup:
                 print(f"  SKIPPING {accession} ({ref_file}) "
@@ -265,13 +265,12 @@ def extract_sequences(cgc_output_dir, hits_df, output_dir, substrate,
     print(f"Substrate: {substrate}")
     print(f"Total hits: {len(hits_df)}")
 
-    # Load reference metadata if provided
+    # Extract genomic sequences first so we know which families are present
+    family_seqs = extract_genome_sequences(cgc_output_dir, hits_df)
+    # Load reference metadata filtered to families present in this run
     ref_lookup = {}
     if ref_metadata:
-        ref_lookup = load_ref_metadata(ref_metadata, substrate)
-
-    # Extract genomic sequences
-    family_seqs = extract_genome_sequences(cgc_output_dir, hits_df)
+        ref_lookup = load_ref_metadata(ref_metadata, set(family_seqs.keys()))
 
     # Append reference sequences if provided
     if ref_seq_dir:
