@@ -238,7 +238,7 @@ def main():
               help='Base output directory. Each substrate gets its own '
                    'subdirectory: <output>/<substrate>/')
 @click.option('--seed', default=None, type=int,
-              help='Random seed for IQ-TREE2 (for reproducible trees).')
+              help='Random seed for IQ-TREE2 and reference sequence subsampling (for reproducible results).')
 @click.option('--threads', default=8, show_default=True,
               help='Number of threads for MAFFT and IQ-TREE2')
 @click.option('--pul_mode', default='bacteroidetes', show_default=True,
