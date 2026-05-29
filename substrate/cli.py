@@ -32,6 +32,7 @@ _PATTERNS_FILE         = os.path.join(_DATA_DIR, 'activity_patterns.tsv')
 _PATTERNS_VERSION_FILE = os.path.join(_DATA_DIR, 'activity_patterns_version.txt')
 _REF_SEQS_DIR  = os.path.join(_DATA_DIR, 'reference_seqs', 'by_family')
 _REF_TREES_DIR = os.path.join(_DATA_DIR, 'reference_trees')
+_REF_METADATA   = os.path.join(_DATA_DIR, 'reference_seqs', 'reference_metadata.tsv')
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -225,9 +226,9 @@ def main():
               help='Path to EXPASY enzyme.dat file')
 @click.option('--tcdb', required=True, type=click.Path(),
               help='Path to TCDB tc_family_definitions.tsv file')
-@click.option('--ref_metadata', type=click.Path(), default=None,
+@click.option('--ref_metadata', type=click.Path(), default=_REF_METADATA,
               help='Path to reference sequence metadata TSV')
-@click.option('--ref_seqs', type=click.Path(), default=None,
+@click.option('--ref_seqs', type=click.Path(), default=_REF_SEQS_DIR,
               help='Path to directory containing characterised '
                    'reference sequences')
 @click.option('--output', required=True, type=click.Path(),
@@ -939,7 +940,7 @@ def tree_cmd(substrate, output, threads, seed):
               help='Target substrate(s)')
 @click.option('--output', required=True, type=click.Path(),
               help='Base output directory')
-@click.option('--ref_metadata', type=click.Path(), default=None,
+@click.option('--ref_metadata', type=click.Path(), default=_REF_METADATA,
               help='Path to reference sequence metadata TSV')
 @click.option('--max_colours', default=None, type=int,
               help='Maximum number of sample colours to generate '
