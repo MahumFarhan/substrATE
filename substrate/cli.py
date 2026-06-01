@@ -725,6 +725,11 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
             itol_step = gbk_step + 1
             _step(itol_step, n_steps,
                   "iTOL annotation files")
+            # Clear stale annotations so regenerated files always match trees
+            itol_dir = os.path.join(sub_output_dir, 'itol_annotations')
+            if os.path.exists(itol_dir):
+                import shutil
+                shutil.rmtree(itol_dir)
 
             itol.generate_itol_annotations(
                 seq_dir=seq_dir,
