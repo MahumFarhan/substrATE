@@ -266,7 +266,7 @@ def annotate_hits(hits_df, expasy_file, fam_sub_map):
     return hits_df
 
 
-def annotate_references(ref_metadata, substrate):
+def annotate_references(ref_metadata, families):
     """
     Build activity annotation rows for reference sequences.
 
@@ -275,7 +275,7 @@ def annotate_references(ref_metadata, substrate):
 
     Args:
         ref_metadata: path to reference_metadata.tsv
-        substrate:    substrate name to filter by
+        families:     collection of family names to include
 
     Returns:
         DataFrame of reference annotation rows, or empty DataFrame if
@@ -286,7 +286,7 @@ def annotate_references(ref_metadata, substrate):
         return pd.DataFrame()
 
     ref_meta = pd.read_csv(ref_metadata, sep='\t')
-    ref_meta = ref_meta[ref_meta['substrate'] == substrate].copy()
+    ref_meta = ref_meta[ref_meta['family'].astype(str).isin(families)].copy()
 
     if ref_meta.empty:
         return pd.DataFrame()

@@ -507,7 +507,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
             if ref_metadata:
                 ref_rows = activity.annotate_references(
                     ref_metadata=ref_metadata,
-                    substrate=sub,
+                    families=set(family_hits['matched_family'].astype(str)),
                 )
                 if not ref_rows.empty:
                     _success(

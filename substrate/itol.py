@@ -341,13 +341,13 @@ def write_labels(out_file, leaf_data):
 
 # ── Reference label loading ───────────────────────────────────────────────────
 
-def load_ref_labels(ref_metadata, substrate):
+def load_ref_labels(ref_metadata, families):
     """
     Build accession -> label lookup from reference_metadata.tsv.
 
     Args:
         ref_metadata: path to reference_metadata.tsv
-        substrate:    substrate name to filter by
+        families:     collection of family names to include
 
     Returns:
         dict mapping cleaned accession string to label string
@@ -355,7 +355,7 @@ def load_ref_labels(ref_metadata, substrate):
     if not os.path.exists(ref_metadata):
         return {}
     ref_meta = pd.read_csv(ref_metadata, sep='\t')
-    ref_meta = ref_meta[ref_meta['substrate'] == substrate].copy()
+    ref_meta = ref_meta[ref_meta['family'].astype(str).isin(families)].copy()
     return {
         str(row['accession']).replace('|', '_').replace('=', '_'):
         str(row['label'])
@@ -513,7 +513,9 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
     # Load reference labels
     ref_label_map = {}
     if ref_metadata:
-        ref_label_map = load_ref_labels(ref_metadata, substrate)
+        _families = {f.replace(".faa", "").split("_", 1)[-1]
+                     for f in os.listdir(seq_dir) if f.endswith(".faa")}
+        ref_label_map = load_ref_labels(ref_metadata, _families)
 
     itol_dir = os.path.join(output_dir, 'itol_annotations')
     os.makedirs(itol_dir, exist_ok=True)
