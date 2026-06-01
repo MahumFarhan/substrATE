@@ -266,7 +266,7 @@ def annotate_hits(hits_df, expasy_file, fam_sub_map):
     return hits_df
 
 
-def annotate_references(ref_metadata, families):
+def annotate_references(ref_metadata, families, expasy_file=None, fam_sub_map=None):
     """
     Build activity annotation rows for reference sequences.
 
@@ -299,10 +299,25 @@ def annotate_references(ref_metadata, families):
         def _make_activity(row):
             name = str(row.get('protein_name', '')).strip()
             ec   = str(row.get('ec_numbers', '')).strip()
+            family = str(row.get('family', '')).strip()
             if ec and ec not in ('', 'nan', '-'):
-                return f"{name} [{ec}]" if name else ec
-            return name or 'unknown'
+                raw = f"{name} [{ec}]" if name else ec
+            else:
+                raw = name or 'unknown'
+            return normalise_activity(raw, family)
         ref_meta['_activity'] = ref_meta.apply(_make_activity, axis=1)
+    # If EXPASY data available, replace with normalised activity labels
+    if expasy_file and fam_sub_map:
+        ec_activities  = load_ec_names(expasy_file)
+        family_activities = load_family_activities(fam_sub_map)
+        ref_meta['_activity'] = ref_meta.apply(
+            lambda row: get_activity_label(
+                extract_primary_ec(str(row.get('ec_numbers', '-'))),
+                str(row['family']),
+                ec_activities,
+                family_activities,
+            ), axis=1
+        )
     else:
         ref_meta['_activity'] = 'unknown'
 
@@ -316,7 +331,7 @@ def annotate_references(ref_metadata, families):
         rows.append({
             'Gene ID':              str(row['accession']),
             'sample':               'Reference',
-            'substrate_category':   substrate,
+            'substrate_category':   str(row.get('substrate', 'unknown')),
             'matched_family':       str(row['family']),
             'localisation':         'characterised_reference',
             'subfamily_annotation': str(row.get('subfamily',
