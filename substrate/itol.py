@@ -341,7 +341,7 @@ def write_labels(out_file, leaf_data):
             # Bold for genomic sequences, normal for references
             is_ref = leaf_id.startswith('Reference__')
             style = 'normal' if is_ref else 'bold'
-            f.write(f'{leaf_id}\tlabel\t{style}\t#000000\t1\t{label}\n')
+            f.write(f'{leaf_id}\tlabel\tlabel\t#000000\t1\t{style}\t{label}\n')
 
 
 # ── Reference label loading ───────────────────────────────────────────────────
