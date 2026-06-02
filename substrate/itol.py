@@ -556,6 +556,15 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
             localisation_data = {k: v for k, v in localisation_data.items() if k in tree_ids}
             activity_data     = {k: v for k, v in activity_data.items()     if k in tree_ids}
             label_data        = {k: v for k, v in label_data.items()        if k in tree_ids}
+            # Add Reference__ sequences in tree but not in FAA (place mode)
+            for _leaf in tree_ids:
+                if _leaf.startswith('Reference__') and _leaf not in sample_data:
+                    _parts = _leaf.split('__')
+                    _acc   = _parts[1] if len(_parts) > 1 else _leaf
+                    sample_data[_leaf]       = 'Reference'
+                    localisation_data[_leaf] = 'characterised_reference'
+                    activity_data[_leaf]     = activity_map.get(_acc, 'unknown')
+                    label_data[_leaf]        = ref_label_map.get(_acc, f'Reference {_acc}')
 
         if not sample_data:
             continue
