@@ -138,7 +138,7 @@ def place_sequences(combined_aln_path, ref_treefile, output_prefix,
         '--redo',
     ]
     if seed is not None:
-        cmd.extend(['-seed', str(seed)])
+        cmd.extend(['--seed', str(seed)])
 
     if log_path:
         with open(log_path, 'a') as log:
@@ -202,7 +202,7 @@ def build_tree(trimmed_path, output_prefix, threads=8,
             '--redo',
         ]
         if seed is not None:
-            cmd.extend(['-seed', str(seed)])
+            cmd.extend(['--seed', str(seed)])
     else:
         cmd = [
             binary,
@@ -215,7 +215,7 @@ def build_tree(trimmed_path, output_prefix, threads=8,
             '--redo',
         ]
         if seed is not None:
-            cmd.extend(['-seed', str(seed)])
+            cmd.extend(['--seed', str(seed)])
 
     if log_path:
         with open(log_path, 'a') as log:
