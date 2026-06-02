@@ -330,18 +330,27 @@ def write_leaf_symbols(out_file, leaf_data, colour_map, title):
 
 
 def write_labels(out_file, leaf_data):
-    """Write an iTOL DATASET_STYLE annotation file with bold genomic sequences."""
+    """Write an iTOL LABELS annotation file with clean display names."""
+    with open(out_file, 'w') as f:
+        f.write('LABELS\n')
+        f.write('SEPARATOR TAB\n')
+        f.write('DATA\n')
+        for leaf_id, label in leaf_data.items():
+            f.write(f'{leaf_id}\t{label}\n')
+
+
+def write_label_styles(out_file, leaf_data):
+    """Write an iTOL DATASET_STYLE file to bold genomic sequences."""
     with open(out_file, 'w') as f:
         f.write('DATASET_STYLE\n')
         f.write('SEPARATOR TAB\n')
-        f.write('DATASET_LABEL\tLabels\n')
+        f.write('DATASET_LABEL\tLabel styles\n')
         f.write('COLOR\t#000000\n')
         f.write('DATA\n')
-        for leaf_id, label in leaf_data.items():
-            # Bold for genomic sequences, normal for references
+        for leaf_id in leaf_data:
             is_ref = leaf_id.startswith('Reference__')
-            style = 'normal' if is_ref else 'bold'
-            f.write(f'{leaf_id}\tlabel\tlabel\t#000000\t1\t{style}\t{label}\n')
+            if not is_ref:
+                f.write(f'{leaf_id}\tlabel\tlabel\t#000000\t1\tbold\n')
 
 
 # ── Reference label loading ───────────────────────────────────────────────────
@@ -602,6 +611,10 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
         )
         write_labels(
             os.path.join(itol_dir, f'{family}_labels.txt'),
+            label_data
+        )
+        write_label_styles(
+            os.path.join(itol_dir, f'{family}_label_styles.txt'),
             label_data
         )
 
