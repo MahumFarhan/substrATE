@@ -665,10 +665,19 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                                             _fout.write(_line)
                                     else:
                                         _fout.write(_line)
+                            # Write query-only FAA (no Reference__ seqs)
+                            # to avoid duplicates with renamed_ref
+                            from Bio import SeqIO as _SeqIO
+                            query_only = os.path.join(
+                                align_dir, f'{family}_query_only.faa')
+                            with open(query_only, 'w') as _qf:
+                                for _rec in _SeqIO.parse(fasta_path, 'fasta'):
+                                    if not _rec.id.startswith('Reference__'):
+                                        _SeqIO.write([_rec], _qf, 'fasta')
                             combined = os.path.join(
                                 align_dir, f'{family}_combined.aln')
                             align.add_fragments(
-                                query_path=fasta_path,
+                                query_path=query_only,
                                 reference_aln_path=renamed_ref,
                                 output_path=combined,
                                 threads=threads,
