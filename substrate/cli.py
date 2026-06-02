@@ -647,11 +647,29 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                             # taxa to an existing tree topology, so
                             # we use the combined alignment with
                             # LG+G4 --fast for speed.
+                            #
+                            # Rename reference IDs from raw format
+                            # accession|family|subfamily|organism
+                            # to Reference__accession__family__characterised_reference
+                            renamed_ref = os.path.join(
+                                align_dir, f'{family}_ref_renamed.trim')
+                            with open(ref_trim_file) as _fin,                                  open(renamed_ref, 'w') as _fout:
+                                for _line in _fin:
+                                    if _line.startswith('>'):
+                                        _parts = _line[1:].strip().split('|')
+                                        if len(_parts) >= 2:
+                                            _acc = _parts[0]
+                                            _fam = _parts[1]
+                                            _fout.write(f'>Reference__{_acc}__{_fam}__characterised_reference\n')
+                                        else:
+                                            _fout.write(_line)
+                                    else:
+                                        _fout.write(_line)
                             combined = os.path.join(
                                 align_dir, f'{family}_combined.aln')
                             align.add_fragments(
                                 query_path=fasta_path,
-                                reference_aln_path=ref_trim_file,
+                                reference_aln_path=renamed_ref,
                                 output_path=combined,
                                 threads=threads,
                                 log_path=mafft_log,
