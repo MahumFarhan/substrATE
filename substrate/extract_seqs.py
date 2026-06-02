@@ -176,6 +176,10 @@ def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup, max_ref_seq
             if accession not in ref_lookup:
                 continue
             meta   = ref_lookup[accession]
+            # Skip references with unknown activity (no EC number)
+            _ec = str(meta.get('ec_numbers', '')).strip()
+            if not _ec or _ec in ('nan', '-', ''):
+                continue
             family = str(meta['family'])
             record.id = (f"Reference__{_clean_id(accession)}"
                          f"__{family}__characterised_reference")

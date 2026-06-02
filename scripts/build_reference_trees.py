@@ -45,6 +45,8 @@ REF_SEQS_DIR   = os.path.join(_PKG_DIR, 'substrate', 'data',
                                'reference_seqs', 'by_family')
 REF_TREES_DIR  = os.path.join(_PKG_DIR, 'substrate', 'data',
                                'reference_trees')
+REF_METADATA   = os.path.join(_PKG_DIR, 'substrate', 'data',
+                               'reference_seqs', 'reference_metadata.tsv')
 MIN_SEQS_DEFAULT = 4
 
 
@@ -165,8 +167,21 @@ def build_reference_tree(family, faa_path, output_dir, threads=8,
 
     os.makedirs(family_dir, exist_ok=True)
 
-    # Load sequences
+    # Load sequences and filter to those with known EC numbers
     records = list(SeqIO.parse(faa_path, 'fasta'))
+    if os.path.exists(REF_METADATA):
+        _meta = pd.read_csv(REF_METADATA, sep='\t')
+        _meta = _meta[_meta['family'].astype(str) == family]
+        _known_ec = set(
+            str(r['accession']) for _, r in _meta.iterrows()
+            if str(r.get('ec_numbers', '')).strip() not in ('', 'nan', '-')
+        )
+        before = len(records)
+        records = [r for r in records
+                   if r.id.split('|')[0] in _known_ec]
+        if len(records) < before:
+            print(f'    Filtered to {len(records)}/{before} '
+                  f'sequences with known EC numbers')
     n_input = len(records)
 
     if n_input < min_seqs:
