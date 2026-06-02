@@ -190,6 +190,14 @@ def build_reference_tree(family, faa_path, output_dir, threads=8,
     ref_trim = os.path.join(family_dir, f'{family}.ref.trim')
     tree_pfx = os.path.join(family_dir, f'{family}.ref')
 
+    # Rename IDs to Reference__accession__family__characterised_reference
+    for _rec in records:
+        _parts = _rec.id.split('|')
+        if len(_parts) >= 2:
+            _acc = _parts[0]
+            _fam = _parts[1]
+            _rec.id = f'Reference__{_acc}__{_fam}__characterised_reference'
+            _rec.description = ''
     SeqIO.write(records, ref_faa, 'fasta')
 
     # Log paths
