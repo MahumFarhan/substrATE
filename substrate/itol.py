@@ -213,9 +213,19 @@ def assign_activity_colours(activities, activity_palette):
     Returns:
         dict mapping activity label to hex colour string
     """
-    unique = sorted(set(activities))
-    return {act: activity_palette[i % len(activity_palette)]
-            for i, act in enumerate(unique)}
+    # Fixed muted palette for reference substrates — kept separate from
+    # genomic activity colours to avoid palette collisions
+    ref_palette = [
+        '#a0a0a0', '#b8860b', '#8b6914', '#6b8e6b', '#8b7355',
+        '#7b8b8b', '#9b7b6b', '#6b7b9b', '#8b6b8b', '#7b9b7b',
+    ]
+    genomic = sorted(a for a in set(activities) if not a.startswith('reference: '))
+    refs    = sorted(a for a in set(activities) if a.startswith('reference: '))
+    result  = {act: activity_palette[i % len(activity_palette)]
+               for i, act in enumerate(genomic)}
+    result.update({act: ref_palette[i % len(ref_palette)]
+                   for i, act in enumerate(refs)})
+    return result
 
 
 # ── Colour config TSV ─────────────────────────────────────────────────────────
