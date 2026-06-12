@@ -143,7 +143,81 @@ def extract_genome_sequences(cgc_output_dir, hits_df):
 
 # ── Reference sequence appending ──────────────────────────────────────────────
 
-def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=None, seed=None):
+
+def subsample_by_relevance(genomic_records, ref_records, max_ref_seqs,
+                           threads=8):
+    """
+    Subsample reference sequences by phylogenetic relevance to genomic
+    sequences. Runs a fast MAFFT alignment, then keeps the top
+    max_ref_seqs references ranked by maximum pairwise identity to
+    any genomic sequence.
+    Args:
+        genomic_records: list of SeqRecord objects (genomic sequences)
+        ref_records:     list of SeqRecord objects (reference sequences)
+        max_ref_seqs:    maximum number of references to keep
+        threads:         number of threads for MAFFT
+    Returns:
+        list of subsampled SeqRecord objects
+    """
+    import tempfile
+    import subprocess
+    if len(ref_records) <= max_ref_seqs:
+        return ref_records
+    # Write combined FASTA to temp file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.faa',
+                                    delete=False) as tmp_in:
+        tmp_in_path = tmp_in.name
+        for rec in genomic_records + ref_records:
+            tmp_in.write(f'>{rec.id}\n{str(rec.seq)}\n')
+    tmp_aln_path = tmp_in_path + '.aln'
+    try:
+        # Fast MAFFT alignment
+        cmd = ['mafft', '--retree', '1', '--maxiterate', '0',
+               '--quiet', '--thread', str(threads), tmp_in_path]
+        with open(tmp_aln_path, 'w') as aln_out:
+            subprocess.run(cmd, stdout=aln_out, stderr=subprocess.DEVNULL,
+                           check=True)
+        # Parse alignment
+        aln = {rec.id: str(rec.seq).upper()
+               for rec in SeqIO.parse(tmp_aln_path, 'fasta')}
+        genomic_ids = {rec.id for rec in genomic_records}
+        ref_ids     = [rec.id for rec in ref_records]
+        # Compute max pairwise identity of each ref to any genomic seq
+        def _identity(seq_a, seq_b):
+            matches = sum(a == b for a, b in zip(seq_a, seq_b)
+                          if a != '-' and b != '-')
+            comparable = sum(1 for a, b in zip(seq_a, seq_b)
+                             if a != '-' and b != '-')
+            return matches / comparable if comparable > 0 else 0.0
+        scores = {}
+        for ref_id in ref_ids:
+            if ref_id not in aln:
+                scores[ref_id] = 0.0
+                continue
+            ref_seq = aln[ref_id]
+            scores[ref_id] = max(
+                (_identity(ref_seq, aln[g]) for g in genomic_ids
+                 if g in aln),
+                default=0.0
+            )
+        # Rank and select top max_ref_seqs
+        ranked = sorted(ref_ids, key=lambda r: scores[r], reverse=True)
+        selected_ids = set(ranked[:max_ref_seqs])
+        selected = [r for r in ref_records if r.id in selected_ids]
+        print(f"    Relevance subsampling: kept {len(selected)}/{len(ref_records)} "
+              f"reference sequences")
+        return selected
+    except Exception as e:
+        print(f"    WARNING: relevance subsampling failed ({e}), "
+              f"falling back to random subsampling")
+        import random
+        return random.sample(ref_records, max_ref_seqs)
+    finally:
+        for p in [tmp_in_path, tmp_aln_path]:
+            if os.path.exists(p):
+                os.remove(p)
+
+def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=None, seed=None, ref_mode="diverse", threads=8):
     """
     Append characterised reference sequences to the family_seqs dict.
 
@@ -188,8 +262,13 @@ def append_reference_sequences(family_seqs, ref_seq_dir, ref_lookup, max_ref_seq
     rng = _random.Random(seed)
     for family, records in ref_by_family.items():
         if max_ref_seqs is not None and len(records) > max_ref_seqs:
-            records = rng.sample(records, max_ref_seqs)
-            print(f"  {family}: subsampled to {max_ref_seqs} reference sequences")
+            if ref_mode == "relevant":
+                genomic = family_seqs.get(family, [])
+                records = subsample_by_relevance(
+                    genomic, records, max_ref_seqs, threads=threads)
+            else:
+                records = rng.sample(records, max_ref_seqs)
+            print(f"  {family}: subsampled to {len(records)} reference sequences [{ref_mode}]")
         if family not in family_seqs:
             family_seqs[family] = []
         family_seqs[family].extend(records)
@@ -244,7 +323,7 @@ def write_family_fastas(family_seqs, seq_dir, substrate):
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def extract_sequences(cgc_output_dir, hits_df, output_dir, substrate,
-                      ref_metadata=None, ref_seq_dir=None, max_ref_seqs=None, seed=None):
+                      ref_metadata=None, ref_seq_dir=None, max_ref_seqs=None, seed=None, ref_mode="diverse", threads=8):
     """
     Full sequence extraction pipeline for one substrate.
 
@@ -278,7 +357,7 @@ def extract_sequences(cgc_output_dir, hits_df, output_dir, substrate,
     # Append reference sequences if provided
     if ref_seq_dir:
         family_seqs = append_reference_sequences(
-            family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=max_ref_seqs, seed=seed)
+            family_seqs, ref_seq_dir, ref_lookup, max_ref_seqs=max_ref_seqs, seed=seed, ref_mode=ref_mode, threads=threads)
 
     # Write output FASTAs
     seq_dir = os.path.join(output_dir, 'sequences')

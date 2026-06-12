@@ -377,10 +377,22 @@ def load_ref_labels(ref_metadata, families):
     }
 
 
+def load_ref_substrate_map(ref_metadata, families):
+    """Build accession -> substrate lookup from reference_metadata.tsv."""
+    if not os.path.exists(ref_metadata):
+        return {}
+    ref_meta = pd.read_csv(ref_metadata, sep='\t')
+    ref_meta = ref_meta[ref_meta['family'].astype(str).isin(families)].copy()
+    return {
+        str(row['accession']).replace('|', '_').replace('=', '_'):
+        str(row['substrate'])
+        for _, row in ref_meta.iterrows()
+    }
+
 # ── Sequence parsing ──────────────────────────────────────────────────────────
 
 def parse_faa_annotations(faa_path, activity_map, sample_labels,
-                          ref_label_map):
+                          ref_label_map, ref_substrate_map=None):
     """
     Parse a family FASTA file and extract per-leaf annotation data.
 
@@ -408,7 +420,13 @@ def parse_faa_annotations(faa_path, activity_map, sample_labels,
 
         samples[leaf_id]       = sample
         localisations[leaf_id] = localisation
-        activities[leaf_id]    = activity_map.get(gene_id, 'unknown')
+        if sample == 'Reference':
+            _ref_sub = ref_substrate_map.get(gene_id) if ref_substrate_map else None
+            activities[leaf_id] = (
+                f'reference: {_ref_sub}' if _ref_sub
+                else activity_map.get(gene_id, 'unknown'))
+        else:
+            activities[leaf_id] = activity_map.get(gene_id, 'unknown')
 
         if sample == 'Reference':
             labels[leaf_id] = ref_label_map.get(
@@ -480,6 +498,13 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
             all_samples.add(sample)
             all_activities.add(activity_map.get(gene_id, 'unknown'))
 
+    # Add reference substrates to activity set so they get colours
+    if ref_metadata and os.path.exists(ref_metadata):
+        _families = {f.replace(".faa", "").split("_", 1)[-1]
+                     for f in os.listdir(seq_dir) if f.endswith(".faa")}
+        ref_sub_map = load_ref_substrate_map(ref_metadata, _families)
+        for sub_val in ref_sub_map.values():
+            all_activities.add(f'reference: {sub_val}')
     sample_colours   = assign_sample_colours(all_samples, sample_palette,
                                               max_colours=max_colours)
     activity_colours = assign_activity_colours(all_activities,
@@ -526,10 +551,12 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
 
     # Load reference labels
     ref_label_map = {}
+    ref_substrate_map = {}
     if ref_metadata:
         _families = {f.replace(".faa", "").split("_", 1)[-1]
                      for f in os.listdir(seq_dir) if f.endswith(".faa")}
         ref_label_map = load_ref_labels(ref_metadata, _families)
+        ref_substrate_map = load_ref_substrate_map(ref_metadata, _families)
 
     itol_dir = os.path.join(output_dir, 'itol_annotations')
     os.makedirs(itol_dir, exist_ok=True)
@@ -577,7 +604,9 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
                     _acc   = _parts[1] if len(_parts) > 1 else _leaf
                     sample_data[_leaf]       = 'Reference'
                     localisation_data[_leaf] = 'characterised_reference'
-                    activity_data[_leaf]     = activity_map.get(_acc, 'unknown')
+                    _ref_sub = ref_substrate_map.get(_acc)
+                    activity_data[_leaf]     = (
+                        f'reference: {_ref_sub}' if _ref_sub else 'unknown')
                     label_data[_leaf]        = ref_label_map.get(_acc, f'Reference {_acc}')
 
         if not sample_data:

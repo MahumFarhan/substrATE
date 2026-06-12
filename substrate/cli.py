@@ -234,6 +234,11 @@ def main():
 @click.option('--max_ref_seqs', type=int, default=50, show_default=True,
               help='Maximum number of reference sequences to include per family '
                    '(randomly subsampled if exceeded). Set to 0 to disable.')
+@click.option('--ref_mode', type=click.Choice(['diverse', 'relevant']),
+              default='diverse', show_default=True,
+              help='Reference subsampling mode: "diverse" uses subfamily '
+                   'diversity (default), "relevant" keeps references closest '
+                   'to your genomic sequences (slower but more targeted).')
 @click.option('--output', required=True, type=click.Path(),
               help='Base output directory. Each substrate gets its own '
                    'subdirectory: <output>/<substrate>/')
@@ -278,7 +283,7 @@ def main():
                    'family derivation (only needed for substrates not '
                    'in the built-in list)')
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
-        ref_metadata, ref_seqs, max_ref_seqs, output, threads, pul_mode,
+        ref_metadata, ref_seqs, max_ref_seqs, ref_mode, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
         max_colours, denovo, pattern_mode, overlap_threshold,
         substrate_terms):
@@ -552,6 +557,8 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                 ref_seq_dir=ref_seqs,
                 max_ref_seqs=max_ref_seqs,
                 seed=seed,
+                ref_mode=ref_mode,
+                threads=threads,
             )
 
             if not fasta_paths:
