@@ -216,8 +216,10 @@ def assign_activity_colours(activities, activity_palette):
     # Fixed muted palette for reference substrates — kept separate from
     # genomic activity colours to avoid palette collisions
     ref_palette = [
-        '#a0a0a0', '#b8860b', '#8b6914', '#6b8e6b', '#8b7355',
-        '#7b8b8b', '#9b7b6b', '#6b7b9b', '#8b6b8b', '#7b9b7b',
+        '#767676', '#b8860b', '#6b8e23', '#8b6914', '#4682b4',
+        '#8b4513', '#708090', '#9400d3', '#2e8b57', '#cd853f',
+        '#4a708b', '#8b2252', '#6b8e6b', '#b8733a', '#5f9ea0',
+        '#8b7355', '#7b6b8b', '#4f7942', '#8b3a62', '#6b7b5b',
     ]
     genomic = sorted(a for a in set(activities) if not a.startswith('reference: '))
     refs    = sorted(a for a in set(activities) if a.startswith('reference: '))
@@ -388,16 +390,308 @@ def load_ref_labels(ref_metadata, families):
 
 
 def load_ref_substrate_map(ref_metadata, families):
-    """Build accession -> substrate lookup from reference_metadata.tsv."""
+    """Build accession -> cleaned protein_name lookup from reference_metadata.tsv.
+    Uses protein_name rather than substrate because the substrate field is
+    assigned at family level and is often inaccurate for multi-functional
+    families (e.g. GH16 contains agarases, carrageenases, lichenases etc.
+    all labelled 'agar'). Protein name is stripped of gene code parentheticals
+    to give a clean activity label, e.g. 'κ-carrageenase (Ce384; CeCgkA)'
+    becomes 'κ-carrageenase'.
+    """
     if not os.path.exists(ref_metadata):
         return {}
     ref_meta = pd.read_csv(ref_metadata, sep='\t')
     ref_meta = ref_meta[ref_meta['family'].astype(str).isin(families)].copy()
-    return {
-        str(row['accession']).replace('|', '_').replace('=', '_'):
-        str(row['substrate'])
-        for _, row in ref_meta.iterrows()
+    # EC number -> canonical activity label for GH16 and other common cases
+    # where protein_name variants are too numerous to normalise by text alone
+    EC_LABELS = {
+        '1.1.3.10': 'pyranose oxidase',
+        '1.1.3.13': 'alcohol oxidase',
+        '1.1.3.16': 'ecdysone oxidase',
+        '1.1.3.4': 'glucose oxidase',
+        '1.1.3.7': 'aryl-alcohol oxidase',
+        '1.1.5.9': 'glucose 1-dehydrogenase (FAD, quinone)',
+        '1.1.99.18': 'cellobiose dehydrogenase (acceptor)',
+        '1.1.99.29': 'pyranose dehydrogenase (acceptor)',
+        '1.14.99.53': 'lytic chitin monooxygenase',
+        '1.14.99.54': 'lytic cellulose monooxygenase (C1-hydroxylating)',
+        '1.14.99.55': 'lytic starch monooxygenase',
+        '1.14.99.56': 'lytic cellulose monooxygenase (C4-dehydrogenating)',
+        '2.3.1.122': 'trehalose O-mycolyltransferase',
+        '2.3.1.20': 'diacylglycerol O-acyltransferase',
+        '2.4.1.10': 'levansucrase',
+        '2.4.1.100': '2,1-fructan:2,1-fructan 1-fructosyltransferase',
+        '2.4.1.140': 'alternansucrase',
+        '2.4.1.161': 'oligosaccharide 4-alpha-D-glucosyltransferase',
+        '2.4.1.18': '1,4-alpha-glucan branching enzyme',
+        '2.4.1.19': 'cyclomaltodextrin glucanotransferase',
+        '2.4.1.2': 'dextrin dextranase',
+        '2.4.1.20': 'cellobiose phosphorylase',
+        '2.4.1.207': 'xyloglucan:xyloglucosyl transferase',
+        '2.4.1.24': '1,4-alpha-glucan 6-alpha-glucosyltransferase',
+        '2.4.1.243': '6(G)-fructosyltransferase',
+        '2.4.1.25': '4-alpha-glucanotransferase',
+        '2.4.1.280': "N,N'-diacetylchitobiose phosphorylase",
+        '2.4.1.281': '4-O-beta-D-mannosyl-D-glucose phosphorylase',
+        '2.4.1.31': 'laminaribiose phosphorylase',
+        '2.4.1.319': 'beta-1,4-mannooligosaccharide phosphorylase',
+        '2.4.1.320': '1,4-beta-mannosyl-N-acetylglucosamine phosphorylase',
+        '2.4.1.321': 'cellobionic acid phosphorylase',
+        '2.4.1.329': 'sucrose 6(F)-phosphate phosphorylase',
+        '2.4.1.333': '1,2-beta-oligoglucan phosphorylase',
+        '2.4.1.339': 'beta-1,2-mannobiose phosphorylase',
+        '2.4.1.340': '1,2-beta-oligomannan phosphorylase',
+        '2.4.1.352': 'glucosylglycerate phosphorylase',
+        '2.4.1.359': 'glucosylglycerol phosphorylase (configuration-retaining)',
+        '2.4.1.387': 'isomaltosyltransferase',
+        '2.4.1.389': 'solabiose phosphorylase',
+        '2.4.1.391': 'beta-1,2-glucosyltransferase',
+        '2.4.1.392': '3-O-beta-D-glucopyranosyl-beta-D-glucuronide phosphorylase',
+        '2.4.1.4': 'amylosucrase',
+        '2.4.1.49': 'cellodextrin phosphorylase',
+        '2.4.1.5': 'dextransucrase',
+        '2.4.1.67': 'galactinol--raffinose galactosyltransferase',
+        '2.4.1.7': 'sucrose phosphorylase',
+        '2.4.1.82': 'galactinol--sucrose galactosyltransferase',
+        '2.4.1.9': 'inulosucrase',
+        '2.4.1.99': 'sucrose:sucrose fructosyltransferase',
+        '2.4.99.16': 'starch synthase (maltosyl-transferring)',
+        '3.1.1.11': 'pectinesterase',
+        '3.1.1.3': 'triacylglycerol lipase',
+        '3.1.1.41': 'cephalosporin-C deacetylase',
+        '3.1.1.6': 'acetylesterase',
+        '3.1.1.72': 'acetylxylan esterase',
+        '3.1.1.73': 'feruloyl esterase',
+        '3.1.1.74': 'cutinase',
+        '3.1.1.86': 'rhamnogalacturonan acetylesterase',
+        '3.2.1.1': 'alpha-amylase',
+        '3.2.1.10': 'oligo-1,6-glucosidase',
+        '3.2.1.100': 'mannan 1,4-mannobiosidase',
+        '3.2.1.101': 'mannan endo-1,6-alpha-mannosidase',
+        '3.2.1.102': 'blood-group-substance endo-1,4-beta-galactosidase',
+        '3.2.1.103': 'keratan-sulfate endo-1,4-beta-galactosidase',
+        '3.2.1.104': 'steryl-beta-glucosidase',
+        '3.2.1.108': 'lactase',
+        '3.2.1.11': 'dextranase',
+        '3.2.1.116': 'glucan 1,4-alpha-maltotriohydrolase',
+        '3.2.1.120': 'oligoxyloglucan beta-glycosidase',
+        '3.2.1.122': "maltose-6'-phosphate glucosidase",
+        '3.2.1.123': 'endoglycosylceramidase',
+        '3.2.1.124': '3-deoxy-2-octulosonidase',
+        '3.2.1.126': 'coniferin beta-glucosidase',
+        '3.2.1.128': 'glycyrrhizinate beta-glucuronidase',
+        '3.2.1.131': 'xylan alpha-1,2-glucuronosidase',
+        '3.2.1.132': 'chitosanase',
+        '3.2.1.133': 'glucan 1,4-alpha-maltohydrolase',
+        '3.2.1.135': 'neopullulanase',
+        '3.2.1.136': 'glucuronoarabinoxylan endo-1,4-beta-xylanase',
+        '3.2.1.139': 'alpha-glucuronidase',
+        '3.2.1.14': 'chitinase',
+        '3.2.1.140': 'lacto-N-biosidase',
+        '3.2.1.141': '4-alpha-D-{(1->4)-alpha-D-glucano}trehalose trehalohydrolase',
+        '3.2.1.145': 'galactan 1,3-beta-galactosidase',
+        '3.2.1.146': 'beta-galactofuranosidase',
+        '3.2.1.149': 'beta-primeverosidase',
+        '3.2.1.15': 'endo-polygalacturonase',
+        '3.2.1.150': 'oligoxyloglucan reducing-end-specific cellobiohydrolase',
+        '3.2.1.151': 'xyloglucan-specific endo-beta-1,4-glucanase',
+        '3.2.1.152': 'mannosylglycoprotein endo-beta-mannosidase',
+        '3.2.1.153': 'fructan beta-(2,1)-fructosidase',
+        '3.2.1.154': 'fructan beta-(2,6)-fructosidase',
+        '3.2.1.156': 'oligosaccharide reducing-end xylanase',
+        '3.2.1.157': 'iota-carrageenase',
+        '3.2.1.158': 'alpha-agarase',
+        '3.2.1.159': 'alpha-neoagaro-oligosaccharide hydrolase',
+        '3.2.1.162': 'lambda-carrageenase',
+        '3.2.1.163': '1,6-alpha-D-mannosidase',
+        '3.2.1.164': 'galactan endo-1,6-beta-galactosidase',
+        '3.2.1.165': 'exo-1,4-beta-D-glucosaminidase',
+        '3.2.1.166': 'heparanase',
+        '3.2.1.167': 'baicalin-beta-D-glucuronidase',
+        '3.2.1.168': 'hesperidin 6-O-alpha-L-rhamnosyl-beta-D-glucosidase',
+        '3.2.1.169': 'protein O-GlcNAcase',
+        '3.2.1.17': 'lysozyme',
+        '3.2.1.171': 'rhamnogalacturonan hydrolase',
+        '3.2.1.172': 'unsaturated rhamnogalacturonyl hydrolase',
+        '3.2.1.173': 'rhamnogalacturonan galacturonohydrolase',
+        '3.2.1.174': 'rhamnogalacturonan rhamnohydrolase',
+        '3.2.1.175': 'beta-D-glucopyranosyl abscisate beta-glucosidase',
+        '3.2.1.176': 'cellulose 1,4-beta-cellobiosidase (reducing end)',
+        '3.2.1.177': 'alpha-D-xyloside xylohydrolase',
+        '3.2.1.178': 'beta-porphyranase',
+        '3.2.1.179': 'gellan tetrasaccharide unsaturated glucuronosyl hydrolase',
+        '3.2.1.18': 'exo-alpha-sialidase',
+        '3.2.1.180': 'unsaturated chondroitin disaccharide hydrolase',
+        '3.2.1.181': 'galactan endo-beta-1,3-galactanase',
+        '3.2.1.185': 'non-reducing end beta-L-arabinofuranosidase',
+        '3.2.1.186': 'protodioscin 26-O-beta-D-glucosidase',
+        '3.2.1.197': 'beta-1,2-mannosidase',
+        '3.2.1.199': 'sulfoquinovosidase',
+        '3.2.1.2': 'beta-amylase',
+        '3.2.1.20': 'alpha-glucosidase',
+        '3.2.1.200': 'exo-chitinase (non-reducing end)',
+        '3.2.1.201': 'exo-chitinase (reducing end)',
+        '3.2.1.204': '1,3-alpha-isomaltosidase',
+        '3.2.1.205': 'isomaltose glucohydrolase',
+        '3.2.1.207': 'mannosyl-oligosaccharide alpha-1,3-glucosidase',
+        '3.2.1.21': 'beta-glucosidase',
+        '3.2.1.211': 'endo-(1->3)-fucoidanase',
+        '3.2.1.212': 'endo-(1->4)-fucoidanase',
+        '3.2.1.213': 'galactan exo-1,6-beta-galactobiohydrolase (non-reducing end)',
+        '3.2.1.215': 'arabinofuranosidase (non-reducing end)',
+        '3.2.1.217': 'exo-acting protein-alpha-N-acetylgalactosaminidase',
+        '3.2.1.22': 'alpha-galactosidase',
+        '3.2.1.222': 'funoran endo-beta-hydrolase',
+        '3.2.1.223': 'arabinofuranosidase (non-reducing end)',
+        '3.2.1.228': 'funoran endo-alpha-hydrolase',
+        '3.2.1.23': 'beta-galactosidase',
+        '3.2.1.24': 'alpha-mannosidase',
+        '3.2.1.25': 'beta-mannosidase',
+        '3.2.1.26': 'beta-fructofuranosidase',
+        '3.2.1.28': 'alpha,alpha-trehalase',
+        '3.2.1.3': 'glucan 1,4-alpha-glucosidase',
+        '3.2.1.31': 'beta-glucuronidase',
+        '3.2.1.32': 'endo-1,3-beta-xylanase',
+        '3.2.1.35': 'hyaluronoglucosaminidase',
+        '3.2.1.36': 'hyaluronoglucuronidase',
+        '3.2.1.37': 'xylan 1,4-beta-xylosidase',
+        '3.2.1.38': 'beta-D-fucosidase',
+        '3.2.1.39': 'glucan endo-1,3-beta-D-glucosidase',
+        '3.2.1.4': 'cellulase',
+        '3.2.1.40': 'alpha-L-rhamnosidase',
+        '3.2.1.41': 'pullulanase',
+        '3.2.1.45': 'glucosylceramidase',
+        '3.2.1.46': 'galactosylceramidase',
+        '3.2.1.48': 'sucrose alpha-glucosidase',
+        '3.2.1.49': 'alpha-N-acetylgalactosaminidase',
+        '3.2.1.51': 'alpha-L-fucosidase',
+        '3.2.1.52': 'beta-N-acetylhexosaminidase',
+        '3.2.1.53': 'beta-N-acetylgalactosaminidase',
+        '3.2.1.54': 'cyclomaltodextrinase',
+        '3.2.1.55': 'non-reducing end alpha-L-arabinofuranosidase',
+        '3.2.1.57': 'isopullulanase',
+        '3.2.1.58': 'glucan 1,3-beta-glucosidase',
+        '3.2.1.6': 'endo-1,3(4)-beta-glucanase',
+        '3.2.1.60': 'glucan 1,4-alpha-maltotetraohydrolase',
+        '3.2.1.63': '1,2-alpha-L-fucosidase',
+        '3.2.1.64': '2,6-beta-fructan 6-levanbiohydrolase',
+        '3.2.1.65': 'levanase',
+        '3.2.1.67': 'galacturonan 1,4-alpha-galacturonidase',
+        '3.2.1.68': 'isoamylase',
+        '3.2.1.7': 'inulinase',
+        '3.2.1.70': 'glucan 1,6-alpha-glucosidase',
+        '3.2.1.72': 'xylan 1,3-beta-xylosidase',
+        '3.2.1.73': 'licheninase',
+        '3.2.1.74': 'glucan 1,4-beta-glucosidase',
+        '3.2.1.75': 'glucan endo-1,6-beta-glucosidase',
+        '3.2.1.76': 'L-iduronidase',
+        '3.2.1.78': 'mannan endo-1,4-beta-mannosidase',
+        '3.2.1.8': 'endo-1,4-beta-xylanase',
+        '3.2.1.81': 'beta-agarase',
+        '3.2.1.82': 'exo-poly-alpha-digalacturonosidase',
+        '3.2.1.83': 'kappa-carrageenase',
+        '3.2.1.84': 'glucan 1,3-alpha-glucosidase',
+        '3.2.1.86': '6-phospho-beta-glucosidase',
+        '3.2.1.88': 'non-reducing end beta-L-arabinopyranosidase',
+        '3.2.1.89': 'arabinogalactan endo-beta-1,4-galactanase',
+        '3.2.1.91': 'cellulose 1,4-beta-cellobiosidase (non-reducing end)',
+        '3.2.1.93': 'alpha,alpha-phosphotrehalase',
+        '3.2.1.94': 'glucan 1,6-alpha-isomaltosidase',
+        '3.2.1.95': 'dextran 1,6-alpha-isomaltotriosidase',
+        '3.2.1.96': 'mannosyl-glycoprotein endo-beta-N-acetylglucosaminidase',
+        '3.2.1.97': 'endo-alpha-N-acetylgalactosaminidase',
+        '3.2.1.98': 'glucan 1,4-alpha-maltohexaosidase',
+        '3.2.1.99': 'arabinan endo-1,5-alpha-L-arabinosidase',
+        '3.5.1.104': 'peptidoglycan-N-acetylglucosamine deacetylase',
+        '3.5.1.105': 'chitin disaccharide deacetylase',
+        '3.5.1.115': 'mycothiol S-conjugate amidase',
+        '3.5.1.136': "N,N'-diacetylchitobiose non-reducing end deacetylase",
+        '3.5.1.33': 'N-acetylglucosamine deacetylase',
+        '3.5.1.41': 'chitin deacetylase',
+        '3.5.1.89': 'N-acetylglucosaminylphosphatidylinositol deacetylase',
+        '4.2.2.1': 'hyaluronate lyase',
+        '4.2.2.10': 'pectin lyase',
+        '4.2.2.11': 'guluronate-specific alginate lyase',
+        '4.2.2.12': 'xanthan lyase',
+        '4.2.2.13': 'exo-(1->4)-alpha-D-glucan lyase',
+        '4.2.2.14': 'glucuronan lyase',
+        '4.2.2.15': 'anhydrosialidase',
+        '4.2.2.16': 'levan fructotransferase (DFA-IV-forming)',
+        '4.2.2.17': 'inulin fructotransferase (DFA-I-forming)',
+        '4.2.2.18': 'inulin fructotransferase (DFA-III-forming)',
+        '4.2.2.19': 'chondroitin B lyase',
+        '4.2.2.2': 'pectate lyase',
+        '4.2.2.23': 'rhamnogalacturonan endolyase',
+        '4.2.2.24': 'rhamnogalacturonan exolyase',
+        '4.2.2.25': 'gellan lyase',
+        '4.2.2.26': 'oligo-alginate lyase',
+        '4.2.2.28': 'alpha-L-rhamnosyl-(1->4)-beta-D-glucuronate lyase',
+        '4.2.2.29': 'peptidoglycan lytic transglycosylase',
+        '4.2.2.3': 'mannuronate-specific alginate lyase',
+        '4.2.2.5': 'chondroitin AC lyase',
+        '4.2.2.6': 'oligogalacturonide lyase',
+        '4.2.2.7': 'heparin lyase',
+        '4.2.2.8': 'heparin-sulfate lyase',
+        '4.2.2.9': 'pectate disaccharide-lyase',
+        '5.4.99.11': 'isomaltulose synthase',
+        '5.4.99.15': '(1->4)-alpha-D-glucan 1-alpha-D-glucosylmutase',
+        '5.4.99.16': 'maltose alpha-D-glucosyltransferase',
     }
+
+    # Keyword normalisation for protein names when EC is ambiguous (3.2.1.-)
+    # Order matters — more specific patterns first
+    KEYWORD_NORMS = [
+        (r'κ-carrageen',                'κ-carrageenase'),
+        (r'kappa-carrageen',            'κ-carrageenase'),
+        (r'ι-carrageen|iota-carrageen', 'ι-carrageenase'),
+        (r'β-carrageen',                'β-carrageenase'),
+        (r'b-/k-carrageen|b-/κ',        'β/κ-carrageenase'),
+        (r'porphyran',                  'β-porphyranase'),
+        (r'agarase|agarohydrolase',     'β-agarase'),
+        (r'laminarinase|laminarin',     'laminarinase'),
+        (r'lichenase|lichenin',         'lichenase'),
+        (r'xyloglucan',                 'xyloglucan endotransglycosylase'),
+        (r'1,3-1,4-glucanase|1,3.1,4.glucanase|1,3\(4\)-glucanase|1,3\(4\)glucanase', 'endo-β-1,3(4)-glucanase'),
+        (r'1,3-glucanase|1,3.glucanase', 'endo-β-1,3-glucanase'),
+        (r'hyaluronidase',              'hyaluronidase'),
+        (r'galactanase',                'endo-β-galactanase'),
+        (r'galactosidase',              'β-galactosidase'),
+        (r'glucosyltransferase',        'glucosyltransferase'),
+        (r'glucanase',                  'β-glucanase'),
+    ]
+
+    import re as _re
+
+    def _greek(s):
+        """Standardise alpha/beta/kappa/iota to Greek symbols."""
+        s = re.sub(r'\balpha\b', 'α', s)
+        s = re.sub(r'\bbeta\b',  'β', s)
+        s = re.sub(r'\bkappa\b', 'κ', s)
+        s = re.sub(r'\biota\b',  'ι', s)
+        s = re.sub(r'\blambda\b','λ', s)
+        return s
+
+    def _normalise_name(ec_str, protein_name):
+        # Try primary EC keys first (use first EC if comma-separated)
+        for ec in [e.strip() for e in ec_str.split(',')]:
+            if ec in EC_LABELS:
+                return _greek(EC_LABELS[ec])
+        # Fall back to keyword matching on lowercased protein name
+        pn_lower = protein_name.lower()
+        for pattern, label in KEYWORD_NORMS:
+            if _re.search(pattern, pn_lower):
+                return label
+        # Last resort: strip parentheticals and return cleaned name
+        name = protein_name.split('(')[0].strip()
+        return ' '.join(name.split()) or 'unknown'
+
+    result = {}
+    for _, row in ref_meta.iterrows():
+        acc      = str(row['accession']).replace('|', '_').replace('=', '_')
+        ec_str   = str(row.get('ec_numbers', ''))
+        pname    = str(row.get('protein_name', row.get('substrate', 'unknown')))
+        result[acc] = _normalise_name(ec_str, pname)
+    return result
 
 # ── Sequence parsing ──────────────────────────────────────────────────────────
 
