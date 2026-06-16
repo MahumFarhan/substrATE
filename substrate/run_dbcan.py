@@ -185,10 +185,20 @@ def run_dbcan_sample(sample, input_path, cgc_output_dir, db_dir,
     sample_output_dir = os.path.join(
         cgc_output_dir, f"output_{sample}")
 
+    # dbCAN meta mode internally expects .fna extension — symlink if needed
+    _, ext = os.path.splitext(input_path)
+    if mode == 'meta' and ext != '.fna':
+        fna_path = os.path.join(cgc_output_dir, f"{sample}.fna")
+        if not os.path.exists(fna_path):
+            os.symlink(os.path.abspath(input_path), fna_path)
+        actual_input = fna_path
+    else:
+        actual_input = input_path
+
     cmd = [
         'run_dbcan', 'easy_substrate',
         '--mode',           mode,
-        '--input_raw_data', input_path,
+        '--input_raw_data', actual_input,
         '--output_dir',     sample_output_dir,
         '--db_dir',         db_dir,
         '--threads',        str(threads),
