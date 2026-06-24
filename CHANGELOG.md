@@ -2,6 +2,68 @@
 
 All notable changes to SubstrATE will be documented here.
 
+## [Unreleased]
+
+### Added
+- `--ref_mode [diverse|relevant]` flag for `substrate run` — `diverse`
+  (default) subsamples reference sequences for subfamily diversity;
+  `relevant` keeps references phylogenetically closest to genomic
+  sequences via MAFFT alignment + identity ranking
+- `subsample_by_relevance()` in extract_seqs.py implementing relevant mode
+- Reference substrate/activity labels in iTOL annotations now use an
+  EC-number-derived controlled vocabulary (built from EXPASY enzyme.dat,
+  231 ECs, 100% coverage) instead of the raw `substrate` metadata field,
+  with keyword-based fallback for ambiguous ECs
+- `load_ref_substrate_map()` in itol.py, plus Greek-symbol
+  normalisation (alpha/beta/kappa/iota -> α/β/κ/ι) for reference labels
+- Reference sequences now receive a distinct muted colour palette in
+  iTOL activity strips, separate from genomic activity colours, to
+  avoid palette collisions
+- `reference_seqs_date.txt` written by `build-reference-db` on scrape;
+  displayed by `check-db` as the reference sequence scrape date
+- README: "How CGCs are detected" and "What canonical_PUL /
+  non_canonical_CGC / outside_CGC mean" subsections under PUL
+  classification modes
+- README: "Reference sequence subsampling modes" subsection documenting
+  `--ref_mode diverse|relevant`
+
+### Fixed
+- `cli.py` `--ref_seqs`/`--ref_metadata` defaults now point to bundled
+  reference data so reference sequences are appended automatically
+  without requiring explicit flags — previously defaulted to `None`,
+  causing reference sequences to be silently omitted from iTOL
+  annotations despite appearing correctly in trees
+- `run_dbcan.py`: dbCAN meta mode internally expects a `.fna` extension;
+  inputs with other extensions (`.fasta`, `.fa`) are now symlinked to a
+  `.fna` path before invocation, fixing `FileNotFoundError` on otherwise
+  valid nucleotide FASTA input
+- `FAMILY_MAP` (classify_pul.py) audited against dbCAN's authoritative
+  `fam-substrate-mapping.tsv` and extended with substrate-specific
+  families that were missing, fixing false `outside_CGC` classifications
+  for genuine PULs:
+    - glycogen/pullulan/starch: +30 alpha-glucan families (GH65, GH97,
+      GH4, GH27, GH63, GH66, GH70, GH71, GH76, GH77, GH87, GH119,
+      GH122, GH126, GH133, GH15, GH176, AA13, starch/glycogen-binding
+      CBMs). Confirmed against a published PUL in *Muricauda* sp.
+      MAR_2010_75 that was being missed (GH13+GH65 CGC, GH65 previously
+      unmapped)
+    - laminarin: +CBM102/103 (explicit laminarin-binding), CBM43/52/56,
+      GH128/132/152/157/158/64/81 (beta-1,3-glucanase/laminarinase
+      activity)
+    - lichenan: +GH26/148/44/51/4 (mixed-linkage beta-1,3/1,4-glucanase
+      activity)
+    - arabinogalactan: +GH147, GH182, GH183
+    - arabinoxylan: +CE15, GH121, GH146, GH93
+    - beta_mannan: +GH164
+    - cellulose: +CBM104
+    - inulin: +CBM66, GH68
+    - levan: +CBM38, CBM66, GH91
+    - pectin: +CBM77, PL27, PL3
+    - ulvan: +PL24, PL25, PL28, PL37
+    - xylan: +CE16, GH159, GH6
+    - xyloglucan: +GH26
+    - alginate: +PL44
+
 ## [0.1.0] - 2025-05-21
 
 ### Added
