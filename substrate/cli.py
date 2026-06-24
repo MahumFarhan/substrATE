@@ -1248,6 +1248,14 @@ def check_db(db_dir, ref_seqs, ref_trees):
         click.echo(f'  Path     : {ref_seqs_path}')
         click.echo(f'  Covered  : {present}/{len(all_substrates)} substrates')
         click.echo(f'  Total    : {total_seqs} sequences')
+        date_path = os.path.join(ref_seqs_path, '..', 'reference_seqs_date.txt')
+        if os.path.exists(date_path):
+            with open(date_path) as f:
+                scrape_date = f.read().strip()
+            click.echo(f'  Scraped  : {scrape_date}')
+        else:
+            click.echo('  Scraped  : unknown (pre-dates date tracking; '
+                       're-run build-reference-db to record)')
         if missing:
             click.echo(f'  Missing  : {", ".join(missing)}')
         click.echo('  To refresh: substrate build-reference-db --force --email ...')

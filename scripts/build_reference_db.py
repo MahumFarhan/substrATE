@@ -590,6 +590,13 @@ def build_reference_db(email, api_key, output_dir,
         meta_df.to_csv(meta_path, sep='\t', index=False)
         print(f"\nMetadata written to {meta_path} "
               f"({len(meta_df)} sequences)")
+        # Write datestamp recording when reference sequences were
+        # scraped from CAZy, for staleness checks via `check-db`
+        import datetime
+        date_path = os.path.join(output_dir, 'reference_seqs_date.txt')
+        with open(date_path, 'w') as f:
+            f.write(datetime.date.today().isoformat() + '\n')
+        print(f"Scrape date written to {date_path}")
 
     # ── Merge into global per-family FASTAs ──────────────────────
     print(f"\nMerging into global per-family FASTAs...")
