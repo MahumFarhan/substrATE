@@ -181,6 +181,29 @@ To rebuild trees for specific families only:
 substrate build-reference-trees --force --families GH16 GH17
 ```
 
+### Reference sequence subsampling modes
+
+When a family has more reference sequences than `--max_ref_seqs`
+(default 50), SubstrATE subsamples using one of two modes set with
+`--ref_mode`:
+
+| Mode | Description | Speed |
+|---|---|---|
+| `diverse` (default) | Subsamples to maximise subfamily diversity, giving broad coverage of the family's known functional range | Fast |
+| `relevant` | Keeps reference sequences phylogenetically closest to your genomic sequences (via a quick MAFFT alignment + identity ranking) | Slower |
+
+Use `diverse` for a general-purpose reference tree representative of
+the whole family. Use `relevant` when you want the reference tree
+focused on the sequences most informative for placing your specific
+genomic hits — e.g. for publication figures where a smaller, targeted
+reference set is preferred over broad subfamily coverage. Both modes
+can be run on the same dataset into different output directories to
+compare results.
+
+```bash
+substrate run --ref_mode relevant --max_ref_seqs 20 ...
+```
+
 ### Tree building modes
 
 SubstrATE auto-selects a tree building mode per CAZyme family based
@@ -461,6 +484,41 @@ substrate run \
 ---
 
 ## PUL classification modes
+
+### How CGCs are detected
+
+CAZyme Gene Clusters (CGCs) are identified by dbCAN's CGC-Finder, not
+by SubstrATE. dbCAN groups co-located genes (CAZyme, TC, TF, STP types)
+using a base-pair distance window (default 15 kb) and a maximum number
+of non-signature ("null") genes allowed between signature genes.
+SubstrATE reads the resulting CGC groupings from dbCAN's
+`cgc_standard_out.tsv` as-is and only classifies each pre-formed
+cluster — it does not adjust cluster boundaries.
+
+### What canonical_PUL / non_canonical_CGC / outside_CGC mean
+
+For each CGC, SubstrATE counts substrate-specific CAZymes (genes whose
+annotation matches a family in the substrate's `FAMILY_MAP`) and checks
+for a co-located transporter (definition depends on `--pul_mode`,
+below). A CGC is classified as:
+
+- **`canonical_PUL`** — transporter present AND substrate CAZyme count
+  meets `--min_substrate_cazymes` (default 2). A complete PUL with the
+  expected uptake machinery.
+- **`non_canonical_CGC`** — substrate CAZyme count meets the threshold
+  but no transporter is co-located. The degradative enzymes are
+  present without the canonical SusC/D-mediated import system.
+- **`outside_CGC`** — substrate CAZyme count below the threshold,
+  regardless of transporter presence. Not considered a
+  substrate-targeting locus.
+
+> **Note:** CGCs with a transporter but only one matched substrate
+> CAZyme (below the default threshold) are currently classified as
+> `outside_CGC`. Kappelmann et al. 2019 describe this single-CAZyme
+> case as a real, reduced PUL variant in their manually curated dataset
+> (e.g. all *Maribacter* alpha-glucan PULs) — lower `--min_substrate_cazymes`
+> to 1 if your analysis should capture these minimal PULs, bearing in
+> mind this may also increase false positives.
 
 SubstrATE supports three classification modes set with `--pul_mode`:
 
