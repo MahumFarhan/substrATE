@@ -334,8 +334,13 @@ def _make_gene_label(gene, tcdb_labels):
         return label_tc(tc_id, tcdb_labels)
     elif 'TF' in gene_type:
         return 'TF'
+    elif 'prodoric' in gene_type:
+        return 'Regulator'
     elif 'STP' in gene_type:
         return 'STP'
+    elif 'Peptidase' in gene_type:
+        raw = annot.split('|')[-1] if '|' in annot else annot
+        return f'Peptidase ({raw})' if raw not in ['nan', ''] else 'Peptidase'
     elif annot in ['nan', ''] or pd.isna(gene['Gene Annotation']):
         return 'hypothetical'
     else:

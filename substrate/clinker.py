@@ -12,7 +12,9 @@ Colour assignment rules:
     single colour per class regardless of subfamily
   - Transporters: fixed colours per category (SusC, SusD etc.)
   - Hypothetical: grey
-  - TF, STP: fixed colours
+  - TF, STP, Peptidase: fixed colours
+  - Regulator: fixed colour, covers dbCAN's 'prodoric' gene type
+    (PRODORIC database cross-references for transcriptional regulators)
 
 All fixed category colours are loaded from default_colours.tsv
 so they can be edited without touching code.
