@@ -28,6 +28,20 @@ All notable changes to SubstrATE will be documented here.
   `--ref_mode diverse|relevant`
 
 ### Fixed
+- `clinker.py` and `genbank.py`: `prodoric` gene type (PRODORIC database
+  transcriptional regulator cross-references) now labelled as `Regulator`
+  with a dedicated colour (`#9970ab`) instead of falling through to
+  `hypothetical` (grey). Affects all existing clinker synteny plots --
+  regenerate outputs to see correct colouring.
+- `clinker.py` and `genbank.py`: `Peptidase` gene type now labelled
+  explicitly as `Peptidase` with a dedicated colour (`#5aae61`) instead
+  of falling through to `hypothetical`. Same regeneration note applies.
+- Raw GH/CBM family counts from `overview.tsv` must scan all four
+  annotation columns (`dbCAN_hmm`, `dbCAN_sub`, `DIAMOND`,
+  `Recommend Results`) to stay consistent with `family_hits.tsv`'s
+  `all_annotations` logic. Scanning only `dbCAN_hmm`/`dbCAN_sub`
+  undercounts genes whose family annotation appears only in `DIAMOND`
+  (e.g. `CBM1+GH3` in `DIAMOND` with `-` in `dbCAN_hmm`/`dbCAN_sub`).
 - `cli.py` `--ref_seqs`/`--ref_metadata` defaults now point to bundled
   reference data so reference sequences are appended automatically
   without requiring explicit flags — previously defaulted to `None`,

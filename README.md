@@ -412,6 +412,11 @@ substrate test-install
 substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db \
     --expasy /path/to/enzyme.dat \
     --tcdb /path/to/tc_family_definitions.tsv
+
+# Check database versions, reference sequence scrape date, and
+# activity patterns version
+substrate check-db --db_dir ~/db \
+    --ref_seqs /path/to/reference_seqs/by_family/
 ```
 
 ---
