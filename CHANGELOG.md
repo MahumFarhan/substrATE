@@ -4,6 +4,16 @@ All notable changes to SubstrATE will be documented here.
 
 ## [Unreleased]
 
+### Planning
+- v1.2.0 FAMILY_MAP plan updated: rather than dynamic derivation from
+  fam-substrate-mapping.tsv at runtime (which would include promiscuous
+  multi-substrate families and inflate canonical/non-canonical CGC calls),
+  v1.2.0 will replace the hardcoded FAMILY_MAP with a curated
+  family_map.tsv file (analogous to activity_patterns.tsv) with reviewed
+  and excluded columns, loaded at runtime but editable without touching
+  source code. Deliberate exclusions of promiscuous families are preserved
+  as explicit excluded=True entries with reasons.
+
 ### Added
 - `--ref_mode [diverse|relevant]` flag for `substrate run` — `diverse`
   (default) subsamples reference sequences for subfamily diversity;
