@@ -7,7 +7,7 @@ as the target substrate.
 
 *Christiangramia forsetii* KT0803 is a marine Flavobacteriia isolated
 from the North Sea. It encodes a well-characterised laminarin PUL,
-making it an ideal test case for SubstrATE. **CAUTION: Synteny plots will not render properly when only running one genome. See below for more detail.** 
+making it an ideal test case for SubstrATE. **CAUTION: Synteny plots will not render properly when only running one genome. See below for more detail.**
 
 **Time required:** ~30 minutes with default 8 threads (dominated by dbCAN annotation)
 
@@ -18,8 +18,15 @@ making it an ideal test case for SubstrATE. **CAUTION: Synteny plots will not re
 - SubstrATE installed and conda environment active (see
   [Installation](../README.md#installation))
 - dbCAN, EXPASY, and TCDB databases downloaded
-- Reference sequence database built (optional — tutorial uses merge
-  mode which does not require pre-built reference trees)
+- Reference sequence database built (optional but recommended — see
+  [Reference sequence database](../README.md#reference-sequence-database))
+
+> **What happens without the reference database?** SubstrATE will still
+> run successfully but will use merge or denovo mode for tree building
+> instead of place mode. Trees will have fewer reference sequences for
+> context and phylogenetic placement will be less accurate. The tutorial
+> uses merge mode by default since the reference tree database is not
+> bundled, but all steps work identically.
 
 ---
 
@@ -53,12 +60,42 @@ substrate run \
     --db_dir /path/to/dbcan/db \
     --expasy /path/to/enzyme.dat \
     --tcdb /path/to/tc_family_definitions.tsv \
-    --output results/tutorial/
+    --output results/tutorial/ \
+    --seed 42
 ```
 
 Replace `/path/to/...` with your actual database paths. If you followed
 the installation guide, these will be wherever you downloaded the
 databases during setup.
+
+The `--seed 42` flag fixes the random seed for reproducible trees and
+reference sequence subsampling. For publication figures, always use a
+fixed seed so results can be exactly reproduced.
+
+### Key optional flags
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--seed` | None | Fix random seed for reproducible trees and subsampling |
+| `--max_ref_seqs` | 50 | Maximum reference sequences appended per family for tree building |
+| `--nearest_refs` | 1 | Nearest references per genomic sequence kept for display |
+| `--max_display_refs` | 5 | Maximum total references shown in the displayed tree |
+| `--ref_mode` | `diverse` | Reference subsampling strategy (`diverse` or `relevant`) |
+
+For a publication-quality run with a larger dataset:
+```bash
+substrate run \
+    --substrate laminarin \
+    --genomes /path/to/genomes/ \
+    --db_dir /path/to/dbcan/db \
+    --expasy /path/to/enzyme.dat \
+    --tcdb /path/to/tc_family_definitions.tsv \
+    --output results/ \
+    --seed 42 \
+    --max_ref_seqs 20 \
+    --nearest_refs 1 \
+    --max_display_refs 5
+```
 
 ### What SubstrATE does
 
@@ -84,6 +121,7 @@ Step 7/7: Clinker synteny plot...
   Pipeline complete (X.X min)
   ✓ laminarin    SUCCESS
 ```
+
 ---
 
 ## 3. Explore the output
@@ -149,7 +187,7 @@ After each run, SubstrATE writes a `{substrate}_pattern_review.tsv` file
 to the substrate output directory. For this tutorial run it will be at:
 
 ```
-results/laminarin/laminarin_pattern_review.tsv
+results/tutorial/laminarin/laminarin_pattern_review.tsv
 ```
 
 Open it to see which activity patterns matched genes in your dataset,
@@ -183,37 +221,101 @@ substrate download-patterns --force
 After downloading, re-run the pipeline to apply the updated patterns.
 
 ---
+
 ## 5. Phylogenetic trees
 
 SubstrATE builds a separate tree for each CAZyme family with enough
-sequences. For laminarin, trees are built for GH16, GH17, GH55, and
-other families present in the dataset.
-
-Trees are written to `trees/` as IQ-TREE2 `.treefile` files. They are
-designed for use with [iTOL](https://itol.embl.de/) — upload the
-treefile and the annotation files from `itol_annotations/` to
-visualise them.
+sequences. For laminarin, trees are typically built for GH16, GH17,
+GH3, and other families present in the dataset.
 
 > **Note on reproducibility:** Trees built in merge or denovo mode
 > are not fully reproducible between runs due to IQ-TREE2's stochastic
-> tree search. For reproducible results, fix the random seed:
-> ```bash
-> substrate run --seed 42 --substrate laminarin ...
-> ```
-> Place mode trees are fully reproducible without a seed.
+> tree search. For reproducible results, fix the random seed with
+> `--seed 42`. The same seed also controls reference sequence
+> subsampling, so results are fully reproducible end-to-end.
+> Place mode trees are fully reproducible without a seed since the
+> reference topology is fixed.
+
+### Reference sequences in the tree
+
+SubstrATE automatically appends characterised reference sequences from
+CAZy to each family's FASTA before tree building. These are
+experimentally characterised enzymes with known EC numbers — they
+provide phylogenetic context and help interpret the enzymatic activities
+of your genomic sequences by showing where they cluster relative to
+characterised enzymes.
+
+Reference sequences are selected by CAZyme family (e.g. all
+characterised GH16 sequences), not by substrate, so your sequences are
+placed in the context of the full known functional diversity of that
+family.
+
+**Two trees are written per family:**
+
+- `trees/GH16.treefile` — the full tree used for IQ-TREE2 inference,
+  containing all reference sequences (up to `--max_ref_seqs`)
+- `trees/GH16.pruned.treefile` — a pruned version for display, keeping
+  only the reference sequences nearest to your genomic sequences
+
+Always upload the **pruned treefile** to iTOL for publication figures.
+The full treefile is preserved for reference.
+
+### Controlling reference sequence display
+
+The number of displayed references is controlled by two flags:
+
+- `--nearest_refs` (default 1) — for each genomic sequence, keep this
+  many nearest reference sequences (by branch length in the final tree)
+- `--max_display_refs` (default 5) — cap the total references displayed
+  per tree; if `--nearest_refs` would keep more, the references nearest
+  to the most genomic sequences are prioritised
+
+To experiment with different pruning settings without rebuilding trees:
+
+```bash
+substrate visualise \
+    --substrate laminarin \
+    --output results/tutorial/ \
+    --nearest_refs 2 \
+    --max_display_refs 10
+```
+
+Set `--nearest_refs 0` to disable pruning and display all reference
+sequences.
 
 ### Uploading to iTOL
 
 1. Go to [itol.embl.de](https://itol.embl.de/) and create a free
    account
-2. Upload the treefile from `trees/laminarin_GH16.treefile`
-3. Drag and drop the annotation files from `itol_annotations/` onto
+2. Upload the **pruned** treefile: `trees/GH16.pruned.treefile`
+3. Drag and drop all annotation files from `itol_annotations/` onto
    the tree
 
-The annotation files colour sequences by:
-- **Sample** — which genome each sequence comes from
-- **Activity** — enzymatic activity label
-- **Localisation** — canonical PUL, non-canonical CGC, or outside CGC
+The annotation files provide several independent layers:
+
+| File | Layer | Description |
+|---|---|---|
+| `*_sample.txt` | Genome colour strip | Which genome each sequence comes from |
+| `*_activity.txt` | Activity colour strip | Enzymatic activity label |
+| `*_localisation.txt` | Localisation colour strip | canonical_PUL / non_canonical_CGC / outside_CGC |
+| `*_localisation_symbols.txt` | Localisation symbols | Same information as symbols at leaf tips |
+| `*_branch_localisation.txt` | Branch colours | Localisation shown on branches |
+| `*_labels.txt` | Clean labels | Human-readable sequence names |
+| `*_label_styles.txt` | Label bold styling | Genomic sequences shown in bold |
+
+> **iTOL tip:** The localisation ring (`*_localisation.txt`) and
+> localisation symbols (`*_localisation_symbols.txt`) are separate
+> datasets with independent legends. You can hide the ring while keeping
+> the symbols visible — each has its own toggle in the iTOL Datasets
+> panel. Genomic sequences are displayed in **bold**; reference
+> sequences from CAZy are in normal weight.
+
+> **Reading reference sequences:** Reference sequences appear as grey
+> tips in the localisation strip (labelled `characterised_reference`).
+> Their activity strip shows their known enzymatic activity in a pastel
+> colour palette distinct from the genomic activity colours. This lets
+> you immediately see which characterised enzyme your genomic sequences
+> cluster nearest to.
 
 ![iTOL tree](Images/Tutorial_11.png)
 
@@ -221,20 +323,23 @@ The annotation files colour sequences by:
 
 ![iTOL tree](Images/Tutorial_8.png)
 
-*GH16 tree for C. forsetii KT0803 with sample and activity
-annotations. Reference sequences from CAZy are shown in grey.*
+*GH16 tree for C. forsetii KT0803 with sample, activity, and
+localisation annotations. Reference sequences from CAZy are shown with
+grey localisation strips and pastel activity colours.*
 
 ### Customising colours
 
 SubstrATE generates a colour configuration file at
-`laminarin_colour_config.tsv`. If you want to adjust the colours used for the tree, open this file as a spreadsheet, edit the
-colour assignments, and regenerate the iTOL annotations without
-rebuilding the tree:
+`laminarin_colour_config.tsv`. Open this file as a spreadsheet, edit
+the hex colour assignments for any sample, activity, or localisation
+category, then regenerate the iTOL annotations without rebuilding the
+tree:
 
 ```bash
 substrate visualise \
     --substrate laminarin \
-    --output results/tutorial/
+    --output results/tutorial/ \
+    --colour_config results/tutorial/laminarin/laminarin_colour_config.tsv
 ```
 
 ---
@@ -242,17 +347,17 @@ substrate visualise \
 ## 6. Synteny plot
 
 SubstrATE generates an interactive clinker synteny plot comparing all
-qualifying laminarin CGCs. CAUTION: This will not work if substrATE is only run on one genome- it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsettii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212 for the sake of showing what the plot should actually look like. Open
+qualifying laminarin CGCs. CAUTION: This will not work if SubstrATE is only run on one genome — it relies on comparison between different genomes. In this example, it was also run on *Christiangramia forsetii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212 for the sake of showing what the plot should actually look like. Open
 `clinker/laminarin_all_cgcs.html` in a web browser:
 
 ![Clinker synteny plot](Images/Tutorial_7.png)
 
-*Clinker synteny plot showing a greyed out PUL CGC diagram for the singular C. forsettii KT0803 genome which has nothing to compare to.*
+*Clinker synteny plot showing a greyed out PUL CGC diagram for the singular C. forsetii KT0803 genome which has nothing to compare to.*
 
 ![Clinker synteny plot](Images/Tutorial_12.png)
 
 *Clinker synteny plot showing gene organisation and homology across
-laminarin CGCs in *Christiangramia forsettii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212. Coloured blocks represent
+laminarin CGCs in *Christiangramia forsetii* KT0803, *Christiangramia flava* JLT2011 and *Christiangramia sediminicola* SM2212. Coloured blocks represent
 genes, connecting lines show homology.*
 
 The plot is interactive (when opened as an .html in browser) — hover over genes to see annotations, click
@@ -295,6 +400,21 @@ GH16 and GH17 family enzymes. You should see at least one
 - A TonB-dependent transporter (SusC-type, TCDB 1.B.14)
 - A SusD-like protein (TCDB 8.A.46)
 
+### Reading the phylogenetic trees
+
+When interpreting the trees in iTOL:
+
+- **Bold labels** — your genomic sequences
+- **Normal weight labels** — characterised reference sequences from CAZy
+- **Grey localisation strip** — reference sequences (`characterised_reference`)
+- **Pastel activity colours** — reference sequence enzymatic activities
+- **Saturated activity colours** — genomic sequence enzymatic activities
+
+Look for your genomic sequences clustering near references with known
+activities — this is the primary evidence for substrate annotation. A
+GH16 sequence clustering with characterised laminarinases (endo-1,3-β-glucanase,
+EC 3.2.1.39) is strong support for laminarin activity.
+
 ---
 
 ## 8. Running on multiple genomes
@@ -309,7 +429,11 @@ substrate run \
     --db_dir /path/to/dbcan/db \
     --expasy /path/to/enzyme.dat \
     --tcdb /path/to/tc_family_definitions.tsv \
-    --output results/multi_genome/
+    --output results/multi_genome/ \
+    --seed 42 \
+    --max_ref_seqs 20 \
+    --nearest_refs 1 \
+    --max_display_refs 5
 ```
 
 SubstrATE will annotate all genomes, build combined trees with
@@ -327,7 +451,8 @@ substrate run \
     --db_dir /path/to/dbcan/db \
     --expasy /path/to/enzyme.dat \
     --tcdb /path/to/tc_family_definitions.tsv \
-    --output results/multi_genome/
+    --output results/multi_genome/ \
+    --seed 42
 ```
 
 ---
@@ -359,3 +484,7 @@ substrate run \
   use `--substrate_terms` to provide search terms for automatic family
   derivation from the dbCAN database.
 
+- **Adjusting tree display** — experiment with `--nearest_refs` and
+  `--max_display_refs` via `substrate visualise` to find the right
+  balance between phylogenetic context and figure readability without
+  rebuilding trees.
