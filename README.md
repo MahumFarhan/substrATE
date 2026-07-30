@@ -57,6 +57,11 @@ dbCAN fam-substrate-mapping database at runtime.
 SubstrATE requires conda. If you do not have conda installed, download
 [Miniconda](https://docs.conda.io/en/latest/miniconda.html) first.
 
+> **Important:** Do not use `pip install` alone. SubstrATE depends on
+> bioinformatics tools (dbCAN, MAFFT, IQ-TREE2, trimAl, clinker) that
+> must be installed via conda. The `conda env create` command below
+> installs everything in one step.
+
 ```bash
 # Clone the repository
 git clone https://github.com/MahumFarhan/substrATE.git
