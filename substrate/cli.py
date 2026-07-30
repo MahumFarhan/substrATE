@@ -242,6 +242,10 @@ def main():
 @click.option('--nearest_refs', type=int, default=1, show_default=True,
               help='Number of nearest reference sequences to keep per genomic '
                    'sequence when pruning trees for display. Set to 0 to disable.')
+@click.option('--max_display_refs', type=int, default=5, show_default=True,
+              help='Maximum total reference sequences to display per tree. '
+                   'References are ranked by how many genomic sequences they '
+                   'are nearest to. Set to 0 to disable cap.')
 @click.option('--output', required=True, type=click.Path(),
               help='Base output directory. Each substrate gets its own '
                    'subdirectory: <output>/<substrate>/')
@@ -286,7 +290,7 @@ def main():
                    'family derivation (only needed for substrates not '
                    'in the built-in list)')
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
-        ref_metadata, ref_seqs, max_ref_seqs, ref_mode, nearest_refs, output, threads, pul_mode,
+        ref_metadata, ref_seqs, max_ref_seqs, ref_mode, nearest_refs, max_display_refs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
         max_colours, denovo, pattern_mode, overlap_threshold,
         substrate_terms):
@@ -738,7 +742,8 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                             _treefile = os.path.join(
                                 tree_dir, f'{family}.treefile')
                             tree.prune_tree_for_display(
-                                _treefile, nearest_refs=nearest_refs)
+                                _treefile, nearest_refs=nearest_refs,
+                                max_display_refs=max_display_refs)
 
                     except TooFewSequencesError as e:
                         _warn(f"Skipping {family}: {e}")
@@ -1000,6 +1005,10 @@ def tree_cmd(substrate, output, threads, seed):
 @click.option('--nearest_refs', type=int, default=1, show_default=True,
               help='Number of nearest reference sequences to keep per genomic '
                    'sequence when pruning trees for display. Set to 0 to disable.')
+@click.option('--max_display_refs', type=int, default=5, show_default=True,
+              help='Maximum total reference sequences to display per tree. '
+                   'References are ranked by how many genomic sequences they '
+                   'are nearest to. Set to 0 to disable cap.')
 @click.option('--max_colours', default=None, type=int,
               help='Maximum number of sample colours to generate '
                    'using HSL colour generation. Use when your dataset '
@@ -1007,7 +1016,7 @@ def tree_cmd(substrate, output, threads, seed):
 @click.option('--colour_config', type=click.Path(), default=None,
               help='Path to existing colour config TSV to use instead '
                    'of regenerating colours')
-def visualise(substrate, output, ref_metadata, nearest_refs, max_colours, colour_config):
+def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, max_colours, colour_config):
     """Generate iTOL annotation files only."""
     for sub in substrate:
         sub_output_dir = os.path.join(output, sub)
@@ -1030,7 +1039,8 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_colours, colour
                         from substrate import tree as _tree
                         _tree.prune_tree_for_display(
                             os.path.join(tree_dir, _tf),
-                            nearest_refs=nearest_refs)
+                            nearest_refs=nearest_refs,
+                            max_display_refs=max_display_refs)
         itol.generate_itol_annotations(
             seq_dir=seq_dir,
             output_dir=sub_output_dir,

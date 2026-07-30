@@ -215,11 +215,13 @@ def assign_activity_colours(activities, activity_palette):
     """
     # Fixed muted palette for reference substrates — kept separate from
     # genomic activity colours to avoid palette collisions
+    # Pastel/desaturated palette for references — clearly distinct
+    # from genomic activity colours but distinguishable from each other
     ref_palette = [
-        '#767676', '#b8860b', '#6b8e23', '#8b6914', '#4682b4',
-        '#8b4513', '#708090', '#9400d3', '#2e8b57', '#cd853f',
-        '#4a708b', '#8b2252', '#6b8e6b', '#b8733a', '#5f9ea0',
-        '#8b7355', '#7b6b8b', '#4f7942', '#8b3a62', '#6b7b5b',
+        '#f4a460', '#87ceeb', '#90ee90', '#dda0dd', '#f08080',
+        '#b0c4de', '#98fb98', '#ffb6c1', '#87cefa', '#ffa07a',
+        '#20b2aa', '#778899', '#66cdaa', '#da70d6', '#48d1cc',
+        '#ff7f50', '#6495ed', '#7b68ee', '#3cb371', '#bc8f8f',
     ]
     genomic = sorted(a for a in set(activities) if not a.startswith('reference: '))
     refs    = sorted(a for a in set(activities) if a.startswith('reference: '))
