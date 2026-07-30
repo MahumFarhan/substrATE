@@ -452,7 +452,7 @@ substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db \
 # activity patterns version
 substrate check-db --db_dir ~/db \
     --ref_seqs /path/to/reference_seqs/by_family/
-```
+````
 
 ---
 
