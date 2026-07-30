@@ -24,10 +24,18 @@ substrate = "substrate.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["substrate*"]
+include = ["substrate*", "tests*"]
 
 [tool.setuptools.package-data]
-substrate = ["data/*.tsv"]
+substrate = [
+    "data/*.tsv",
+    "data/*.txt",
+    "data/reference_seqs/**/*",
+    "data/reference_trees/**/*",
+]
+tests = [
+    "data/**/*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
