@@ -476,21 +476,21 @@ results/
 
 ### Key output files
 
-**`{substrate}_family_hits.tsv`** — All CAZyme family hits for the
+**{substrate}_family_hits.tsv** — All CAZyme family hits for the
 substrate, with columns including sample, gene ID, matched family,
 CGC ID, localisation (canonical_PUL / non_canonical_CGC / outside_CGC),
 and activity annotation.
 
-**`{substrate}_activity_annotated.tsv`** — Activity-annotated hits
+**{substrate}_activity_annotated.tsv** — Activity-annotated hits
 including reference sequences, used as input for iTOL and tree
 interpretation.
 
-**`{substrate}_colour_config.tsv`** — Colour assignments for samples,
+**{substrate}_colour_config.tsv** — Colour assignments for samples,
 activities, and localisations. Edit this file and rerun
 `substrate visualise` to regenerate iTOL annotations with custom
 colours without rebuilding trees.
 
-**`clinker/{substrate}_all_cgcs.html`** — Interactive clinker synteny
+**clinker/{substrate}_all_cgcs.html** — Interactive clinker synteny
 plot comparing all qualifying CGCs for the substrate.
 
 ---
