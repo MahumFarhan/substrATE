@@ -164,13 +164,18 @@ giving reproducible trees that are directly comparable across runs.
 ```bash
 substrate build-reference-trees \
     --threads 8 \
-    --max_seqs 150 \
+    --max_seqs 50 \
     --output substrate/data/reference_trees
 ```
 
 This step is not required if you are happy with the default merge
 behaviour, where SubstrATE builds a de novo tree per family with
 reference sequences merged in automatically.
+
+> **Note on reference sequence filtering:** Only characterised sequences
+> with a known EC number are included in reference trees and appended to
+> family FASTAs. Sequences without an EC number are excluded to ensure
+> all reference tips in the tree have interpretable enzymatic activity.
 
 To rebuild all reference trees, overwriting existing ones:
 ```bash
@@ -204,6 +209,34 @@ compare results.
 substrate run --ref_mode relevant --max_ref_seqs 20 ...
 ```
 
+### Tree display pruning
+
+After trees are built, SubstrATE prunes reference sequences for display
+using two parameters:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `--nearest_refs` | 1 | Number of nearest reference sequences to keep per genomic sequence (by branch length) |
+| `--max_display_refs` | 5 | Maximum total references displayed per tree; references are ranked by how many genomic sequences they are nearest to |
+
+This means the tree used for IQ-TREE2 inference retains all reference
+sequences (up to `--max_ref_seqs`), while the tree uploaded to iTOL
+shows only the most relevant ones. Set `--nearest_refs 0` to disable
+pruning entirely.
+
+```bash
+# Keep 2 nearest refs per genomic sequence, cap at 10 total
+substrate run --nearest_refs 2 --max_display_refs 10 ...
+# Disable pruning — show all reference sequences
+substrate run --nearest_refs 0 ...
+```
+
+Pruning can also be applied post-hoc without rebuilding trees:
+```bash
+substrate visualise --nearest_refs 2 --max_display_refs 10 \
+    --substrate laminarin --output results/
+```
+
 ### Tree building modes
 
 SubstrATE auto-selects a tree building mode per CAZyme family based
@@ -226,7 +259,9 @@ of available reference data.
 > **Note on reproducibility:** Merge and denovo mode trees are not
 > fully reproducible between runs — IQ-TREE2 uses stochastic
 > hill-climbing and random starting trees. For reproducible results,
-> use `--seed` to fix the random seed:
+> use `--seed` to fix the random seed. The same seed also controls
+> random subsampling of reference sequences, so results are fully
+> reproducible end-to-end:
 > ```bash
 > substrate run --seed 42 ...
 > ```

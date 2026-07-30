@@ -331,12 +331,19 @@ def write_branch_colours(out_file, leaf_data, colour_map, title):
 
 
 def write_leaf_symbols(out_file, leaf_data, colour_map, title):
-    """Write an iTOL DATASET_SYMBOL file for leaf tip shapes."""
+    """Write an iTOL DATASET_SYMBOL file for leaf tip shapes with legend."""
+    # Collect unique values present in data for legend
+    present = sorted(set(leaf_data.values()))
     with open(out_file, 'w') as f:
         f.write('DATASET_SYMBOL\n')
         f.write('SEPARATOR TAB\n')
         f.write(f'DATASET_LABEL\t{title}\n')
         f.write('COLOR\t#000000\n')
+        f.write(f'LEGEND_TITLE\t{title}\n')
+        f.write('LEGEND_SHAPES\t' + '\t'.join('1' for _ in present) + '\n')
+        f.write('LEGEND_COLORS\t' + '\t'.join(
+            colour_map.get(v, '#cccccc') for v in present) + '\n')
+        f.write('LEGEND_LABELS\t' + '\t'.join(present) + '\n')
         f.write('DATA\n')
         for leaf_id, value in leaf_data.items():
             colour = colour_map.get(value, '#cccccc')
