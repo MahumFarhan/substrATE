@@ -230,3 +230,104 @@ def build_tree(trimmed_path, output_prefix, threads=8,
         )
 
     return treefile
+
+
+def prune_tree_for_display(treefile, nearest_refs=1):
+    """
+    Prune a treefile for display by keeping only the N nearest reference
+    sequences to each genomic sequence (by branch length distance).
+    Args:
+        treefile:     path to input treefile (Newick)
+        nearest_refs: number of nearest references to keep per genomic sequence
+    Returns:
+        path to pruned treefile (written alongside original as .pruned.treefile)
+        or original treefile path if pruning is not needed
+    """
+    from Bio import Phylo
+    import copy
+
+    if not os.path.exists(treefile):
+        return treefile
+    tree = Phylo.read(treefile, 'newick')
+    terminals = tree.get_terminals()
+    genomic_ids = [t.name for t in terminals
+                   if not t.name.startswith('Reference__')]
+    ref_ids     = [t.name for t in terminals
+                   if t.name and t.name.startswith('Reference__')]
+    if not ref_ids or nearest_refs <= 0:
+        return treefile
+    if len(ref_ids) <= nearest_refs:
+        return treefile
+    # For each genomic sequence, find nearest N references
+    keep_refs = set()
+    for gid in genomic_ids:
+        distances = []
+        for rid in ref_ids:
+            try:
+                dist = tree.distance(gid, rid)
+                distances.append((dist, rid))
+            except Exception:
+                continue
+        distances.sort()
+        for _, rid in distances[:nearest_refs]:
+            keep_refs.add(rid)
+    # Prune: remove ref leaves not in keep_refs
+    remove_ids = set(ref_ids) - keep_refs
+    for name in remove_ids:
+        tree.prune(name)
+    pruned_path = treefile.replace('.treefile', '.pruned.treefile')
+    Phylo.write(tree, pruned_path, 'newick')
+    print(f"    Pruned tree: {len(genomic_ids)} genomic + "
+          f"{len(keep_refs)} reference sequences "
+          f"(removed {len(remove_ids)} refs)")
+    return pruned_path
+
+
+def prune_tree_for_display(treefile, nearest_refs=1):
+    """
+    Prune a treefile for display by keeping only the N nearest reference
+    sequences to each genomic sequence (by branch length distance).
+    Args:
+        treefile:     path to input treefile (Newick)
+        nearest_refs: number of nearest references to keep per genomic sequence
+    Returns:
+        path to pruned treefile (written alongside original as .pruned.treefile)
+        or original treefile path if pruning is not needed
+    """
+    from Bio import Phylo
+
+    if not os.path.exists(treefile):
+        return treefile
+    tree = Phylo.read(treefile, 'newick')
+    terminals = tree.get_terminals()
+    genomic_ids = [t.name for t in terminals
+                   if t.name and not t.name.startswith('Reference__')]
+    ref_ids     = [t.name for t in terminals
+                   if t.name and t.name.startswith('Reference__')]
+    if not ref_ids or nearest_refs <= 0:
+        return treefile
+    if len(ref_ids) <= nearest_refs:
+        return treefile
+    # For each genomic sequence find nearest N references by branch length
+    keep_refs = set()
+    for gid in genomic_ids:
+        distances = []
+        for rid in ref_ids:
+            try:
+                dist = tree.distance(gid, rid)
+                distances.append((dist, rid))
+            except Exception:
+                continue
+        distances.sort()
+        for _, rid in distances[:nearest_refs]:
+            keep_refs.add(rid)
+    # Remove ref leaves not in keep_refs
+    remove_ids = set(ref_ids) - keep_refs
+    for name in remove_ids:
+        tree.prune(name)
+    pruned_path = treefile.replace('.treefile', '.pruned.treefile')
+    Phylo.write(tree, pruned_path, 'newick')
+    print(f"    Pruned tree: {len(genomic_ids)} genomic + "
+          f"{len(keep_refs)} reference sequences "
+          f"(removed {len(remove_ids)} refs)")
+    return pruned_path

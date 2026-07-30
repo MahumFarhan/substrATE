@@ -895,6 +895,9 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
         # Filter to sequences present in the treefile
         family_key = family[len(substrate)+1:] if family.startswith(f'{substrate}_') else family
         treefile = os.path.join(output_dir, 'trees', f'{family_key}.treefile')
+        pruned   = os.path.join(output_dir, 'trees', f'{family_key}.pruned.treefile')
+        if os.path.exists(pruned):
+            treefile = pruned
         tree_ids = _get_tree_leaf_ids(treefile)
         if tree_ids:
             sample_data       = {k: v for k, v in sample_data.items()       if k in tree_ids}
