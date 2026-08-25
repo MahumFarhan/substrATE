@@ -1054,6 +1054,243 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, m
         _success(f"iTOL annotations written for {sub}")
 
 
+
+# ── reduced-tree subcommand ───────────────────────────────────────────────────
+
+@main.command('reduced-tree')
+@click.option('--substrate', required=True, multiple=True,
+              help='Target substrate(s)')
+@click.option('--output', required=True, type=click.Path(),
+              help='Base output directory (existing substrate run output)')
+@click.option('--family', default=None, multiple=True,
+              help='CAZyme family/families to include (e.g. GH16). '
+                   'If not specified, builds a tree for every family with hits.')
+@click.option('--activity', default=None, multiple=True,
+              help='Activity label(s) to include. If not specified, includes all activities.')
+@click.option('--localisation', default=None, multiple=True,
+              type=click.Choice(['canonical_PUL', 'non_canonical_CGC',
+                                 'outside_CGC', 'characterised_reference']),
+              help='Localisation filter(s). If not specified, includes all.')
+@click.option('--one-per-genome', is_flag=True, default=False,
+              help='Keep only the highest-confidence sequence per genome per family.')
+@click.option('--exclude-sample', default=None, multiple=True,
+              help='Sample name(s) to exclude.')
+@click.option('--exclude-samples-file', default=None, type=click.Path(),
+              help='Path to a text file with one sample name per line to exclude.')
+@click.option('--threads', default=8, show_default=True,
+              help='Number of threads for MAFFT and IQ-TREE2')
+@click.option('--seed', default=None, type=int,
+              help='Random seed for IQ-TREE2')
+@click.option('--nearest_refs', type=int, default=1, show_default=True,
+              help='Nearest reference sequences to keep per genomic sequence '
+                   'for display (0 = no references)')
+@click.option('--max_display_refs', type=int, default=5, show_default=True,
+              help='Maximum total reference sequences to display per tree')
+@click.option('--max_colours', default=None, type=int,
+              help='Maximum number of sample colours to generate')
+@click.option('--force', is_flag=True, default=False,
+              help='Overwrite existing reduced tree outputs')
+def reduced_tree(substrate, output, family, activity, localisation,
+                 one_per_genome, exclude_sample, exclude_samples_file,
+                 threads, seed, nearest_refs, max_display_refs, max_colours, force):
+    """Build reduced phylogenetic trees from existing substrate run output.
+
+    Filters sequences from an existing substrate run by family, activity,
+    and/or localisation, then builds trees and generates iTOL annotations
+    for the filtered sequences.
+
+    Examples:
+
+    \b
+    # All canonical PUL GH16 laminarinases
+    substrate reduced-tree --substrate laminarin --output results/ \
+        --family GH16 --localisation canonical_PUL \
+        --activity "glucan endo-1,3-beta-D-glucosidase"
+
+    \b
+    # All canonical PUL families (no family filter)
+    substrate reduced-tree --substrate laminarin --output results/ \
+        --localisation canonical_PUL
+    """
+    import shutil
+    from Bio import SeqIO
+
+    # Build exclusion set from flags and file
+    exclude_set = set(exclude_sample)
+    if exclude_samples_file and os.path.exists(exclude_samples_file):
+        with open(exclude_samples_file) as f:
+            exclude_set.update(line.strip() for line in f if line.strip())
+    if exclude_set:
+        click.echo(f"Excluding {len(exclude_set)} samples")
+
+    for sub in substrate:
+        sub_output_dir  = os.path.join(output, sub)
+        activity_file   = os.path.join(sub_output_dir,
+                                        f'{sub}_activity_annotated.tsv')
+
+        if not os.path.exists(activity_file):
+            click.echo(f"WARNING: No activity file found for {sub} at {activity_file}")
+            continue
+
+        hits = pd.read_csv(activity_file, sep='\t')
+
+        # Apply exclusions
+        if exclude_set:
+            hits = hits[~hits['sample'].isin(exclude_set)]
+
+        # Apply localisation filter
+        if localisation:
+            hits = hits[hits['localisation'].isin(localisation)]
+
+        # Apply activity filter
+        # If no activity specified, automatically filter to substrate-relevant
+        # activities using patterns from activity_patterns.tsv
+        if activity:
+            hits = hits[hits['activity'].isin(activity)]
+        else:
+            patterns_df = parse_substrates.load_patterns(
+                substrate=sub, patterns_file=_PATTERNS_FILE)
+            if not patterns_df.empty:
+                patterns = patterns_df['pattern'].tolist()
+                mask = hits['activity'].str.lower().apply(
+                    lambda a: any(p.lower() in str(a) for p in patterns)
+                )
+                hits = hits[mask]
+                click.echo(f'  Filtered to {len(hits)} hits matching '
+                           f'{len(patterns)} substrate patterns')
+
+        # Determine families to process
+        if family:
+            families = list(family)
+        else:
+            families = sorted(hits['matched_family'].dropna().unique())
+
+        click.echo(f"Processing {len(families)} families for {sub}")
+
+        for fam in families:
+            fam_hits = hits[hits['matched_family'] == fam]
+            if fam_hits.empty:
+                click.echo(f"  {fam}: no hits after filtering — skipping")
+                continue
+
+            if one_per_genome:
+                fam_hits = fam_hits.sort_values('#ofTools', ascending=False)
+                fam_hits = fam_hits.drop_duplicates(subset='sample', keep='first')
+
+            gene_ids = set(fam_hits['Gene ID'])
+            click.echo(f"  {fam}: {len(fam_hits)} hits across "
+                       f"{fam_hits['sample'].nunique()} genomes")
+
+            # Find source FAA
+            seq_dir  = os.path.join(sub_output_dir, 'sequences')
+            src_faa  = os.path.join(seq_dir, f'{sub}_{fam}.faa')
+            if not os.path.exists(src_faa):
+                click.echo(f"  {fam}: FAA not found at {src_faa} — skipping")
+                continue
+
+            # Build output directory
+            filter_label = '_'.join(filter(None, [
+                fam,
+                '_'.join(localisation) if localisation else None,
+                '1pg' if one_per_genome else None,
+            ]))
+            reduced_dir  = os.path.join(sub_output_dir, 'reduced_trees',
+                                         filter_label)
+            reduced_seq_dir = os.path.join(reduced_dir, sub, 'sequences')
+            os.makedirs(reduced_seq_dir, exist_ok=True)
+
+            # Skip if already exists and --force not set
+            out_faa = os.path.join(reduced_seq_dir, f'{sub}_{fam}.faa')
+            if os.path.exists(out_faa) and not force:
+                click.echo(f'  {fam}: already exists — skipping (use --force to overwrite)')
+                continue
+
+            # Filter FAA to matching gene IDs
+            # Reference sequences kept — pruned at display stage
+            records = [r for r in SeqIO.parse(src_faa, 'fasta')
+                       if r.id.startswith('Reference__') or
+                       any(gid in r.id for gid in gene_ids)]
+            SeqIO.write(records, out_faa, 'fasta')
+            click.echo(f"  {fam}: wrote {len(records)} sequences to {out_faa}")
+
+            if len(records) < 3:
+                click.echo(f"  {fam}: too few sequences for tree building — skipping")
+                continue
+
+            # Build tree
+            reduced_output = os.path.join(sub_output_dir, 'reduced_trees',
+                                           filter_label)
+            try:
+                _validate_tools(skip_clinker=True)
+                tree_dir     = os.path.join(reduced_output, sub, 'trees')
+                align_dir    = os.path.join(reduced_output, sub, 'alignments')
+                trimmed_dir  = os.path.join(reduced_output, sub, 'trimmed')
+                log_dir      = os.path.join(reduced_output, sub, 'logs')
+                os.makedirs(tree_dir,    exist_ok=True)
+                os.makedirs(align_dir,   exist_ok=True)
+                os.makedirs(trimmed_dir, exist_ok=True)
+                os.makedirs(log_dir,     exist_ok=True)
+
+                aligned = align.align(
+                    fasta_path  = out_faa,
+                    output_path = os.path.join(align_dir, f'{sub}_{fam}.aln'),
+                    threads     = threads,
+                    log_path    = os.path.join(log_dir, f'{fam}_mafft.log'),
+                )
+                trimmed = trim.trim(
+                    alignment_path = aligned,
+                    output_path    = os.path.join(trimmed_dir, f'{sub}_{fam}.trim'),
+                    log_path       = os.path.join(log_dir, f'{fam}_trimal.log'),
+                )
+                tree.build_tree(
+                    trimmed_path   = trimmed,
+                    output_prefix  = os.path.join(tree_dir, f'{sub}_{fam}'),
+                    threads        = threads,
+                    log_path       = os.path.join(log_dir, f'{fam}_iqtree.log'),
+                    seed           = seed,
+                )
+                click.echo(f"  ✓ {fam} tree built")
+            except TooFewSequencesError as e:
+                click.echo(f"  WARNING: {fam}: {e}")
+                continue
+            except Exception as e:
+                click.echo(f"  WARNING: {fam} tree failed: {e}")
+                continue
+
+            # Generate iTOL annotations
+            try:
+                # Copy activity file to reduced output dir for iTOL
+                reduced_act_file = os.path.join(reduced_output, sub,
+                                                 f'{sub}_activity_annotated.tsv')
+                fam_hits_out = hits[hits['matched_family'] == fam].copy()
+                if exclude_set:
+                    fam_hits_out = fam_hits_out[~fam_hits_out['sample'].isin(exclude_set)]
+                fam_hits_out.to_csv(reduced_act_file, sep='\t', index=False)
+
+                # Prune tree for display
+                treefile = os.path.join(tree_dir, f'{sub}_{fam}.treefile')
+                if nearest_refs > 0 and os.path.exists(treefile):
+                    tree.prune_tree_for_display(treefile,
+                                                nearest_refs=nearest_refs,
+                                                max_display_refs=max_display_refs)
+
+                itol.generate_itol_annotations(
+                    seq_dir            = reduced_seq_dir,
+                    output_dir         = os.path.join(reduced_output, sub),
+                    substrate          = sub,
+                    colours_file       = _COLOURS_FILE,
+                    activity_file      = reduced_act_file,
+                    ref_metadata       = _REF_METADATA,
+                    sample_metadata    = None,
+                    max_colours        = max_colours,
+                )
+                click.echo(f"  ✓ {fam} iTOL annotations written")
+            except Exception as e:
+                click.echo(f"  WARNING: {fam} iTOL failed: {e}")
+
+        click.echo(f"\nReduced trees written to: "
+                   f"{os.path.join(sub_output_dir, 'reduced_trees')}")
+
 # ── synteny subcommand ────────────────────────────────────────────────────────
 
 @main.command()
