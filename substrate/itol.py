@@ -794,6 +794,11 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
             activity = str(row['activity'])
             activity_map[gene_id] = activity
             activity_map[gene_id.replace('|', '_').replace('=', '_')] = activity
+    # Filter activity_colours to only include activities present in data
+    # This prevents phantom legend entries when reusing a colour config
+    present_activities = set(activity_map.values())
+    activity_colours = {k: v for k, v in activity_colours.items()
+                        if k in present_activities}
 
     # Collect all samples and activities across all family FASTAs
     all_samples    = set()
@@ -913,6 +918,11 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
             localisation_data = {k: v for k, v in localisation_data.items() if k in tree_ids}
             activity_data     = {k: v for k, v in activity_data.items()     if k in tree_ids}
             label_data        = {k: v for k, v in label_data.items()        if k in tree_ids}
+            # Rebuild activity_colours to only include activities present
+            # in the filtered data — prevents phantom legend entries
+            present_acts = set(activity_data.values())
+            activity_colours = {k: v for k, v in activity_colours.items()
+                                if k in present_acts}
             # Add Reference__ sequences in tree but not in FAA (place mode)
             for _leaf in tree_ids:
                 if _leaf.startswith('Reference__') and _leaf not in sample_data:

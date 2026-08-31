@@ -328,3 +328,24 @@ fucoidan	fucoidan	curated	True	strict
 fucoidan	fucanase	curated	True	strict
 fucoidan	fucosidase	curated	True	permissive
 fucoidan	fucan	curated	True	permissive
+laminarin	laminarinase	curated	True	strict
+laminarin	laminarin	curated	True	strict
+laminarin	glucan endo-1,3	curated	True	strict
+laminarin	glucan 1,3-beta	curated	True	strict
+laminarin	laminaribiose	curated	True	strict
+pullulan	pullulan	curated	True	strict
+pullulan	pullulanase	curated	True	strict
+pullulan	isopullulanase	curated	True	strict
+pullulan	neopullulanase	curated	True	strict
+inulin	inulin	curated	True	strict
+inulin	inulinase	curated	True	strict
+inulin	fructan	curated	True	strict
+inulin	fructooligosaccharide	curated	True	strict
+chondroitin_sulfate	chondroitin	curated	True	strict
+chondroitin_sulfate	chondroitinase	curated	True	strict
+chondroitin_sulfate	chondroitin sulfate	curated	True	strict
+hyaluronic_acid	hyaluronate	curated	True	strict
+hyaluronic_acid	hyaluronidase	curated	True	strict
+hyaluronic_acid	hyaluronic acid	curated	True	strict
+hyaluronic_acid	hyaluronoglucosaminidase	curated	True	strict
+hyaluronic_acid	hyaluronoglucuronidase	curated	True	strict
