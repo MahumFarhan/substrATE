@@ -794,12 +794,6 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
             activity = str(row['activity'])
             activity_map[gene_id] = activity
             activity_map[gene_id.replace('|', '_').replace('=', '_')] = activity
-    # Filter activity_colours to only include activities present in data
-    # This prevents phantom legend entries when reusing a colour config
-    present_activities = set(activity_map.values())
-    activity_colours = {k: v for k, v in activity_colours.items()
-                        if k in present_activities}
-
     # Collect all samples and activities across all family FASTAs
     all_samples    = set()
     all_activities = set()
@@ -879,10 +873,12 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
     itol_dir = os.path.join(output_dir, 'itol_annotations')
     os.makedirs(itol_dir, exist_ok=True)
 
+    _base_activity_colours = dict(activity_colours)
     for faa_file in sorted(os.listdir(seq_dir)):
         if not faa_file.endswith('.faa'):
             continue
 
+        activity_colours = dict(_base_activity_colours)
         family   = faa_file.replace('.faa', '')
         faa_path = os.path.join(seq_dir, faa_file)
 
