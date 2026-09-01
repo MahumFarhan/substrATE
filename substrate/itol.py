@@ -810,13 +810,27 @@ def assign_colours(seq_dir, output_dir, substrate, colours_file,
             all_samples.add(sample)
             all_activities.add(activity_map.get(gene_id, 'unknown'))
 
-    # Add reference substrates to activity set so they get colours
+    # Add reference activities to activity set so they get colours
+    # Includes both FAA-based and place-mode (treefile-only) references
     if ref_metadata and os.path.exists(ref_metadata):
         _families = {f.replace(".faa", "").split("_", 1)[-1]
                      for f in os.listdir(seq_dir) if f.endswith(".faa")}
         ref_sub_map = load_ref_substrate_map(ref_metadata, _families)
         for sub_val in ref_sub_map.values():
             all_activities.add(f'reference: {sub_val}')
+        # Also scan treefiles for place-mode references not in FAA
+        tree_dir = os.path.join(output_dir, 'trees')
+        if os.path.exists(tree_dir):
+            for tf in os.listdir(tree_dir):
+                if not tf.endswith('.treefile') or tf.endswith('.pruned.treefile'):
+                    continue
+                tf_path = os.path.join(tree_dir, tf)
+                for tip_id in _get_tree_leaf_ids(tf_path):
+                    if tip_id and tip_id.startswith('Reference__'):
+                        acc = tip_id.split('__')[1]
+                        act = ref_sub_map.get(acc)
+                        if act:
+                            all_activities.add(f'reference: {act}')
     sample_colours   = assign_sample_colours(all_samples, sample_palette,
                                               max_colours=max_colours)
     activity_colours = assign_activity_colours(all_activities,
@@ -920,11 +934,6 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
             localisation_data = {k: v for k, v in localisation_data.items() if k in tree_ids}
             activity_data     = {k: v for k, v in activity_data.items()     if k in tree_ids}
             label_data        = {k: v for k, v in label_data.items()        if k in tree_ids}
-            # Rebuild activity_colours to only include activities present
-            # in the filtered data — prevents phantom legend entries
-            present_acts = set(activity_data.values())
-            activity_colours = {k: v for k, v in activity_colours.items()
-                                if k in present_acts}
             # Add Reference__ sequences in tree but not in FAA (place mode)
             for _leaf in tree_ids:
                 if _leaf.startswith('Reference__') and _leaf not in sample_data:

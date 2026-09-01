@@ -1097,30 +1097,30 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, m
               help='Activity pattern mode for filtering sequences')
 def reduced_tree(substrate, output, family, activity, localisation,
                  one_per_genome, exclude_sample, exclude_samples_file,
-                 threads, seed, nearest_refs, max_display_refs, max_colours, force, force_visualise, pattern_mode):
+                 threads, seed, nearest_refs, max_display_refs, max_colours,
+                 force, force_visualise, pattern_mode):
     """Build reduced phylogenetic trees from existing substrate run output.
 
-    Filters sequences from an existing substrate run by family, activity,
-    and/or localisation, then builds trees and generates iTOL annotations
-    for the filtered sequences.
+    Prunes the existing full pruned treefile to keep only sequences matching
+    the specified filters, retaining the same reference sequences and colours
+    as the full tree.
 
     Examples:
 
     \b
     # All canonical PUL GH16 laminarinases
-    substrate reduced-tree --substrate laminarin --output results/ \
-        --family GH16 --localisation canonical_PUL \
-        --activity "glucan endo-1,3-beta-D-glucosidase"
+    substrate reduced-tree --substrate laminarin --output results/ \\
+        --family GH16 --localisation canonical_PUL
 
     \b
-    # All canonical PUL families (no family filter)
-    substrate reduced-tree --substrate laminarin --output results/ \
-        --localisation canonical_PUL
+    # All families for laminarin (auto activity filter from strict patterns)
+    substrate reduced-tree --substrate laminarin --output results/
     """
-    import shutil
-    from Bio import SeqIO
+    from Bio import Phylo
+    from Bio.Phylo.BaseTree import Tree
+    import io
 
-    # Build exclusion set from flags and file
+    # Build exclusion set
     exclude_set = set(exclude_sample)
     if exclude_samples_file and os.path.exists(exclude_samples_file):
         with open(exclude_samples_file) as f:
@@ -1129,12 +1129,11 @@ def reduced_tree(substrate, output, family, activity, localisation,
         click.echo(f"Excluding {len(exclude_set)} samples")
 
     for sub in substrate:
-        sub_output_dir  = os.path.join(output, sub)
-        activity_file   = os.path.join(sub_output_dir,
-                                        f'{sub}_activity_annotated.tsv')
-
+        sub_output_dir = os.path.join(output, sub)
+        activity_file  = os.path.join(sub_output_dir,
+                                       f'{sub}_activity_annotated.tsv')
         if not os.path.exists(activity_file):
-            click.echo(f"WARNING: No activity file found for {sub} at {activity_file}")
+            click.echo(f"WARNING: No activity file found for {sub}")
             continue
 
         hits = pd.read_csv(activity_file, sep='\t')
@@ -1147,9 +1146,7 @@ def reduced_tree(substrate, output, family, activity, localisation,
         if localisation:
             hits = hits[hits['localisation'].isin(localisation)]
 
-        # Apply activity filter
-        # If no activity specified, automatically filter to substrate-relevant
-        # activities using patterns from activity_patterns.tsv
+        # Apply activity filter — auto from strict patterns if not specified
         if activity:
             hits = hits[hits['activity'].isin(activity)]
         else:
@@ -1159,18 +1156,14 @@ def reduced_tree(substrate, output, family, activity, localisation,
             if not patterns_df.empty:
                 patterns = patterns_df['pattern'].tolist()
                 mask = hits['activity'].str.lower().apply(
-                    lambda a: any(p.lower() in str(a) for p in patterns)
-                )
+                    lambda a: any(p.lower() in str(a) for p in patterns))
                 hits = hits[mask]
                 click.echo(f'  Filtered to {len(hits)} hits matching '
-                           f'{len(patterns)} substrate patterns')
+                           f'{len(patterns)} {pattern_mode} patterns')
 
         # Determine families to process
-        if family:
-            families = list(family)
-        else:
-            families = sorted(hits['matched_family'].dropna().unique())
-
+        families = list(family) if family else sorted(
+            hits['matched_family'].dropna().unique())
         click.echo(f"Processing {len(families)} families for {sub}")
 
         for fam in families:
@@ -1183,119 +1176,105 @@ def reduced_tree(substrate, output, family, activity, localisation,
                 fam_hits = fam_hits.sort_values('#ofTools', ascending=False)
                 fam_hits = fam_hits.drop_duplicates(subset='sample', keep='first')
 
+            # Get gene IDs that pass the filter
             gene_ids = set(fam_hits['Gene ID'])
             click.echo(f"  {fam}: {len(fam_hits)} hits across "
                        f"{fam_hits['sample'].nunique()} genomes")
 
-            # Find source FAA
-            seq_dir  = os.path.join(sub_output_dir, 'sequences')
-            src_faa  = os.path.join(seq_dir, f'{sub}_{fam}.faa')
-            if not os.path.exists(src_faa):
-                click.echo(f"  {fam}: FAA not found at {src_faa} — skipping")
+            # Find the full pruned treefile
+            tree_dir   = os.path.join(sub_output_dir, 'trees')
+            pruned_tf  = os.path.join(tree_dir, f'{fam}.pruned.treefile')
+            full_tf    = os.path.join(tree_dir, f'{fam}.treefile')
+
+            if not os.path.exists(pruned_tf) and not os.path.exists(full_tf):
+                click.echo(f"  {fam}: no treefile found — skipping")
                 continue
 
-            # Build output directory
+            src_treefile = pruned_tf if os.path.exists(pruned_tf) else full_tf
+
+            # Output directory
             filter_label = '_'.join(filter(None, [
                 fam,
                 '_'.join(localisation) if localisation else None,
                 '1pg' if one_per_genome else None,
             ]))
-            reduced_dir  = os.path.join(sub_output_dir, 'reduced_trees',
-                                         filter_label)
-            reduced_seq_dir = os.path.join(reduced_dir, sub, 'sequences')
-            os.makedirs(reduced_seq_dir, exist_ok=True)
+            reduced_dir     = os.path.join(sub_output_dir, 'reduced_trees',
+                                            filter_label)
+            reduced_sub_dir = os.path.join(reduced_dir, sub)
+            reduced_tree_dir = os.path.join(reduced_sub_dir, 'trees')
+            reduced_seq_dir  = os.path.join(reduced_sub_dir, 'sequences')
+            reduced_itol_dir = os.path.join(reduced_sub_dir, 'itol_annotations')
+            out_treefile     = os.path.join(reduced_tree_dir, f'{fam}.treefile')
 
-            # Skip if already exists and neither --force nor --force-visualise set
-            out_faa = os.path.join(reduced_seq_dir, f'{sub}_{fam}.faa')
-            if os.path.exists(out_faa) and not force and not force_visualise:
-                click.echo(f'  {fam}: already exists — skipping (use --force to overwrite)')
+            if os.path.exists(out_treefile) and not force and not force_visualise:
+                click.echo(f'  {fam}: already exists — skipping '                           f'(use --force to overwrite)')
                 continue
 
-            # Filter FAA to matching gene IDs
-            # Reference sequences kept — pruned at display stage
-            records = [r for r in SeqIO.parse(src_faa, 'fasta')
-                       if r.id.startswith('Reference__') or
-                       any(gid in r.id for gid in gene_ids)]
-            SeqIO.write(records, out_faa, 'fasta')
-            click.echo(f"  {fam}: wrote {len(records)} sequences to {out_faa}")
+            if not force_visualise:
+                os.makedirs(reduced_tree_dir, exist_ok=True)
+                os.makedirs(reduced_seq_dir,  exist_ok=True)
 
-            if len(records) < 3:
-                click.echo(f"  {fam}: too few sequences for tree building — skipping")
-                continue
+                # Read and prune the tree
+                with open(src_treefile) as f:
+                    newick = f.read().strip()
+                src_tree = Phylo.read(io.StringIO(newick), 'newick')
 
-            # Build tree
-            reduced_output = os.path.join(sub_output_dir, 'reduced_trees',
-                                           filter_label)
-            tree_dir = os.path.join(reduced_output, sub, 'trees')
-            if force_visualise:
-                # Skip tree building — just redo iTOL annotations
-                treefile_check = os.path.join(tree_dir, f'{sub}_{fam}.treefile')
-                if not os.path.exists(treefile_check):
-                    click.echo(f'  {fam}: no treefile found — skipping')
-                    continue
-                click.echo(f'  {fam}: skipping tree build (--force-visualise)')
-            else:
-                try:
-                    _validate_tools(skip_clinker=True)
-                    align_dir    = os.path.join(reduced_output, sub, 'alignments')
-                    trimmed_dir  = os.path.join(reduced_output, sub, 'trimmed')
-                    log_dir      = os.path.join(reduced_output, sub, 'logs')
-                    os.makedirs(tree_dir,    exist_ok=True)
-                    os.makedirs(align_dir,   exist_ok=True)
-                    os.makedirs(trimmed_dir, exist_ok=True)
-                    os.makedirs(log_dir,     exist_ok=True)
-                    aligned = align.align(
-                        fasta_path  = out_faa,
-                        output_path = os.path.join(align_dir, f'{sub}_{fam}.aln'),
-                        threads     = threads,
-                        log_path    = os.path.join(log_dir, f'{fam}_mafft.log'),
-                    )
-                    trimmed = trim.trim(
-                        alignment_path = aligned,
-                        output_path    = os.path.join(trimmed_dir, f'{sub}_{fam}.trim'),
-                        log_path       = os.path.join(log_dir, f'{fam}_trimal.log'),
-                    )
-                    tree.build_tree(
-                        trimmed_path   = trimmed,
-                        output_prefix  = os.path.join(tree_dir, f'{sub}_{fam}'),
-                        threads        = threads,
-                        log_path       = os.path.join(log_dir, f'{fam}_iqtree.log'),
-                        seed           = seed,
-                    )
-                    click.echo(f"  ✓ {fam} tree built")
-                except TooFewSequencesError as e:
-                    click.echo(f"  WARNING: {fam}: {e}")
-                    continue
-                except Exception as e:
-                    click.echo(f"  WARNING: {fam} tree failed: {e}")
+                # Keep tips that match gene_ids OR are Reference__ sequences
+                def keep_tip(tip_name):
+                    if tip_name.startswith('Reference__'):
+                        return True
+                    # Leaf ID format: sample__geneID__subfamily__localisation
+                    parts = tip_name.split('__')
+                    if len(parts) >= 2:
+                        return parts[1] in gene_ids
+                    return False
+
+                tips_to_keep = [t.name for t in src_tree.get_terminals()
+                                if keep_tip(t.name)]
+
+                if len(tips_to_keep) < 3:
+                    click.echo(f'  {fam}: too few sequences after filtering '                               f'({len(tips_to_keep)}) — skipping')
                     continue
 
-            # Generate iTOL annotations
+                # Prune tree using ete3-free approach via Phylo
+                tips_to_prune = [t.name for t in src_tree.get_terminals()
+                                 if not keep_tip(t.name)]
+                for tip_name in tips_to_prune:
+                    src_tree.prune(tip_name)
+
+                Phylo.write(src_tree, out_treefile, 'newick')
+                click.echo(f'  ✓ {fam}: pruned tree written '                           f'({len(tips_to_keep)} tips)')
+
+                # Write filtered FAA for reference (sequences in tree)
+                src_faa = os.path.join(sub_output_dir, 'sequences',
+                                        f'{sub}_{fam}.faa')
+                if os.path.exists(src_faa):
+                    from Bio import SeqIO
+                    tips_set = set(tips_to_keep)
+                    records  = [r for r in SeqIO.parse(src_faa, 'fasta')
+                                if r.id in tips_set]
+                    out_faa  = os.path.join(reduced_seq_dir, f'{sub}_{fam}.faa')
+                    SeqIO.write(records, out_faa, 'fasta')
+
+            # Generate iTOL annotations using full tree colour config
             try:
-                # Copy activity file to reduced output dir for iTOL
-                reduced_act_file = os.path.join(reduced_output, sub,
+                os.makedirs(reduced_itol_dir, exist_ok=True)
+
+                # Write filtered activity TSV
+                reduced_act_file = os.path.join(reduced_sub_dir,
                                                  f'{sub}_activity_annotated.tsv')
-                # Use already-filtered hits so only sequences in the tree
-                # appear in the activity TSV — prevents phantom legend entries
-                fam_hits_out = fam_hits.copy()
-                fam_hits_out.to_csv(reduced_act_file, sep='\t', index=False)
+                fam_hits.to_csv(reduced_act_file, sep='\t', index=False)
 
-                # Prune tree for display
-                treefile = os.path.join(tree_dir, f'{sub}_{fam}.treefile')
-                if nearest_refs > 0 and os.path.exists(treefile):
-                    tree.prune_tree_for_display(treefile,
-                                                nearest_refs=nearest_refs,
-                                                max_display_refs=max_display_refs)
+                # Reuse original colour config
+                orig_colour_config = os.path.join(sub_output_dir,
+                                                   f'{sub}_colour_config.tsv')
+                colour_config_path = (orig_colour_config
+                                      if os.path.exists(orig_colour_config)
+                                      else None)
 
-                # Reuse colour config from original run so colours
-                # match between full and reduced trees
-                orig_colour_config = os.path.join(
-                    sub_output_dir, f'{sub}_colour_config.tsv')
-                colour_config_path = orig_colour_config if os.path.exists(
-                    orig_colour_config) else None
                 itol.generate_itol_annotations(
                     seq_dir            = reduced_seq_dir,
-                    output_dir         = os.path.join(reduced_output, sub),
+                    output_dir         = reduced_sub_dir,
                     substrate          = sub,
                     colours_file       = _COLOURS_FILE,
                     activity_file      = reduced_act_file,
@@ -1307,11 +1286,10 @@ def reduced_tree(substrate, output, family, activity, localisation,
                 click.echo(f"  ✓ {fam} iTOL annotations written")
             except Exception as e:
                 click.echo(f"  WARNING: {fam} iTOL failed: {e}")
+                import traceback; traceback.print_exc()
 
         click.echo(f"\nReduced trees written to: "
                    f"{os.path.join(sub_output_dir, 'reduced_trees')}")
-
-# ── synteny subcommand ────────────────────────────────────────────────────────
 
 @main.command()
 @click.option('--substrate', required=True, multiple=True,
