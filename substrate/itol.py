@@ -897,15 +897,21 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
 
         sample_data, localisation_data, activity_data, label_data = (
             parse_faa_annotations(
-                faa_path, activity_map, sample_labels, ref_label_map))
+                faa_path, activity_map, sample_labels, ref_label_map,
+                ref_substrate_map=ref_substrate_map))
 
         if not sample_data:
             continue
 
         # Filter to sequences present in the treefile
         family_key = family[len(substrate)+1:] if family.startswith(f'{substrate}_') else family
+        # Try both GH16.treefile and glycogen_GH16.treefile naming conventions
         treefile = os.path.join(output_dir, 'trees', f'{family_key}.treefile')
+        if not os.path.exists(treefile):
+            treefile = os.path.join(output_dir, 'trees', f'{family}.treefile')
         pruned   = os.path.join(output_dir, 'trees', f'{family_key}.pruned.treefile')
+        if not os.path.exists(pruned):
+            pruned = os.path.join(output_dir, 'trees', f'{family}.pruned.treefile')
         if os.path.exists(pruned):
             treefile = pruned
         tree_ids = _get_tree_leaf_ids(treefile)
@@ -927,9 +933,18 @@ def write_itol_annotations(seq_dir, output_dir, substrate,
                     sample_data[_leaf]       = 'Reference'
                     localisation_data[_leaf] = 'characterised_reference'
                     _ref_sub = ref_substrate_map.get(_acc)
+                    # Fall back to EXPASY activity if no substrate in metadata
+                    _ref_act = activity_map.get(_acc)
                     activity_data[_leaf]     = (
-                        f'reference: {_ref_sub}' if _ref_sub else 'unknown')
+                        f'reference: {_ref_sub}' if _ref_sub
+                        else f'reference: {_ref_act}' if _ref_act
+                        else 'unknown')
                     label_data[_leaf]        = ref_label_map.get(_acc, f'Reference {_acc}')
+            # Rebuild activity_colours after all sequences added
+            # to prevent phantom legend entries
+            present_acts = set(activity_data.values())
+            activity_colours = {k: v for k, v in activity_colours.items()
+                                if k in present_acts}
 
         if not sample_data:
             continue
