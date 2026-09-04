@@ -37,6 +37,21 @@ All notable changes to SubstrATE will be documented here.
 - README: "Reference sequence subsampling modes" subsection documenting
   `--ref_mode diverse|relevant`
 
+- `reduced-tree` subcommand: prunes an existing full pruned treefile to a
+  filtered subset of sequences (by `--family`, `--localisation`, and/or
+  `--activity`), without realigning or rebuilding the tree from scratch.
+  Reuses the same reference sequences and colour configuration as the full
+  run. Supports `--one-per-genome`, `--exclude-sample`/
+  `--exclude-samples-file`, and `--force-visualise` (regenerate iTOL
+  annotations only, without re-pruning). Activity-pattern filtering is
+  hardcoded to strict mode by design (see README) — not exposed as a user
+  option.
+- Strict activity patterns added for previously-missing substrates:
+  laminarin, pullulan, inulin, chondroitin_sulfate, hyaluronic_acid
+  (`substrate/data/activity_patterns.tsv`). `pustulan` removed from the
+  laminarin strict pattern set (β-1,6-glucan, not laminarin-specific).
+- Extended the activity colour palette from 10 to 20 distinct colours
+  (`substrate/data/default_colours.tsv`).
 ### Fixed
 - `clinker.py` and `genbank.py`: `prodoric` gene type (PRODORIC database
   transcriptional regulator cross-references) now labelled as `Regulator`
@@ -88,6 +103,26 @@ All notable changes to SubstrATE will be documented here.
     - xyloglucan: +GH26
     - alginate: +PL44
 
+- `itol.py`: cross-family activity colour contamination — `activity_colours`
+  was mutated inside the per-family loop without being restored, bleeding
+  colour assignments from one family into the next. Fixed by saving
+  `_base_activity_colours` before the loop and restoring it at the start
+  of each iteration.
+- `itol.py`: phantom legend entries caused by filtering `activity_colours`
+  before place-mode reference sequences were added to `activity_data`.
+  Fixed by moving the rebuild to after the place-mode reference block.
+- `itol.py`: treefile lookup only checked the `{family}.treefile` naming
+  convention; reduced trees and some substrate/family combinations use
+  `{substrate}_{family}.treefile`-style names. Lookup now tries both.
+- `itol.py`: `ref_substrate_map` was not being passed to
+  `parse_faa_annotations`, causing reference sequences to show `unknown`
+  activity in iTOL output.
+- `itol.py`: place-mode reference activities were missing from the colour
+  config because Phase 1 didn't scan treefiles for references absent from
+  the FAA. Added a treefile scan to `assign_colours`.
+- `itol.py`: a premature `activity_colours` rebuild (before place-mode
+  references were added) was stripping reference activities from the
+  colour config; removed.
 ## [0.1.0] - 2025-05-21
 
 ### Added

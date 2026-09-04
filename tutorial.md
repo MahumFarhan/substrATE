@@ -457,7 +457,57 @@ substrate run \
 
 ---
 
-## 9. Next steps
+## 9. Focused (reduced) trees
+
+The full GH16 tree built in step 5 includes every sequence extracted
+for the family — genomic hits at every localisation
+(`canonical_PUL`, `non_canonical_CGC`, `outside_CGC`) plus reference
+sequences. For a publication figure, you often want a smaller, focused
+tree — e.g. only the canonical-PUL laminarinase sequences.
+
+`substrate reduced-tree` builds this by pruning the existing full
+treefile, rather than rebuilding it from scratch:
+
+```
+substrate reduced-tree \
+    --substrate laminarin \
+    --output results/tutorial/ \
+    --family GH16 \
+    --localisation canonical_PUL \
+    --one-per-genome \
+    --seed 42
+```
+
+This is much faster than `substrate tree`, since it reuses the
+alignment and tree that `substrate run` already built — no realignment
+or re-inference happens. Because no `--activity` was specified, the
+strict laminarin activity patterns are applied automatically (see
+[Activity patterns](README.md#activity-patterns) — `--pattern_mode`
+for `reduced-tree` is intentionally not user-configurable, unlike for
+`substrate run`).
+
+Output is written to
+`results/tutorial/laminarin/reduced_trees/GH16_canonical_PUL_1pg/laminarin/`,
+containing its own `trees/`, `sequences/`, and `itol_annotations/` —
+upload the treefile from there to iTOL the same way as in step 5. Since
+`reduced-tree` reuses the full run's colour configuration, the reduced
+tree's colours will match the full tree's legend exactly, making the
+two figures easy to present side by side.
+
+If you want to tweak only the iTOL annotation afterwards (e.g. after
+editing the colour config) without re-pruning:
+
+```
+substrate reduced-tree \
+    --substrate laminarin \
+    --output results/tutorial/ \
+    --family GH16 \
+    --localisation canonical_PUL \
+    --one-per-genome \
+    --force-visualise
+```
+
+## 10. Next steps
 
 - **Analyse additional substrates** — add `--substrate alginate`,
   `--substrate fucoidan` etc. to the same run. SubstrATE runs all

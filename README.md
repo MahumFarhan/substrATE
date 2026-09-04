@@ -439,6 +439,60 @@ substrate synteny --substrate laminarin --output results/
 ````
 The `genbank/` directory must already exist from a previous run.
 
+#### Reduced tree
+
+Builds a filtered ("reduced") version of an existing family tree — for
+example, only the canonical-PUL sequences within one CAZyme family, or
+only sequences matching a specific activity. Unlike `substrate tree`,
+this does not realign or rebuild the tree from scratch: it prunes the
+tips of the existing pruned treefile down to the matching subset, which
+is much faster and guarantees the reduced tree's topology is a genuine
+subtree of the full one.
+
+`reduced-tree` requires that `substrate run` has already completed for
+the target substrate — it reads the existing pruned treefile and
+sequence FASTA from that run's output directory.
+
+```
+substrate reduced-tree \
+    --substrate laminarin \
+    --output results/ \
+    --family GH16 \
+    --localisation canonical_PUL \
+    --one-per-genome \
+    --nearest_refs 1 \
+    --max_display_refs 5 \
+    --threads 8 \
+    --seed 42
+```
+
+| Option | Description |
+|---|---|
+| `--family` | Restrict to one CAZyme family. Omit to include all families. |
+| `--localisation` | Restrict to a localisation category (e.g. `canonical_PUL`). |
+| `--activity` | Restrict to a specific activity string. If omitted, filters using the substrate's strict activity patterns automatically. |
+| `--one-per-genome` | Keep only the highest-confidence sequence per genome. |
+| `--exclude-sample` / `--exclude-samples-file` | Drop specific sample(s) from the reduced tree; repeatable / file-based. |
+| `--force` | Overwrite an existing reduced tree output. |
+| `--force-visualise` | Skip tree pruning entirely and only regenerate iTOL annotations from the existing reduced tree — use after an iTOL/colour-config fix, not after changing filter criteria. |
+
+Output is written to
+`{output}/{substrate}/reduced_trees/{filter_label}/{substrate}/`, where
+`{filter_label}` is built from whichever filters you supplied (family,
+localisation, and `1pg` if `--one-per-genome` was set), joined with
+underscores — e.g. `GH16_canonical_PUL_1pg`.
+
+`reduced-tree` reuses the full run's colour configuration
+(`{substrate}_colour_config.tsv`), so activity colours in the reduced
+tree match the full tree's legend exactly.
+
+> **Note:** activity-pattern filtering for `reduced-tree` is hardcoded
+> to strict mode — this is a deliberate choice, not a missing option.
+> Strict patterns avoid cross-substrate false positives that broader
+> patterns are prone to (e.g. `glycogen` matching generic
+> `glucan`/`glucosidase` hits). Use `--activity` for a specific string
+> instead of relaxing the pattern matching globally.
+
 #### Other utilities
 ````bash
 # List built-in substrates and reference sequence counts
