@@ -15,7 +15,8 @@ import click
 
 from substrate import (run_dbcan, classify_pul, activity,
                        extract_seqs, align, trim, tree,
-                       genbank, itol, clinker, parse_substrates)
+                       genbank, itol, clinker, parse_substrates,
+                       transporter_hmm)
 from substrate.align import TooFewSequencesError
 from substrate.align import ToolNotFoundError as AlignToolError
 from substrate.trim  import ToolNotFoundError as TrimToolError
@@ -289,11 +290,19 @@ def main():
               help='Comma-separated search terms for custom substrate '
                    'family derivation (only needed for substrates not '
                    'in the built-in list)')
+@click.option('--susc_hmm', default=None, type=click.Path(exists=True),
+              help='Path to TIGR04056.hmm (SusC, TIGRFAM). Combined with '
+                   '--susd_hmm, transporter detection during PUL '
+                   'classification uses both TCDB and HMM search against '
+                   'each genome\'s predicted proteins. If either is '
+                   'omitted, falls back to TCDB-only (original behaviour).')
+@click.option('--susd_hmm', default=None, type=click.Path(exists=True),
+              help='Path to PF07980.hmm (SusD, Pfam). See --susc_hmm.')
 def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
         ref_metadata, ref_seqs, max_ref_seqs, ref_mode, nearest_refs, max_display_refs, output, threads, pul_mode,
         min_substrate_cazymes, skip_tree, skip_clinker, force,
         max_colours, denovo, pattern_mode, overlap_threshold,
-        substrate_terms):
+        substrate_terms, susc_hmm, susd_hmm):
     """Run the full analysis pipeline."""
 
     os.makedirs(output, exist_ok=True)
@@ -336,6 +345,32 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
         raise click.ClickException(
             "Either --genomes or --dbcan_output must be provided."
         )
+
+    # ── HMM-based transporter evidence (once per run, reused across
+    # every substrate below — doesn't depend on substrate, only on
+    # the genome/dbCAN output) ──────────────────────────────────────
+    transporter_hmm_df = None
+    if susc_hmm and susd_hmm:
+        hmm_cache_path = os.path.join(cgc_output_dir,
+                                      'transporter_hmm_hits.tsv')
+        if os.path.exists(hmm_cache_path) and not force:
+            click.echo(
+                f"Using cached transporter HMM hits: {hmm_cache_path} "
+                f"(use --force to re-run hmmsearch)")
+            transporter_hmm_df = pd.read_csv(hmm_cache_path, sep='\t')
+        else:
+            _section("SusC/SusD HMM search")
+            click.echo("Running hmmsearch (TIGR04056 + PF07980) against "
+                      "each genome's predicted proteins...")
+            transporter_hmm_df = transporter_hmm.annotate_all_samples(
+                cgc_output_dir, susc_hmm, susd_hmm)
+            transporter_hmm_df.to_csv(hmm_cache_path, sep='\t', index=False)
+            _success(f"{len(transporter_hmm_df)} transporter HMM hits "
+                    f"written to {hmm_cache_path}")
+    elif susc_hmm or susd_hmm:
+        _warn("Both --susc_hmm and --susd_hmm are required to enable "
+             "HMM-based transporter detection — only one was given. "
+             "Falling back to TCDB-only classification.")
 
     # ── Survey and substrate selection ────────────────────────────────────────
     if not substrate:
@@ -476,6 +511,7 @@ def run(substrate, genomes, dbcan_output, db_dir, expasy, tcdb, seed,
                     substrate=sub,
                     pul_mode=pul_mode,
                     min_cazymes=min_substrate_cazymes,
+                    transporter_hmm_df=transporter_hmm_df,
                 )
             )
 
@@ -888,11 +924,30 @@ def annotate(genomes, db_dir, output, threads, force):
               help='PUL classification mode')
 @click.option('--min_substrate_cazymes', default=2, show_default=True,
               help='Minimum substrate CAZymes required per CGC')
+@click.option('--susc_hmm', default=None, type=click.Path(exists=True),
+              help='Path to TIGR04056.hmm (SusC, TIGRFAM). See run --help.')
+@click.option('--susd_hmm', default=None, type=click.Path(exists=True),
+              help='Path to PF07980.hmm (SusD, Pfam). See --susc_hmm.')
 def classify(substrate, dbcan_output, db_dir, output, pul_mode,
-             min_substrate_cazymes):
+             min_substrate_cazymes, susc_hmm, susd_hmm):
     """Run PUL classification only."""
     _validate_paths(dbcan_output=dbcan_output, db_dir=db_dir)
     fam_sub_map = _get_fam_sub_map(db_dir)
+
+    transporter_hmm_df = None
+    if susc_hmm and susd_hmm:
+        click.echo("Running SusC/SusD HMM search "
+                  "(TIGR04056 + PF07980)...")
+        transporter_hmm_df = transporter_hmm.annotate_all_samples(
+            dbcan_output, susc_hmm, susd_hmm)
+        hmm_out_path = os.path.join(output, 'transporter_hmm_hits.tsv')
+        os.makedirs(output, exist_ok=True)
+        transporter_hmm_df.to_csv(hmm_out_path, sep='\t', index=False)
+        _success(f"{len(transporter_hmm_df)} transporter HMM hits "
+                f"written to {hmm_out_path}")
+    elif susc_hmm or susd_hmm:
+        _warn("Both --susc_hmm and --susd_hmm are required — only one "
+             "was given. Falling back to TCDB-only classification.")
 
     for sub in substrate:
         sub_output_dir = os.path.join(output, sub)
@@ -905,6 +960,7 @@ def classify(substrate, dbcan_output, db_dir, output, pul_mode,
             substrate=sub,
             pul_mode=pul_mode,
             min_cazymes=min_substrate_cazymes,
+            transporter_hmm_df=transporter_hmm_df,
         )
 
         if not family_hits.empty:
