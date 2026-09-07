@@ -169,21 +169,39 @@ FAMILY_MAP = {
 # ── CGC classification ────────────────────────────────────────────────────────
 
 def classify_cgc(cgc_id, cgc_df, substrate_families,
-                 pul_mode='bacteroidetes', min_cazymes=2):
+                 pul_mode='bacteroidetes', min_cazymes=2,
+                 hmm_susc_ids=None, hmm_susd_ids=None):
     """
     Classify a CGC as canonical_PUL, non_canonical_CGC, or outside_CGC.
 
     Classification rules by pul_mode:
 
-      bacteroidetes: SusC/SusD (TCDB 1.B.14 or 8.A.46) present
+      bacteroidetes: SusC/SusD transporter present
                      AND >= min_cazymes substrate CAZymes
                      -> canonical_PUL
                      No SusC/SusD BUT >= min_cazymes substrate CAZymes
                      -> non_canonical_CGC
                      Otherwise -> outside_CGC
 
+                     "SusC/SusD transporter present" is evaluated from
+                     THREE evidence sources, combined with OR:
+                       - TCDB (1.B.14 or 8.A.46) substring match in the
+                         CGC's combined Gene Annotation text — the
+                         original, unchanged check.
+                       - Any gene in this CGC whose Protein ID appears
+                         in hmm_susc_ids (TIGR04056 / SusC hits).
+                       - Any gene in this CGC whose Protein ID appears
+                         in hmm_susd_ids (PF07980 / SusD hits).
+                     If hmm_susc_ids/hmm_susd_ids are both None (the
+                     default), behaviour is IDENTICAL to before this
+                     change — TCDB-only. Simply don't pass the HMM sets
+                     to reproduce the original classification exactly.
+
       generic:       Any TC gene present AND >= min_cazymes substrate CAZymes
                      -> canonical_PUL
+                     (HMM evidence is not used in generic mode — only
+                     bacteroidetes mode has the SusC/SusD-specific
+                     semantics these HMMs target.)
                      No TC gene BUT >= min_cazymes substrate CAZymes
                      -> non_canonical_CGC
                      Otherwise -> outside_CGC
@@ -198,6 +216,12 @@ def classify_cgc(cgc_id, cgc_df, substrate_families,
         substrate_families: list of CAZyme family strings for the substrate
         pul_mode:          'bacteroidetes', 'generic', or 'cazyme_only'
         min_cazymes:       minimum substrate CAZymes required per CGC
+        hmm_susc_ids:      set of Protein IDs with a TIGR04056 (SusC) hit
+                           for this sample, or None to disable HMM
+                           evidence entirely (TCDB-only, original
+                           behaviour).
+        hmm_susd_ids:      set of Protein IDs with a PF07980 (SusD) hit
+                           for this sample, or None.
 
     Returns:
         'canonical_PUL', 'non_canonical_CGC', or 'outside_CGC'
@@ -206,6 +230,7 @@ def classify_cgc(cgc_id, cgc_df, substrate_families,
     genes['Gene Annotation'] = genes['Gene Annotation'].fillna('')
 
     all_annots = ' '.join(genes['Gene Annotation'].astype(str))
+    cgc_gene_ids = set(genes['Protein ID'].astype(str))
 
     # Count substrate-specific CAZymes
     sub_cazyme_count = sum(
@@ -226,7 +251,10 @@ def classify_cgc(cgc_id, cgc_df, substrate_families,
         )
 
     else:  # bacteroidetes (default)
-        has_transporter = any(tc in all_annots for tc in SUSC_FAMILIES)
+        has_tcdb_transporter = any(tc in all_annots for tc in SUSC_FAMILIES)
+        has_hmm_susc = bool(hmm_susc_ids) and bool(cgc_gene_ids & hmm_susc_ids)
+        has_hmm_susd = bool(hmm_susd_ids) and bool(cgc_gene_ids & hmm_susd_ids)
+        has_transporter = has_tcdb_transporter or has_hmm_susc or has_hmm_susd
 
     if has_transporter and sub_cazyme_count >= min_cazymes:
         return 'canonical_PUL'
@@ -236,10 +264,38 @@ def classify_cgc(cgc_id, cgc_df, substrate_families,
         return 'outside_CGC'
 
 
+def get_transporter_sources(cgc_id, cgc_df, hmm_susc_ids=None, hmm_susd_ids=None):
+    """
+    Companion to classify_cgc(): returns WHICH evidence source(s)
+    triggered has_transporter for this CGC, for provenance tracking in
+    output tables. Does not affect classification itself — call this
+    separately alongside classify_cgc() when writing results.
+
+    Returns:
+        Sorted list of source labels, e.g. ['TCDB'], ['Pfam'],
+        ['TCDB', 'TIGRFAM'], or [] if no transporter evidence at all.
+        (Only meaningful for pul_mode='bacteroidetes'; returns [] for
+        other modes since they don't use SusC/SusD-specific evidence.)
+    """
+    genes = cgc_df[cgc_df['CGC#'] == cgc_id].copy()
+    genes['Gene Annotation'] = genes['Gene Annotation'].fillna('')
+    all_annots = ' '.join(genes['Gene Annotation'].astype(str))
+    cgc_gene_ids = set(genes['Protein ID'].astype(str))
+
+    sources = []
+    if any(tc in all_annots for tc in SUSC_FAMILIES):
+        sources.append('TCDB')
+    if hmm_susc_ids and (cgc_gene_ids & hmm_susc_ids):
+        sources.append('TIGRFAM')
+    if hmm_susd_ids and (cgc_gene_ids & hmm_susd_ids):
+        sources.append('Pfam')
+    return sorted(sources)
+
+
 # ── Sample processing ─────────────────────────────────────────────────────────
 
 def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
-                    min_cazymes=2):
+                    min_cazymes=2, transporter_hmm_df=None):
     """
     Iterate over all sample directories in cgc_output_dir and build
     substrate hit and family hit DataFrames.
@@ -250,10 +306,19 @@ def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
                         and FAMILY_MAP)
         pul_mode:       PUL classification mode (see classify_cgc)
         min_cazymes:    minimum substrate CAZymes required per CGC
+        transporter_hmm_df: combined DataFrame from
+                        transporter_hmm.annotate_all_samples() (columns:
+                        sample, Protein ID, transporter_role,
+                        hmm_accession, hmm_source), or None to disable
+                        HMM-based transporter evidence entirely
+                        (TCDB-only — identical to behaviour before this
+                        parameter was added).
 
     Returns:
         tuple of (substrate_hits_df, family_hits_df, overview_df)
         Any of these may be an empty DataFrame if no hits were found.
+        family_hits_df additionally has a 'transporter_source' column
+        (see get_transporter_sources()) once transporter_hmm_df is used.
     """
     if substrate not in FAMILY_MAP:
         raise ValueError(
@@ -319,6 +384,19 @@ def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
                     cgc_df['CGC#'].astype(str)
                 ))
 
+        # ── HMM-based transporter evidence for this sample ──────────────────
+        sample_hmm_susc_ids = set()
+        sample_hmm_susd_ids = set()
+        if transporter_hmm_df is not None and not transporter_hmm_df.empty:
+            sample_hmm = transporter_hmm_df[
+                transporter_hmm_df['sample'] == sample]
+            sample_hmm_susc_ids = set(
+                sample_hmm.loc[sample_hmm['transporter_role'] == 'SusC',
+                              'Protein ID'].astype(str))
+            sample_hmm_susd_ids = set(
+                sample_hmm.loc[sample_hmm['transporter_role'] == 'SusD',
+                              'Protein ID'].astype(str))
+
         # ── Family-level hits from overview.tsv ───────────────────────────────
         if os.path.exists(over_file):
             over_df = pd.read_csv(over_file, sep='\t')
@@ -347,12 +425,20 @@ def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
             all_overview.append(over_df)
 
             # Build per-CGC classifications for this substrate
-            cgc_classifications = {}
+            cgc_classifications      = {}
+            cgc_transporter_sources  = {}
             if not cgc_df.empty:
                 for cgc_id in cgc_df['CGC#'].unique():
                     cgc_classifications[cgc_id] = classify_cgc(
                         cgc_id, cgc_df, families,
-                        pul_mode=pul_mode, min_cazymes=min_cazymes
+                        pul_mode=pul_mode, min_cazymes=min_cazymes,
+                        hmm_susc_ids=sample_hmm_susc_ids,
+                        hmm_susd_ids=sample_hmm_susd_ids,
+                    )
+                    cgc_transporter_sources[cgc_id] = get_transporter_sources(
+                        cgc_id, cgc_df,
+                        hmm_susc_ids=sample_hmm_susc_ids,
+                        hmm_susd_ids=sample_hmm_susd_ids,
                     )
 
             # Match genes to substrate families and assign localisation
@@ -373,6 +459,11 @@ def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
                     fam_hits['CGC_id']
                     .map(cgc_classifications)
                     .fillna('outside_CGC')
+                )
+                fam_hits['transporter_source'] = (
+                    fam_hits['CGC_id']
+                    .map(cgc_transporter_sources)
+                    .apply(lambda s: ','.join(s) if isinstance(s, list) else '')
                 )
 
                 all_family_hits.append(fam_hits)
