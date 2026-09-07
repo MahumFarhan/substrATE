@@ -54,3 +54,7 @@ tests/test_data/
 *__non_canonical_CGC
 # Reference seqs zip in repo root
 reference_seqs.zip
+results/
+*.bak
+*.zip
+transporters/
