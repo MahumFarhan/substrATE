@@ -470,7 +470,8 @@ substrate reduced-tree \
 |---|---|
 | `--family` | Restrict to one CAZyme family. Omit to include all families. |
 | `--localisation` | Restrict to a localisation category (e.g. `canonical_PUL`). |
-| `--activity` | Restrict to a specific activity string. If omitted, filters using the substrate's strict activity patterns automatically. |
+| `--activity` | Restrict to a specific activity string. If omitted, filters using the substrate's activity patterns automatically (see `--pattern-mode`). |
+| `--pattern-mode` | `strict` (default) or `permissive`. Which of the substrate's activity patterns to filter by when `--activity` is omitted. Ignored if `--activity` is given. |
 | `--one-per-genome` | Keep only the highest-confidence sequence per genome. |
 | `--exclude-sample` / `--exclude-samples-file` | Drop specific sample(s) from the reduced tree; repeatable / file-based. |
 | `--force` | Overwrite an existing reduced tree output. |
@@ -486,12 +487,13 @@ underscores — e.g. `GH16_canonical_PUL_1pg`.
 (`{substrate}_colour_config.tsv`), so activity colours in the reduced
 tree match the full tree's legend exactly.
 
-> **Note:** activity-pattern filtering for `reduced-tree` is hardcoded
-> to strict mode — this is a deliberate choice, not a missing option.
-> Strict patterns avoid cross-substrate false positives that broader
-> patterns are prone to (e.g. `glycogen` matching generic
-> `glucan`/`glucosidase` hits). Use `--activity` for a specific string
-> instead of relaxing the pattern matching globally.
+> **Note:** `reduced-tree` defaults to `--pattern-mode strict`, unlike
+> `substrate run`, which defaults to permissive. Strict patterns avoid
+> the cross-substrate false positives that broader patterns are prone
+> to. Pass `--pattern-mode permissive` to filter by all of the
+> substrate's patterns instead, or `--activity` to select one specific
+> activity string. The option is spelled `--pattern-mode` for
+> `reduced-tree` and `--pattern_mode` for `substrate run`.
 
 #### Other utilities
 ````bash
@@ -724,14 +726,14 @@ Activity patterns are assigned one of two modes, which determine how
 they are applied during CGC filtering:
 
 **`permissive`** — the pattern is relevant for the substrate but the
-enzyme may also act on other substrates. Applied in both permissive
-and strict pipeline runs. Examples: `arabinosidase` for arabinoxylan
+enzyme may also act on other substrates. Applied only in permissive
+runs (the default); ignored in strict runs. Examples: `arabinosidase` for arabinoxylan
 (also acts on arabinogalactan), `glucosidase` for starch (broad
 substrate range).
 
 **`strict`** — the pattern is highly specific to the substrate and
-unlikely to produce false positives. Only applied when running with
-`--pattern_mode strict`. Examples: `xylanase` for xylan,
+unlikely to produce false positives. Applied in every run, and the
+only patterns used with `--pattern_mode strict`. Examples: `xylanase` for xylan,
 `laminarinase` for laminarin, `chitinase` for chitin.
 
 Use `--pattern_mode strict` for conservative filtering that reduces

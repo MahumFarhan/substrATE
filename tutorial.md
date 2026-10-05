@@ -482,9 +482,9 @@ This is much faster than `substrate tree`, since it reuses the
 alignment and tree that `substrate run` already built — no realignment
 or re-inference happens. Because no `--activity` was specified, the
 strict laminarin activity patterns are applied automatically (see
-[Activity patterns](README.md#activity-patterns) — `--pattern_mode`
-for `reduced-tree` is intentionally not user-configurable, unlike for
-`substrate run`).
+[Activity patterns](README.md#activity-patterns) — pass
+`--pattern-mode permissive` to filter by all of the substrate's
+patterns instead).
 
 Output is written to
 `results/tutorial/laminarin/reduced_trees/GH16_canonical_PUL_1pg/laminarin/`,

@@ -43,9 +43,9 @@ All notable changes to SubstrATE will be documented here.
   Reuses the same reference sequences and colour configuration as the full
   run. Supports `--one-per-genome`, `--exclude-sample`/
   `--exclude-samples-file`, and `--force-visualise` (regenerate iTOL
-  annotations only, without re-pruning). Activity-pattern filtering is
-  hardcoded to strict mode by design (see README) — not exposed as a user
-  option.
+  annotations only, without re-pruning). When `--activity` is omitted,
+  sequences are filtered by the substrate's activity patterns;
+  `--pattern-mode [strict|permissive]` selects which (default: strict).
 - Strict activity patterns added for previously-missing substrates:
   laminarin, pullulan, inulin, chondroitin_sulfate, hyaluronic_acid
   (`substrate/data/activity_patterns.tsv`). `pustulan` removed from the
