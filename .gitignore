@@ -58,3 +58,6 @@ results/
 *.bak
 *.zip
 transporters/
+
+# Tutorial genomes (downloaded from NCBI by the user)
+Tutorial/
