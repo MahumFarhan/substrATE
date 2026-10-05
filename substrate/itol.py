@@ -204,7 +204,16 @@ def assign_activity_colours(activities, activity_palette):
     Assign colours to activity labels from the activity palette.
 
     Activities are sorted alphabetically for reproducibility across
-    substrates.
+    substrates. If the number of distinct genomic activities exceeds
+    the fixed palette size, colours are generated programmatically via
+    _generate_hsl_palette() instead of cycling the fixed palette.
+
+    Unlike assign_sample_colours(), this HSL fallback is NOT gated
+    behind an opt-in flag (there's no --max_activity_colours). A
+    repeated colour in the activity legend means two DIFFERENT
+    activities are shown as visually identical -- a correctness issue,
+    not a cosmetic one a user might reasonably accept, unlike sample
+    colour cycling for very large sample counts.
 
     Args:
         activities:       iterable of activity label strings
@@ -215,8 +224,6 @@ def assign_activity_colours(activities, activity_palette):
     """
     # Fixed muted palette for reference substrates — kept separate from
     # genomic activity colours to avoid palette collisions
-    # Pastel/desaturated palette for references — clearly distinct
-    # from genomic activity colours but distinguishable from each other
     ref_palette = [
         '#f4a460', '#87ceeb', '#90ee90', '#dda0dd', '#f08080',
         '#b0c4de', '#98fb98', '#ffb6c1', '#87cefa', '#ffa07a',
@@ -225,8 +232,20 @@ def assign_activity_colours(activities, activity_palette):
     ]
     genomic = sorted(a for a in set(activities) if not a.startswith('reference: '))
     refs    = sorted(a for a in set(activities) if a.startswith('reference: '))
-    result  = {act: activity_palette[i % len(activity_palette)]
-               for i, act in enumerate(genomic)}
+
+    n_genomic    = len(genomic)
+    palette_size = len(activity_palette)
+
+    if n_genomic > palette_size:
+        print(f"INFO: {n_genomic} distinct activities exceed the "
+              f"activity colour palette size ({palette_size}) -- "
+              f"using HSL colour generation ({n_genomic} colours) so "
+              f"no two activities share a colour.")
+        genomic_palette = _generate_hsl_palette(n_genomic)
+    else:
+        genomic_palette = activity_palette
+
+    result = {act: genomic_palette[i] for i, act in enumerate(genomic)}
     result.update({act: ref_palette[i % len(ref_palette)]
                    for i, act in enumerate(refs)})
     return result

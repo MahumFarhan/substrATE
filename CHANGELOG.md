@@ -50,9 +50,14 @@ All notable changes to SubstrATE will be documented here.
   laminarin, pullulan, inulin, chondroitin_sulfate, hyaluronic_acid
   (`substrate/data/activity_patterns.tsv`). `pustulan` removed from the
   laminarin strict pattern set (β-1,6-glucan, not laminarin-specific).
-- Extended the activity colour palette from 10 to 20 distinct colours
+- Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Fixed
+- `default_colours.tsv`: removed five duplicate entries from the activity
+  palette, which could give two different activities the same colour.
+- `itol.py`: when a run has more distinct genomic activities than the
+  activity palette holds, colours are now generated programmatically
+  instead of cycling the palette, which also produced duplicate colours.
 - `clinker.py` and `genbank.py`: `prodoric` gene type (PRODORIC database
   transcriptional regulator cross-references) now labelled as `Regulator`
   with a dedicated colour (`#9970ab`) instead of falling through to
