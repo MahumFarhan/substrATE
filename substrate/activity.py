@@ -79,9 +79,11 @@ def normalise_activity(activity, family):
         return activity[:57] + '...'
 
     # Normalise non-standard alpha/beta prefixes
+    # The lookbehind stops 'a-gluco' matching inside 'alpha-gluco' or
+    # 'beta-gluco' (which produced 'alphalpha-'/'betalpha-' names).
     for variant, canonical in PREFIX_NORMALISATION.items():
-        if variant in activity:
-            activity = activity.replace(variant, canonical)
+        activity = re.sub(r'(?<![A-Za-z])' + re.escape(variant),
+                          canonical, activity)
 
     return activity
 

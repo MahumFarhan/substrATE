@@ -168,6 +168,17 @@ class TestNormaliseActivity:
         assert 'alpha-manno' in result
         assert 'beta-gluco' in result
 
+    def test_spelled_out_alpha_not_doubled(self):
+        assert normalise_activity('alpha-glucosidase', 'GH31') == 'alpha-glucosidase'
+        assert normalise_activity('glucan 1,4-alpha-glucosidase', 'GH15') == 'glucan 1,4-alpha-glucosidase'
+
+    def test_spelled_out_beta_not_mangled(self):
+        assert normalise_activity('6-phospho-beta-glucosidase', 'GH1') == '6-phospho-beta-glucosidase'
+        assert normalise_activity('glucan 1,3-beta-glucosidase', 'GH3') == 'glucan 1,3-beta-glucosidase'
+
+    def test_prefix_normalised_mid_string(self):
+        assert normalise_activity('sucrose a-glucosidase', 'GH31') == 'sucrose alpha-glucosidase'
+
     def test_whitespace_stripped(self):
         assert normalise_activity('  laminarinase  ', 'GH16') == 'laminarinase'
 

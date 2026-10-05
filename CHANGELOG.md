@@ -53,6 +53,14 @@ All notable changes to SubstrATE will be documented here.
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Fixed
+- `activity.py`: activity names containing a spelled-out `alpha-` or
+  `beta-` prefix were mangled by prefix normalisation (e.g.
+  `alpha-glucosidase` became `alphalpha-glucosidase`, and
+  `beta-glucosidase` became `betalpha-glucosidase`). Affected names
+  for gluco-, galacto-, manno-, fuco- and xylo- enzymes in activity
+  tables and iTOL legends. Re-run the pipeline to regenerate
+  activity annotations. The `count.py` whitelists, which had been
+  extended with the malformed names, now use the correct ones.
 - `default_colours.tsv`: removed five duplicate entries from the activity
   palette, which could give two different activities the same colour.
 - `itol.py`: when a run has more distinct genomic activities than the
