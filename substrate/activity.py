@@ -131,7 +131,9 @@ def load_family_activities(fam_sub_map):
                           names=['substrate_cat', 'specific_substrate',
                                  'family', 'activity', 'ec_number'])
     fam_map['family']    = fam_map['family'].astype(str).str.strip()
-    fam_map['ec_number'] = fam_map['ec_number'].astype(str).str.strip()
+    # fillna first: from pandas 3, astype(str) leaves missing values as
+    # NaN rather than the text 'nan', so the check below would miss them
+    fam_map['ec_number'] = fam_map['ec_number'].fillna('').astype(str).str.strip()
     fam_map['activity']  = fam_map['activity'].astype(str).str.strip()
 
     family_ec_map = {}
@@ -320,7 +322,7 @@ def annotate_references(ref_metadata, families, expasy_file=None, fam_sub_map=No
                 family_activities,
             ), axis=1
         )
-    else:
+    elif '_activity' not in ref_meta.columns:
         ref_meta['_activity'] = 'unknown'
 
     if 'ec_numbers' in ref_meta.columns:

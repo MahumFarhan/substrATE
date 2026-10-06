@@ -351,47 +351,47 @@ class TestLoadFamilyActivities:
 class TestAnnotateReferences:
 
     def test_current_schema_loaded(self, minimal_ref_metadata):
-        df = annotate_references(minimal_ref_metadata, 'laminarin')
+        df = annotate_references(minimal_ref_metadata, {'GH16', 'GH17'})
         assert len(df) == 2
         assert set(df['Gene ID']) == {'WP_001', 'WP_002'}
 
     def test_legacy_schema_loaded(self, legacy_ref_metadata):
-        df = annotate_references(legacy_ref_metadata, 'laminarin')
+        df = annotate_references(legacy_ref_metadata, {'GH55'})
         assert len(df) == 1
         assert df.iloc[0]['activity'] == 'exo-1,3-beta-glucosidase'
 
-    def test_substrate_filter_applied(self, minimal_ref_metadata):
-        """Only rows for the requested substrate are returned."""
-        df = annotate_references(minimal_ref_metadata, 'xylan')
+    def test_family_filter_applied(self, minimal_ref_metadata):
+        """Only rows for the requested families are returned."""
+        df = annotate_references(minimal_ref_metadata, {'GH10'})
         assert len(df) == 1
         assert df.iloc[0]['Gene ID'] == 'WP_003'
 
-    def test_empty_for_missing_substrate(self, minimal_ref_metadata):
-        df = annotate_references(minimal_ref_metadata, 'starch')
+    def test_empty_for_missing_family(self, minimal_ref_metadata):
+        df = annotate_references(minimal_ref_metadata, {'GH13'})
         assert df.empty
 
     def test_missing_file_returns_empty(self, tmp_path):
         df = annotate_references(
-            str(tmp_path / 'nonexistent.tsv'), 'laminarin')
+            str(tmp_path / 'nonexistent.tsv'), {'GH16'})
         assert df.empty
 
     def test_required_columns_present(self, minimal_ref_metadata):
-        df = annotate_references(minimal_ref_metadata, 'laminarin')
+        df = annotate_references(minimal_ref_metadata, {'GH16', 'GH17'})
         for col in ['Gene ID', 'sample', 'substrate_category',
                     'matched_family', 'localisation', 'activity']:
             assert col in df.columns
 
     def test_sample_is_reference(self, minimal_ref_metadata):
-        df = annotate_references(minimal_ref_metadata, 'laminarin')
+        df = annotate_references(minimal_ref_metadata, {'GH16', 'GH17'})
         assert (df['sample'] == 'Reference').all()
 
     def test_localisation_is_characterised_reference(self, minimal_ref_metadata):
-        df = annotate_references(minimal_ref_metadata, 'laminarin')
+        df = annotate_references(minimal_ref_metadata, {'GH16', 'GH17'})
         assert (df['localisation'] == 'characterised_reference').all()
 
     def test_current_schema_activity_includes_ec(self, minimal_ref_metadata):
         """Current schema activity is formatted as 'name [ec]'."""
-        df = annotate_references(minimal_ref_metadata, 'laminarin')
+        df = annotate_references(minimal_ref_metadata, {'GH16', 'GH17'})
         wp001 = df[df['Gene ID'] == 'WP_001'].iloc[0]
         assert 'Laminarinase A' in wp001['activity']
         assert '3.2.1.39' in wp001['activity']

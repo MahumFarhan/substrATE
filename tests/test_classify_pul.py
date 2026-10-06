@@ -345,3 +345,116 @@ class TestFamilyMap:
         for substrate, families in FAMILY_MAP.items():
             assert len(families) == len(set(families)), (
                 f"{substrate}: duplicate families found")
+
+
+# ── HMM-based transporter evidence ────────────────────────────────────────────
+
+from substrate.classify_pul import get_transporter_sources
+
+
+def _two_cazymes_no_tcdb():
+    """CGC with 2 substrate CAZymes and no TCDB transporter.
+    Protein IDs are gene_0, gene_1, gene_2 (see make_cgc_df)."""
+    return make_cgc_df([
+        ('CGC1', 'CAZyme', 'GH16'),
+        ('CGC1', 'CAZyme', 'GH17'),
+        ('CGC1', 'null',   'hypothetical protein'),
+    ])
+
+
+class TestHmmTransporterEvidence:
+
+    def test_without_hmm_sets_is_non_canonical(self):
+        """Baseline: no TCDB hit and no HMM data -> non_canonical_CGC."""
+        result = classify_cgc(
+            'CGC1', _two_cazymes_no_tcdb(), SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2)
+        assert result == 'non_canonical_CGC'
+
+    def test_susc_hmm_hit_gives_canonical(self):
+        result = classify_cgc(
+            'CGC1', _two_cazymes_no_tcdb(), SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2,
+            hmm_susc_ids={'gene_2'}, hmm_susd_ids=set())
+        assert result == 'canonical_PUL'
+
+    def test_susd_hmm_hit_gives_canonical(self):
+        result = classify_cgc(
+            'CGC1', _two_cazymes_no_tcdb(), SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2,
+            hmm_susc_ids=set(), hmm_susd_ids={'gene_2'})
+        assert result == 'canonical_PUL'
+
+    def test_hmm_hit_outside_cgc_is_ignored(self):
+        """An HMM hit on a gene that is not in this CGC does not count."""
+        result = classify_cgc(
+            'CGC1', _two_cazymes_no_tcdb(), SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2,
+            hmm_susc_ids={'gene_99'}, hmm_susd_ids={'gene_98'})
+        assert result == 'non_canonical_CGC'
+
+    def test_hmm_hit_does_not_bypass_min_cazymes(self):
+        """A transporter hit alone is not enough without enough CAZymes."""
+        cgc_df = make_cgc_df([
+            ('CGC1', 'CAZyme', 'GH16'),
+            ('CGC1', 'null',   'hypothetical protein'),
+        ])
+        result = classify_cgc(
+            'CGC1', cgc_df, SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2,
+            hmm_susc_ids={'gene_1'}, hmm_susd_ids=set())
+        assert result != 'canonical_PUL'
+
+    def test_hmm_evidence_not_used_in_generic_mode(self):
+        """generic mode requires a TC gene; HMM hits are not consulted."""
+        result = classify_cgc(
+            'CGC1', _two_cazymes_no_tcdb(), SUBSTRATE_FAMILIES,
+            pul_mode='generic', min_cazymes=2,
+            hmm_susc_ids={'gene_2'}, hmm_susd_ids={'gene_2'})
+        assert result == 'non_canonical_CGC'
+
+    def test_tcdb_result_unchanged_when_hmm_sets_empty(self):
+        cgc_df = make_cgc_df([
+            ('CGC1', 'CAZyme', 'GH16'),
+            ('CGC1', 'CAZyme', 'GH17'),
+            ('CGC1', 'TC',     '1.B.14'),
+        ])
+        result = classify_cgc(
+            'CGC1', cgc_df, SUBSTRATE_FAMILIES,
+            pul_mode='bacteroidetes', min_cazymes=2,
+            hmm_susc_ids=set(), hmm_susd_ids=set())
+        assert result == 'canonical_PUL'
+
+
+class TestGetTransporterSources:
+
+    def test_no_evidence_returns_empty_list(self):
+        assert get_transporter_sources('CGC1', _two_cazymes_no_tcdb()) == []
+
+    def test_tcdb_only(self):
+        cgc_df = make_cgc_df([
+            ('CGC1', 'CAZyme', 'GH16'),
+            ('CGC1', 'TC',     '8.A.46'),
+        ])
+        assert get_transporter_sources('CGC1', cgc_df) == ['TCDB']
+
+    def test_susc_hmm_reported_as_tigrfam(self):
+        sources = get_transporter_sources(
+            'CGC1', _two_cazymes_no_tcdb(), hmm_susc_ids={'gene_2'})
+        assert sources == ['TIGRFAM']
+
+    def test_susd_hmm_reported_as_pfam(self):
+        sources = get_transporter_sources(
+            'CGC1', _two_cazymes_no_tcdb(), hmm_susd_ids={'gene_2'})
+        assert sources == ['Pfam']
+
+    def test_all_sources_sorted(self):
+        cgc_df = make_cgc_df([
+            ('CGC1', 'CAZyme', 'GH16'),
+            ('CGC1', 'TC',     '1.B.14'),
+            ('CGC1', 'null',   'hypothetical protein'),
+        ])
+        sources = get_transporter_sources(
+            'CGC1', cgc_df,
+            hmm_susc_ids={'gene_1'}, hmm_susd_ids={'gene_2'})
+        assert sources == ['Pfam', 'TCDB', 'TIGRFAM']

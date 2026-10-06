@@ -139,12 +139,8 @@ def annotate_all_samples(cgc_output_dir, susc_hmm_path, susd_hmm_path):
 
     Returns:
         Combined DataFrame across all samples (same columns as
-        annotate_sample). Write this to a single
-        'transporter_hmm_hits.tsv' at the cgc_output_dir level, or
-        wherever classify_pul.py's caller expects to load it from —
-        this is the one piece of wiring I haven't finalized yet (see
-        chat) since I don't yet know the exact path convention
-        process_samples()/cli.py should read it from.
+        annotate_sample). `substrate run` caches this as
+        'transporter_hmm_hits.tsv' in cgc_output_dir.
     """
     all_hits = []
     for entry in sorted(os.listdir(cgc_output_dir)):

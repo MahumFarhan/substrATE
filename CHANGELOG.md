@@ -69,6 +69,16 @@ All notable changes to SubstrATE will be documented here.
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Fixed
+- `activity.py`: `load_family_activities()` no longer keeps rows with a
+  missing EC number under pandas 3, where `astype(str)` leaves missing
+  values as NaN instead of the text `'nan'`.
+- `activity.py`: `annotate_references()` overwrote reference activities
+  with `unknown` when called without EXPASY data. The pipeline always
+  passes EXPASY data, so pipeline output is unchanged.
+- Tests: updated `TestAnnotateReferences` to the current
+  `annotate_references(ref_metadata, families)` signature; added tests
+  for HMM transporter evidence, `transporter_hmm.py` and activity
+  colour assignment.
 - `activity.py`: activity names containing a spelled-out `alpha-` or
   `beta-` prefix were mangled by prefix normalisation (e.g.
   `alpha-glucosidase` became `alphalpha-glucosidase`, and
