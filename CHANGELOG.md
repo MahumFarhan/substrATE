@@ -69,6 +69,18 @@ All notable changes to SubstrATE will be documented here.
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Fixed
+- `reduced-tree`: tree tips are now matched on sample and gene ID
+  together. Matching on the gene ID alone could keep a gene from a
+  different (or excluded) genome that shared the same ID, which is
+  possible when assemblies use generic contig names.
+- `reduced-tree`: now also finds trees named
+  `{substrate}_{family}.treefile`, as written by the standalone
+  `substrate tree` command. Previously only `substrate run` output
+  (`{family}.treefile`) was found and other trees were skipped.
+- `reduced-tree`: corrected the `--activity` help text.
+- Tests: added `tests/test_reduced_tree.py` and
+  `tests/test_process_samples.py`, which run on small synthetic
+  output folders.
 - `classify_pul.py`, `scripts/build_gh_counts_tsv.py`: under pandas 3, a
   gene with an empty cell in any of dbCAN's `dbCAN_hmm`, `dbCAN_sub`,
   `DIAMOND` or `Recommend Results` columns was silently dropped from

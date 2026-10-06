@@ -1122,7 +1122,9 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, m
               help='CAZyme family/families to include (e.g. GH16). '
                    'If not specified, builds a tree for every family with hits.')
 @click.option('--activity', default=None, multiple=True,
-              help='Activity label(s) to include. If not specified, includes all activities.')
+              help='Activity label(s) to include (exact match). If not '
+                   'specified, filters by the substrate\'s activity '
+                   'patterns (see --pattern-mode).')
 @click.option('--localisation', default=None, multiple=True,
               type=click.Choice(['canonical_PUL', 'non_canonical_CGC',
                                  'outside_CGC', 'characterised_reference']),
@@ -1232,21 +1234,32 @@ def reduced_tree(substrate, output, family, activity, localisation,
                 fam_hits = fam_hits.sort_values('#ofTools', ascending=False)
                 fam_hits = fam_hits.drop_duplicates(subset='sample', keep='first')
 
-            # Get gene IDs that pass the filter
-            gene_ids = set(fam_hits['Gene ID'])
+            # (sample, gene ID) pairs that pass the filter. Matching on
+            # the gene ID alone would also keep a different genome's gene
+            # that happens to share the ID (e.g. 'contig_1_5'). Gene IDs
+            # are cleaned the same way as when the tree tips were named.
+            gene_ids = set(zip(
+                fam_hits['sample'].astype(str),
+                fam_hits['Gene ID'].astype(str).map(extract_seqs._clean_id)))
             click.echo(f"  {fam}: {len(fam_hits)} hits across "
                        f"{fam_hits['sample'].nunique()} genomes")
 
             # Find the full pruned treefile
             tree_dir   = os.path.join(sub_output_dir, 'trees')
-            pruned_tf  = os.path.join(tree_dir, f'{fam}.pruned.treefile')
-            full_tf    = os.path.join(tree_dir, f'{fam}.treefile')
+            # `substrate run` names trees {family}.treefile; the standalone
+            # `substrate tree` names them {substrate}_{family}.treefile.
+            # Prefer a pruned tree, then fall back to the full one.
+            candidates = [
+                f'{fam}.pruned.treefile', f'{sub}_{fam}.pruned.treefile',
+                f'{fam}.treefile',        f'{sub}_{fam}.treefile',
+            ]
+            src_treefile = next(
+                (os.path.join(tree_dir, c) for c in candidates
+                 if os.path.exists(os.path.join(tree_dir, c))), None)
 
-            if not os.path.exists(pruned_tf) and not os.path.exists(full_tf):
+            if src_treefile is None:
                 click.echo(f"  {fam}: no treefile found — skipping")
                 continue
-
-            src_treefile = pruned_tf if os.path.exists(pruned_tf) else full_tf
 
             # Output directory
             filter_label = '_'.join(filter(None, [
@@ -1282,7 +1295,7 @@ def reduced_tree(substrate, output, family, activity, localisation,
                     # Leaf ID format: sample__geneID__subfamily__localisation
                     parts = tip_name.split('__')
                     if len(parts) >= 2:
-                        return parts[1] in gene_ids
+                        return (parts[0], parts[1]) in gene_ids
                     return False
 
                 tips_to_keep = [t.name for t in src_tree.get_terminals()
