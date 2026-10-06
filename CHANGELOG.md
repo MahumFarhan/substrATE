@@ -69,6 +69,22 @@ All notable changes to SubstrATE will be documented here.
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Changed
+- Glycogen strict activity patterns revised. The generic terms `amylo`,
+  `glucan` and `glucosidase` were tagged strict while `glycogen` and
+  `isoamylase` were tagged permissive, so strict mode kept unrelated
+  enzymes (e.g. beta-glucosidases, alpha-1,3-glucanase) and dropped
+  glycogen phosphorylase and isoamylase. The strict set is now
+  `glycogen`, `isoamylase`, `amylo-alpha-1,6-glucosidase`,
+  `1,4-alpha-glucan`, `4-alpha-glucanotransferase`,
+  `glucan phosphorylase` and `glucan 1,4-alpha`. Alpha-amylase and
+  alpha-glucosidase remain permissive-only, as they act on other
+  alpha-glucans too. **Glycogen results in strict mode change**
+  (including `reduced-tree`, which defaults to strict); permissive-mode
+  results are unchanged.
+- `activity_patterns.tsv`: removed 15 rows where a pattern was listed
+  as both strict and permissive for the same substrate (laminarin,
+  pullulan, inulin, chondroitin_sulfate, hyaluronic_acid). No effect
+  on results.
 - `reduced-tree`: removed the `--threads`, `--seed`, `--nearest_refs` and
   `--max_display_refs` options. They were accepted but had no effect,
   because `reduced-tree` prunes an existing tree rather than rebuilding
