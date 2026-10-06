@@ -333,17 +333,43 @@ class TestLoadFamilyActivities:
     def test_returns_dict(self, minimal_fam_sub_map):
         assert isinstance(load_family_activities(minimal_fam_sub_map), dict)
 
-    def test_missing_ec_excluded(self, tmp_path):
-        """Rows with no EC number are excluded from the list."""
+    def test_empty_ec_kept_as_name_only_fallback(self, tmp_path):
+        """Rows with an empty EC cell are kept, with '-' as the EC, so
+        families without any EC number still have a fallback name."""
         content = (
-            "cat\tsub\tGH16\tlaminarinase\tnan\n"
+            "cat\tsub\tCBM48\tglycogen-binding module\t\n"
             "cat\tsub\tGH17\tbeta-glucosidase\t3.2.1.21\n"
         )
         p = tmp_path / "fam.tsv"
         p.write_text(content)
         fam_acts = load_family_activities(str(p))
-        assert fam_acts.get('GH16', []) == []
-        assert len(fam_acts['GH17']) == 1
+        assert fam_acts['CBM48'] == [('-', 'glycogen-binding module')]
+        assert fam_acts['GH17'] == [('3.2.1.21', 'beta-glucosidase')]
+
+    def test_file_order_preserved_with_mixed_rows(self, tmp_path):
+        """The fallback uses the first row for a family, so order matters."""
+        content = (
+            "cat\tsub\tGH65\tfirst name\t\n"
+            "cat\tsub\tGH65\tsecond name\t2.4.1.8\n"
+        )
+        p = tmp_path / "fam.tsv"
+        p.write_text(content)
+        fam_acts = load_family_activities(str(p))
+        assert [a for _, a in fam_acts['GH65']] == ['first name', 'second name']
+
+    def test_dash_ec_excluded(self, tmp_path):
+        """A literal '-' in the EC column is not treated as an entry."""
+        p = tmp_path / "fam.tsv"
+        p.write_text("cat\tsub\tGH16\tlaminarinase\t-\n")
+        assert load_family_activities(str(p))['GH16'] == []
+
+    def test_family_without_ec_still_gets_a_label(self, tmp_path):
+        """A gene with no EC in a family with no EC rows must not be
+        labelled 'unknown'."""
+        p = tmp_path / "fam.tsv"
+        p.write_text("cat\tsub\tCBM48\tglycogen-binding module\t\n")
+        fam_acts = load_family_activities(str(p))
+        assert get_activity_label('-', 'CBM48', {}, fam_acts) != 'unknown'
 
 
 # ── annotate_references ───────────────────────────────────────────────────────

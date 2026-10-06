@@ -118,8 +118,13 @@ def load_ec_names(expasy_file):
 def load_family_activities(fam_sub_map):
     """
     Parse dbCAN fam-substrate-mapping.tsv and return a dict of
-    family -> list of (ec, activity) tuples.
+    family -> list of (ec, activity) tuples, in file order.
     Used as fallback when no EC number is available for a gene.
+
+    Rows whose EC cell is empty are kept, with '-' as the EC, because
+    the fallback only needs the activity name. Without them, families
+    that have no EC numbers at all (e.g. CBMs) would be labelled
+    'unknown'.
 
     Args:
         fam_sub_map: path to dbCAN fam-substrate-mapping.tsv
@@ -131,19 +136,23 @@ def load_family_activities(fam_sub_map):
                           names=['substrate_cat', 'specific_substrate',
                                  'family', 'activity', 'ec_number'])
     fam_map['family']    = fam_map['family'].astype(str).str.strip()
-    # fillna first: from pandas 3, astype(str) leaves missing values as
-    # NaN rather than the text 'nan', so the check below would miss them
-    fam_map['ec_number'] = fam_map['ec_number'].fillna('').astype(str).str.strip()
+    # Decide which EC cells are empty before converting to text, so the
+    # result does not depend on how the pandas version writes missing
+    # values (pandas 2: the text 'nan'; pandas 3: still missing).
+    ec_missing           = fam_map['ec_number'].isna()
+    fam_map['ec_number'] = fam_map['ec_number'].fillna('-').astype(str).str.strip()
     fam_map['activity']  = fam_map['activity'].astype(str).str.strip()
 
     family_ec_map = {}
-    for _, row in fam_map.iterrows():
+    for (_, row), missing in zip(fam_map.iterrows(), ec_missing):
         fam = row['family']
         ec  = row['ec_number']
         act = row['activity']
         if fam not in family_ec_map:
             family_ec_map[fam] = []
-        if ec not in ['nan', '', '-']:
+        if missing:
+            family_ec_map[fam].append(('-', act))   # name-only fallback
+        elif ec not in ['nan', '', '-']:
             family_ec_map[fam].append((ec, act))
     return family_ec_map
 

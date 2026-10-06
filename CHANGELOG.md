@@ -108,9 +108,11 @@ All notable changes to SubstrATE will be documented here.
   `DIAMOND` or `Recommend Results` columns was silently dropped from
   family matching. Empty cells are now treated as `-` (no hit). Output
   is unchanged where dbCAN's `overview.tsv` has no empty cells.
-- `activity.py`: `load_family_activities()` no longer keeps rows with a
-  missing EC number under pandas 3, where `astype(str)` leaves missing
-  values as NaN instead of the text `'nan'`.
+- `activity.py`: `load_family_activities()` now behaves the same under
+  pandas 2 and pandas 3. Rows with an empty EC cell are kept as
+  name-only fallback entries, so families with no EC numbers (e.g. CBMs)
+  are labelled by name instead of `unknown`. This matches the behaviour
+  of runs made under pandas 3.
 - `activity.py`: `annotate_references()` overwrote reference activities
   with `unknown` when called without EXPASY data. The pipeline always
   passes EXPASY data, so pipeline output is unchanged.
