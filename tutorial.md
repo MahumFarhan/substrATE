@@ -474,8 +474,7 @@ substrate reduced-tree \
     --output results/tutorial/ \
     --family GH16 \
     --localisation canonical_PUL \
-    --one-per-genome \
-    --seed 42
+    --one-per-genome
 ```
 
 This is much faster than `substrate tree`, since it reuses the

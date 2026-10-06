@@ -1135,15 +1135,6 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, m
               help='Sample name(s) to exclude.')
 @click.option('--exclude-samples-file', default=None, type=click.Path(),
               help='Path to a text file with one sample name per line to exclude.')
-@click.option('--threads', default=8, show_default=True,
-              help='Number of threads for MAFFT and IQ-TREE2')
-@click.option('--seed', default=None, type=int,
-              help='Random seed for IQ-TREE2')
-@click.option('--nearest_refs', type=int, default=1, show_default=True,
-              help='Nearest reference sequences to keep per genomic sequence '
-                   'for display (0 = no references)')
-@click.option('--max_display_refs', type=int, default=5, show_default=True,
-              help='Maximum total reference sequences to display per tree')
 @click.option('--max_colours', default=None, type=int,
               help='Maximum number of sample colours to generate')
 @click.option('--force', is_flag=True, default=False,
@@ -1155,8 +1146,7 @@ def visualise(substrate, output, ref_metadata, nearest_refs, max_display_refs, m
               help='Activity pattern mode for filtering sequences')
 def reduced_tree(substrate, output, family, activity, localisation,
                  one_per_genome, exclude_sample, exclude_samples_file,
-                 threads, seed, nearest_refs, max_display_refs, max_colours,
-                 force, force_visualise, pattern_mode):
+                 max_colours, force, force_visualise, pattern_mode):
     """Build reduced phylogenetic trees from existing substrate run output.
 
     Prunes the existing full pruned treefile to keep only sequences matching

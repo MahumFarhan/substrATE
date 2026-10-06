@@ -68,6 +68,12 @@ All notable changes to SubstrATE will be documented here.
   laminarin strict pattern set (β-1,6-glucan, not laminarin-specific).
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
+### Changed
+- `reduced-tree`: removed the `--threads`, `--seed`, `--nearest_refs` and
+  `--max_display_refs` options. They were accepted but had no effect,
+  because `reduced-tree` prunes an existing tree rather than rebuilding
+  one. Commands that pass them will now report an unknown option.
+
 ### Fixed
 - `reduced-tree`: tree tips are now matched on sample and gene ID
   together. Matching on the gene ID alone could keep a gene from a

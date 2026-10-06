@@ -482,11 +482,7 @@ substrate reduced-tree \
     --output results/ \
     --family GH16 \
     --localisation canonical_PUL \
-    --one-per-genome \
-    --nearest_refs 1 \
-    --max_display_refs 5 \
-    --threads 8 \
-    --seed 42
+    --one-per-genome
 ```
 
 | Option | Description |
