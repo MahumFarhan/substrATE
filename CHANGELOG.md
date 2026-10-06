@@ -15,6 +15,22 @@ All notable changes to SubstrATE will be documented here.
   as explicit excluded=True entries with reasons.
 
 ### Added
+- HMM-based SusC/SusD transporter detection, supplementing TCDB
+  (`substrate/transporter_hmm.py`). New `--susc_hmm` and `--susd_hmm`
+  options for `substrate run` and `substrate classify` take TIGR04056
+  (SusC, TIGRFAM) and PF07980 (SusD, Pfam) profiles, which are searched
+  with `hmmsearch --cut_tc` against each genome's predicted proteins.
+  In `bacteroidetes` mode a CGC now counts as having a transporter if
+  it has TCDB, TIGR04056 or PF07980 evidence. Off by default; both
+  options are required to enable it. Addresses under-calling of
+  `canonical_PUL` caused by TCDB's sparse SusD coverage.
+- `transporter_source` column in `{substrate}_family_hits.tsv` when HMM
+  detection is enabled, recording the evidence source(s) per CGC.
+- HMM hits cached in `cgc_output/transporter_hmm_hits.tsv` and reused
+  unless `--force` is given.
+- `scripts/download_transporter_hmms.sh` to download and extract the
+  two HMM profiles.
+- `hmmer=3.4` added to `environment.yml`.
 - `--ref_mode [diverse|relevant]` flag for `substrate run` — `diverse`
   (default) subsamples reference sequences for subfamily diversity;
   `relevant` keeps references phylogenetically closest to genomic

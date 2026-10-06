@@ -87,6 +87,7 @@ The main external tools are:
 | trimAl | 1.5 | Alignment trimming |
 | IQ-TREE2 | 3.1.1 | Phylogenetic tree inference |
 | clinker | 0.0.32 | Synteny plot generation |
+| HMMER | 3.4 | SusC/SusD transporter HMM search (optional step) |
 
 Python dependencies: `biopython`, `pandas`, `click`, `requests`,
 `beautifulsoup4`.
@@ -123,6 +124,26 @@ Download the TCDB family definitions file:
 ```bash
 wget https://www.tcdb.org/public/tcdb -O tc_family_definitions.tsv
 ```
+
+### SusC/SusD transporter HMMs (optional)
+
+TCDB contains few SusD reference sequences, so TCDB-only transporter
+detection can miss genuine SusD genes and under-call `canonical_PUL`.
+SubstrATE can additionally search each genome's predicted proteins
+with two HMM profiles: TIGR04056 (SusC, TIGRFAM) and PF07980 (SusD,
+Pfam). To download them:
+
+```bash
+mkdir -p ~/db && cd ~/db
+bash /path/to/substrATE/scripts/download_transporter_hmms.sh
+```
+
+This downloads the full TIGRFAM and Pfam-A libraries (Pfam-A is about
+250 MB compressed), extracts the two profiles into `transporters/`,
+and deletes the large source files. Pass the two resulting files to
+`substrate run` or `substrate classify` with `--susc_hmm` and
+`--susd_hmm` (see
+[PUL classification modes](#pul-classification-modes)).
 
 ---
 
@@ -334,6 +355,8 @@ times. If omitted, runs survey mode.
 --db_dir PATH            Path to dbCAN database directory  [required]
 --expasy PATH            Path to EXPASY enzyme.dat  [required]
 --tcdb PATH              Path to TCDB tc_family_definitions.tsv  [required]
+--susc_hmm PATH          Path to TIGR04056.hmm (SusC); enables HMM transporter detection with --susd_hmm
+--susd_hmm PATH          Path to PF07980.hmm (SusD); enables HMM transporter detection with --susc_hmm
 --ref_metadata PATH      Path to reference sequence metadata TSV
 --ref_seqs PATH          Path to reference sequence FASTA directory
 --output PATH            Base output directory  [required]
@@ -627,6 +650,28 @@ SubstrATE supports three classification modes set with `--pul_mode`:
 (TCDB families 1.B.14 and 8.A.46) co-located with substrate CAZymes.
 Designed for Bacteroidetes PUL systems.
 
+By default the transporter is identified from dbCAN's TCDB annotation
+alone. If both `--susc_hmm` and `--susd_hmm` are given, a CGC also
+counts as having a transporter when one of its genes hits TIGR04056
+(SusC) or PF07980 (SusD) above the model's trusted cutoff. Evidence
+from any one of the three sources is enough. HMM evidence is used in
+`bacteroidetes` mode only, and if only one of the two options is
+given, SubstrATE warns and falls back to TCDB-only detection.
+
+```bash
+substrate run --substrate laminarin ... \
+    --susc_hmm ~/db/transporters/TIGR04056.hmm \
+    --susd_hmm ~/db/transporters/PF07980.hmm
+```
+
+With HMM detection enabled, `{substrate}_family_hits.tsv` gains a
+`transporter_source` column recording which evidence supported each
+CGC's transporter (`TCDB`, `TIGRFAM`, `Pfam`). `substrate run` caches
+the HMM hits in `cgc_output/transporter_hmm_hits.tsv` and reuses them
+on later runs; use `--force` to repeat the search. Because this can
+change which CGCs are called `canonical_PUL`, report whether it was
+enabled when describing your methods.
+
 **`generic`** — requires any TC gene co-located with substrate CAZymes.
 Suitable for non-Bacteroidetes bacteria with CAZyme gene clusters.
 
@@ -788,6 +833,16 @@ Please also cite the underlying tools that SubstrATE depends on:
   methods for phylogenetic inference. *Molecular Biology and Evolution*.
 - **clinker**: Gilchrist CLM & Chooi YH (2021) clinker & clustermap.js.
   *Bioinformatics*.
+
+If you use HMM-based transporter detection (`--susc_hmm`/`--susd_hmm`),
+please also cite:
+
+- **HMMER**: Eddy SR (2011) Accelerated profile HMM searches.
+  *PLoS Computational Biology*.
+- **TIGRFAMs**: Haft DH et al. (2013) TIGRFAMs and Genome Properties
+  in 2013. *Nucleic Acids Research*.
+- **Pfam**: Mistry J et al. (2021) Pfam: the protein families database
+  in 2021. *Nucleic Acids Research*.
 
 ---
 
