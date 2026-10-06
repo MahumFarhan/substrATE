@@ -506,7 +506,7 @@ def build_reference_db(email, api_key, output_dir,
           f"{', '.join(sorted(target_substrates))}\n")
 
     session       = requests.Session()
-    session.headers.update({'User-Agent': 'substrATE/0.1.0'})
+    session.headers.update({'User-Agent': 'substrATE/1.0.0'})
     all_metadata  = []
     total_written = 0
 

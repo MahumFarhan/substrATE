@@ -201,7 +201,7 @@ def _save_dataframe(df, path, description):
 
 @click.group()
 @click.version_option(
-    version='0.1.0',
+    version='1.0.0',
     prog_name='substrATE',
     message='%(prog)s %(version)s'
 )

@@ -5,14 +5,16 @@ All notable changes to SubstrATE will be documented here.
 ## [Unreleased]
 
 ### Planning
-- v1.2.0 FAMILY_MAP plan updated: rather than dynamic derivation from
+- v1.1.0 FAMILY_MAP plan updated: rather than dynamic derivation from
   fam-substrate-mapping.tsv at runtime (which would include promiscuous
   multi-substrate families and inflate canonical/non-canonical CGC calls),
-  v1.2.0 will replace the hardcoded FAMILY_MAP with a curated
+  v1.1.0 will replace the hardcoded FAMILY_MAP with a curated
   family_map.tsv file (analogous to activity_patterns.tsv) with reviewed
   and excluded columns, loaded at runtime but editable without touching
   source code. Deliberate exclusions of promiscuous families are preserved
   as explicit excluded=True entries with reasons.
+
+## [1.0.0] - 2026-10-06
 
 ### Added
 - HMM-based SusC/SusD transporter detection, supplementing TCDB
