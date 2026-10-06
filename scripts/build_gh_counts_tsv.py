@@ -137,6 +137,9 @@ def count_raw_family_hits(cgc_output_dir, families):
         for col in ["dbCAN_hmm", "dbCAN_sub", "DIAMOND", "Recommend Results"]:
             if col not in over_df.columns:
                 over_df[col] = ""
+            # From pandas 3, astype(str) leaves missing values as NaN, and
+            # one NaN would blank the whole combined string for that gene.
+            over_df[col] = over_df[col].fillna("-")
 
         all_annot = (
             over_df["dbCAN_hmm"].astype(str) + "|" +

@@ -403,6 +403,14 @@ def process_samples(cgc_output_dir, substrate, pul_mode='bacteroidetes',
             over_df.columns = over_df.columns.str.strip()
             over_df['sample'] = sample
 
+            # dbCAN writes '-' for "no hit"; make any empty cells match that.
+            # From pandas 3, astype(str) leaves missing values as NaN, and
+            # a NaN in one column would blank the whole combined annotation
+            # string below, silently dropping the gene from family matching.
+            _annot_cols = ['dbCAN_hmm', 'dbCAN_sub', 'DIAMOND',
+                           'Recommend Results']
+            over_df[_annot_cols] = over_df[_annot_cols].fillna('-')
+
             over_df['subfamily_annotation'] = over_df['Recommend Results'].astype(str)
             over_df.loc[
                 over_df['subfamily_annotation'].isin(['', 'nan', '-']),

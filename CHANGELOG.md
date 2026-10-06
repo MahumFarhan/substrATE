@@ -69,6 +69,11 @@ All notable changes to SubstrATE will be documented here.
 - Extended the activity colour palette from 20 to 25 distinct colours
   (`substrate/data/default_colours.tsv`).
 ### Fixed
+- `classify_pul.py`, `scripts/build_gh_counts_tsv.py`: under pandas 3, a
+  gene with an empty cell in any of dbCAN's `dbCAN_hmm`, `dbCAN_sub`,
+  `DIAMOND` or `Recommend Results` columns was silently dropped from
+  family matching. Empty cells are now treated as `-` (no hit). Output
+  is unchanged where dbCAN's `overview.tsv` has no empty cells.
 - `activity.py`: `load_family_activities()` no longer keeps rows with a
   missing EC number under pandas 3, where `astype(str)` leaves missing
   values as NaN instead of the text `'nan'`.
