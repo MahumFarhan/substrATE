@@ -14,7 +14,7 @@ All notable changes to SubstrATE will be documented here.
   source code. Deliberate exclusions of promiscuous families are preserved
   as explicit excluded=True entries with reasons.
 
-## [1.0.0] - 2026-10-06
+## [1.0.0] - 2026-10-08
 
 ### Added
 - HMM-based SusC/SusD transporter detection, supplementing TCDB

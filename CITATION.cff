@@ -8,7 +8,7 @@ abstract: "A command-line pipeline for identifying and annotating
   automated phylogenetic tree building, synteny visualisation,
   and activity annotation."
 version: 1.0.0
-date-released: 2026-10-06
+date-released: 2026-10-08
 license: MIT
 repository-code: https://github.com/MahumFarhan/substrATE
 authors:
