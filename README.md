@@ -520,8 +520,10 @@ tree match the full tree's legend exactly.
 substrate list-substrates
 substrate family-sizes --substrate laminarin
 
-# Test installation on bundled Gramella forsetii genome
-substrate test-install
+# Test installation on the bundled Christiangramia forsetii genome
+substrate test-install --db_dir ~/db \
+    --expasy /path/to/enzyme.dat \
+    --tcdb /path/to/tc_family_definitions.tsv
 
 # Survey existing dbCAN output
 substrate survey --dbcan_output /path/to/cgc_output/ --db_dir ~/db \
